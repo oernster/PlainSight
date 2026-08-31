@@ -40,8 +40,14 @@ class SkillView(QTextBrowser):
         self.setReadOnly(True)
         self.document().setDefaultStyleSheet(document_style(palette))
         self._renderer = renderer
+        self._palette = palette
         self._scroller = AutoScroller(self)
         self.show_nothing()
+
+    def wear(self, palette: Palette) -> None:
+        """Take the colours of this palette; the caller re-renders after."""
+        self._palette = palette
+        self.document().setDefaultStyleSheet(document_style(palette))
 
     @property
     def scroller(self) -> AutoScroller:

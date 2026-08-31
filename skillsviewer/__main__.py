@@ -18,7 +18,6 @@ from .infrastructure.resources import BundledAssets
 from .infrastructure.settings_store import JsonSettingsStore
 from .infrastructure.skill_repository import FileSystemSkillRepository
 from .ui.main_window import MainWindow
-from .ui.theme import DARK, stylesheet
 
 
 def build_service() -> SkillLibraryService:
@@ -36,10 +35,7 @@ def build_service() -> SkillLibraryService:
 def main() -> int:
     """Start the application."""
     application = QApplication(sys.argv)
-    application.setStyleSheet(stylesheet(DARK))
-    window = MainWindow(
-        build_service(), PythonMarkdownRenderer(), BundledAssets(), DARK
-    )
+    window = MainWindow(build_service(), PythonMarkdownRenderer(), BundledAssets())
     window.show()
     return application.exec()
 

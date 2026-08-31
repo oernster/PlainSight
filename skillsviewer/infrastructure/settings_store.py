@@ -12,7 +12,12 @@ import os
 import tempfile
 from pathlib import Path
 
-from ..domain.settings import EditorChoice, InvalidEditorChoice, Settings
+from ..domain.settings import (
+    Appearance,
+    EditorChoice,
+    InvalidEditorChoice,
+    Settings,
+)
 
 FORMAT_VERSION = 1
 VERSION_KEY = "version"
@@ -20,6 +25,7 @@ ROOT_KEY = "skills_root"
 EDITOR_KEY = "editor"
 EDITOR_PATH_KEY = "path"
 EDITOR_NAME_KEY = "display_name"
+APPEARANCE_KEY = "appearance"
 
 
 class JsonSettingsStore:
@@ -39,6 +45,7 @@ class JsonSettingsStore:
         return Settings(
             skills_root=_text(raw.get(ROOT_KEY)),
             editor=_editor(raw.get(EDITOR_KEY)),
+            appearance=Appearance.of(_text(raw.get(APPEARANCE_KEY))),
         )
 
     def save(self, settings: Settings) -> None:
@@ -46,6 +53,7 @@ class JsonSettingsStore:
         payload = {
             VERSION_KEY: FORMAT_VERSION,
             ROOT_KEY: settings.skills_root,
+            APPEARANCE_KEY: settings.appearance.value,
             EDITOR_KEY: (
                 None
                 if settings.editor is None

@@ -50,6 +50,8 @@ BUTTON_MARKS = (
     "help-about",
     "ui-licence",
     "model-licence",
+    "light-mode",
+    "dark-mode",
 )
 MASTER_SUFFIX = "-master.png"
 

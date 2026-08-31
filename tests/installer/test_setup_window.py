@@ -198,16 +198,45 @@ def test_the_mark_is_the_house_size() -> None:
     assert theme.MARK_PX == 126
 
 
+def test_the_appearance_toggle_is_artwork_rather_than_a_text_pill(
+    window: SetupWindow,
+) -> None:
+    """The licence is text and the toggle is a picture, deliberately."""
+    assert window.theme_button.text() == ""
+    assert not window.theme_button.icon().isNull()
+    assert window.licence_button.text() == "Licence"
+
+
 def test_the_appearance_toggle_says_what_it_would_move_to(
     window: SetupWindow,
 ) -> None:
     """Repaint and re-face happen together; a lagging toggle invites a second press."""
-    assert window.theme_button.text() == "Light"
+    from installer.app import TO_DARK_TOOLTIP, TO_LIGHT_TOOLTIP
+
+    assert window.theme_button.toolTip() == TO_LIGHT_TOOLTIP
 
     window.switch_appearance()
 
     assert window.palette_choice is theme.LIGHT
-    assert window.theme_button.text() == "Dark"
+    assert window.theme_button.toolTip() == TO_DARK_TOOLTIP
+
+
+def test_the_toggle_wears_a_different_mark_in_each_appearance(
+    window: SetupWindow,
+) -> None:
+    dark_face = window.theme_button.icon().cacheKey()
+
+    window.switch_appearance()
+
+    assert window.theme_button.icon().cacheKey() != dark_face
+
+
+def test_the_toggle_carries_its_own_ring_rule() -> None:
+    """An object-name border rule beats the generic one by id specificity."""
+    sheet = theme.stylesheet(theme.DARK)
+
+    assert "QPushButton#Mark:enabled:hover" in sheet
+    assert "QPushButton#Mark:enabled:focus" in sheet
 
 
 def test_every_named_button_carries_its_own_ring_rule() -> None:

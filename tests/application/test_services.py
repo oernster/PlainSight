@@ -5,7 +5,7 @@ from __future__ import annotations
 from skillsviewer.application.defaults import default_skills_root
 from skillsviewer.application.services import SkillLibraryService
 from skillsviewer.domain.catalogue import SkillCatalogue
-from skillsviewer.domain.settings import EditorChoice, Settings
+from skillsviewer.domain.settings import Appearance, EditorChoice, Settings
 
 from .fakes import (
     FakeLauncher,
@@ -73,6 +73,27 @@ def test_choosing_an_editor_remembers_it() -> None:
     a_service(store=store).choose_editor(AN_EDITOR)
 
     assert store.settings.editor == AN_EDITOR
+
+
+def test_the_appearance_starts_dark() -> None:
+    assert a_service().appearance() is Appearance.DARK
+
+
+def test_switching_remembers_the_other_appearance_and_reports_it() -> None:
+    store = FakeSettingsStore()
+    service = a_service(store=store)
+
+    assert service.switch_appearance() is Appearance.LIGHT
+    assert store.settings.appearance is Appearance.LIGHT
+    assert service.appearance() is Appearance.LIGHT
+
+
+def test_switching_twice_returns_to_where_it_started() -> None:
+    service = a_service(store=FakeSettingsStore())
+
+    service.switch_appearance()
+
+    assert service.switch_appearance() is Appearance.DARK
 
 
 def test_the_settings_can_be_read_back() -> None:

@@ -17,6 +17,8 @@ HEADER_GAP_PX = 18
 BODY_MARGIN_PX = 34
 FOOTER_GAP_PX = 10
 BAND_GAP_PX = 16
+MARK_BUTTON_PX = 40
+MARK_ICON_PX = 26
 WINDOW_WIDTH_PX = 720
 WINDOW_HEIGHT_PX = 560
 TITLE_PX = 32
@@ -169,6 +171,15 @@ QPushButton#Link {{
     border: {BORDER_PX}px solid transparent;
 }}
 QPushButton#Link:enabled:hover, QPushButton#Link:enabled:focus {{
+    border-color: {palette.ring};
+}}
+QPushButton#Mark {{
+    background: transparent;
+    padding: 4px;
+    border: {BORDER_PX}px solid transparent;
+    border-radius: {RADIUS_PX}px;
+}}
+QPushButton#Mark:enabled:hover, QPushButton#Mark:enabled:focus {{
     border-color: {palette.ring};
 }}
 QCheckBox {{

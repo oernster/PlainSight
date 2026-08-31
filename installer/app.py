@@ -8,7 +8,7 @@ from __future__ import annotations
 
 import sys
 
-from PySide6.QtCore import Qt, QTimer
+from PySide6.QtCore import QSize, Qt, QTimer
 from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import (
     QApplication,
@@ -19,7 +19,15 @@ from PySide6.QtWidgets import (
 )
 
 from installer import actions, launching, running, screens, shell, theme
-from installer.bundled import archive_path, licence_path, mark_path, read_version
+from installer.bundled import (
+    DARK_MODE_NAME,
+    LIGHT_MODE_NAME,
+    appearance_mark,
+    archive_path,
+    licence_path,
+    mark_path,
+    read_version,
+)
 from installer.existing import Existing, look
 from installer.footer import DANGER, PRIMARY, Action, Footer
 from installer.performing import install_steps, ladder, uninstall_steps
@@ -30,8 +38,8 @@ from installer.wording import PRODUCT, verdict_line, verdict_title, wording_for
 
 UNINSTALL_FLAG = "--uninstall"
 LICENCE_LABEL = "Licence"
-THEME_LABEL = "Light"
-THEME_LABEL_DARK = "Dark"
+TO_LIGHT_TOOLTIP = "Switch to the light appearance"
+TO_DARK_TOOLTIP = "Switch to the dark appearance"
 CLOSE_LABEL = "Close"
 CANCEL_LABEL = "Cancel"
 REMOVE_LABEL = "Remove"
@@ -61,7 +69,7 @@ class SetupWindow(QWidget):
         self._succeeded = True
 
         self.licence_button = self._link(LICENCE_LABEL, self.show_licence)
-        self.theme_button = self._link(THEME_LABEL, self.switch_appearance)
+        self.theme_button = self._mark_button(self.switch_appearance)
         self.stack = QStackedWidget(self)
         self.stack.setFocusPolicy(Qt.FocusPolicy.NoFocus)
         self.footer = Footer(self)
@@ -73,6 +81,16 @@ class SetupWindow(QWidget):
         button = QPushButton(label, self)
         button.setObjectName("Link")
         button.setFocusPolicy(Qt.FocusPolicy.TabFocus)
+        button.clicked.connect(on_click)
+        return button
+
+    def _mark_button(self, on_click) -> QPushButton:
+        """The appearance toggle: artwork, not a text pill."""
+        button = QPushButton(self)
+        button.setObjectName("Mark")
+        button.setFocusPolicy(Qt.FocusPolicy.TabFocus)
+        button.setFixedSize(theme.MARK_BUTTON_PX, theme.MARK_BUTTON_PX)
+        button.setIconSize(QSize(theme.MARK_ICON_PX, theme.MARK_ICON_PX))
         button.clicked.connect(on_click)
         return button
 
@@ -111,10 +129,20 @@ class SetupWindow(QWidget):
         self._neutral.setFocusPolicy(Qt.FocusPolicy.TabFocus)
 
     def apply_appearance(self) -> None:
-        """Repaint and re-face the toggle together, so it never lags."""
+        """Repaint and re-face the toggle together, so it never lags.
+
+        The toggle wears the appearance it would move TO, so the sun appears
+        while you are in the dark.
+        """
         self.setStyleSheet(theme.stylesheet(self.palette_choice))
         moving_to_light = self.palette_choice is theme.DARK
-        self.theme_button.setText(THEME_LABEL if moving_to_light else THEME_LABEL_DARK)
+        name = LIGHT_MODE_NAME if moving_to_light else DARK_MODE_NAME
+        tooltip = TO_LIGHT_TOOLTIP if moving_to_light else TO_DARK_TOOLTIP
+        found = appearance_mark(name)
+        if found is not None:
+            self.theme_button.setIcon(QIcon(str(found)))
+        self.theme_button.setToolTip(tooltip)
+        self.theme_button.setAccessibleName(tooltip)
 
     def switch_appearance(self) -> None:
         """Swap the palette, then say what the toggle would move to next."""

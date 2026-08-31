@@ -9,6 +9,8 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
+from ..domain.settings import Appearance
+
 BORDER_WIDTH_PX = 2
 THIN_BORDER_WIDTH_PX = 1
 RADIUS_PX = 6
@@ -42,6 +44,27 @@ DARK = Palette(
     selection_text="#ffffff",
     code_background="#0e1117",
 )
+
+# The ring and danger tokens are per theme rather than shared. A pastel green
+# that reads on near-black is weak on white, so light names a saturated one of
+# its own; the same goes for the red.
+LIGHT = Palette(
+    window="#f5f6fa",
+    panel="#ffffff",
+    control="#eceef5",
+    text="#161a22",
+    muted="#5b6478",
+    accent="#5a49d6",
+    ring="#059669",
+    danger="#b91c1c",
+    selection_text="#ffffff",
+    code_background="#eef0f6",
+)
+
+
+def palette_for(appearance: Appearance) -> Palette:
+    """The palette this appearance draws with."""
+    return LIGHT if appearance is Appearance.LIGHT else DARK
 
 
 def stylesheet(palette: Palette) -> str:

@@ -10,7 +10,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 from ..domain.catalogue import SkillCatalogue
-from ..domain.settings import EditorChoice, Settings
+from ..domain.settings import Appearance, EditorChoice, Settings
 from ..domain.skill import Skill
 from .defaults import effective_skills_root
 from .ports import (
@@ -51,6 +51,16 @@ class SkillLibraryService:
     def choose_editor(self, editor: EditorChoice) -> None:
         """Remember the editor to launch skills in."""
         self.settings_store.save(self.settings_store.load().with_editor(editor))
+
+    def appearance(self) -> Appearance:
+        """The palette the application should draw with now."""
+        return self.settings_store.load().appearance
+
+    def switch_appearance(self) -> Appearance:
+        """Remember the other appearance; report which it now is."""
+        wanted = self.settings_store.load().appearance.other
+        self.settings_store.save(self.settings_store.load().with_appearance(wanted))
+        return wanted
 
     def settings(self) -> Settings:
         """What is remembered right now."""

@@ -28,6 +28,7 @@ that click.
 - Lists every skill and renders the selected one, with its declared fields and
   the files that travel with it.
 - Reads itself down the page gently; hands control back the moment you scroll.
+- Light and dark, switched from the tray and remembered between runs.
 - Full keyboard navigation.
 - Opens the selected skill in your chosen editor.
 

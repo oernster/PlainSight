@@ -14,6 +14,8 @@ import sys
 PAYLOAD_DIRECTORY = "payload"
 ARCHIVE_NAME = "SkillsViewer.zip"
 MARK_NAME = "skillsviewer_icon_256.png"
+LIGHT_MODE_NAME = "light-mode.png"
+DARK_MODE_NAME = "dark-mode.png"
 LICENCE_NAME = "INSTALLER_LICENSE"
 VERSION_NAME = "VERSION"
 FALLBACK_VERSION = "0.0.0-dev"
@@ -62,6 +64,11 @@ def _find(name: str) -> pathlib.Path | None:
 def mark_path() -> pathlib.Path | None:
     """The 126px mark in the header."""
     return _find(MARK_NAME) or _find(f"assets/{MARK_NAME}")
+
+
+def appearance_mark(name: str) -> pathlib.Path | None:
+    """One of the two appearance marks, wherever the build put it."""
+    return _find(name) or _find(f"assets/{name}")
 
 
 def licence_path() -> pathlib.Path | None:

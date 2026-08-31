@@ -102,9 +102,11 @@ selected, an editor was chosen and that editor is still where it was.
 
 Two trays around a split body, exactly as design plan part 2 describes.
 
-- `theme`: one `Palette` and the stylesheet built from it. The ring model has
-  three states and no more: nothing at rest, green while hovered or focused and
-  enabled, permanent red while disabled. The accent is never a ring.
+- `theme`: two `Palette` values and the one stylesheet template built from
+  either. The ring model has three states and no more: nothing at rest, green
+  while hovered or focused and enabled, permanent red while disabled. The accent
+  is never a ring. `ring` and `danger` are named per palette rather than shared,
+  since a pastel green that reads on near-black is weak on white.
 - `keyboard_nav`: one `KeyboardNavigator` installed as an application event
   filter, driving a ring recomputed live on every move. `NeutralStart` is the
   zero-size sink that absorbs the window's first focus.
@@ -116,9 +118,16 @@ Two trays around a split body, exactly as design plan part 2 describes.
   drawn, so the ring's order is never inferred from a layout walk.
 - `skill_list`: one stop, walked with Up and Down, with internal cell tab
   walking turned off so Tab leaves in a single press.
-- `skill_view`: the reading pane, a stop only while it overflows.
+- `skill_view`: the reading pane, a stop only while it overflows. `wear` gives
+  it a palette; the window re-renders after, because a rendered document keeps
+  the colours it was rendered under.
 - `about_dialog`, `licence_dialog`, `widgets`: the dialogs and the pieces they
   share, all on the `FirstStopDialog` base.
+
+`MainWindow.apply_appearance` does three things in one call: repaint the
+application stylesheet, re-face the toggle and re-render the open skill. Split
+apart, the toggle can be left showing the mode just departed, which invites a
+second press; the document then keeps the old palette's colours too.
 
 The user interface reaches the application layer and the domain only. Bundled
 artwork is found through the `AssetLocator` port rather than by importing
@@ -144,6 +153,11 @@ application. It follows the house setup model.
 - The archive is fenced as a whole before any entry is written, so a crafted
   archive cannot write half its contents before one is caught climbing out.
 - Every path ends in a verdict; a step log is flushed as it goes.
+- The licence is a text button and the appearance toggle is artwork, which is
+  the deliberate asymmetry of the house header. Both marks are staged beside the
+  payload rather than left inside the bundle the setup program has not extracted
+  yet. A test asserts every mark the window reads is one the staging step
+  carries.
 
 The read-only invariant of design plan 13.1 is about the application, not the
 setup program: an installer writes files by definition. What it never touches

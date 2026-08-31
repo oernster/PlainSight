@@ -26,7 +26,14 @@ CARRIED_FILES = (
     PROJECT_ROOT / "VERSION",
     PROJECT_ROOT / "INSTALLER_LICENSE",
 )
-CARRIED_ASSETS = ("skillsviewer_icon_256.png", "skillsviewer.ico")
+# The setup program's own interface reads these, so they are staged beside the
+# payload rather than left inside the zipped bundle it has not extracted yet.
+CARRIED_ASSETS = (
+    "skillsviewer_icon_256.png",
+    "skillsviewer.ico",
+    "light-mode.png",
+    "dark-mode.png",
+)
 
 
 def stage() -> pathlib.Path:

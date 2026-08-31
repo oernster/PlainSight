@@ -110,6 +110,13 @@ rewind, 2000ms top hold, 2500ms resume after manual input.
 
 ## 5. Help and About
 
+5.0 An appearance toggle immediately left of the help button. It wears the
+application's own light and dark artwork and shows the appearance it would move
+**to**, so the sun appears while you are in the dark. Repainting, re-facing the
+toggle and re-rendering the open skill all happen in one call, so it can never
+be left showing the mode just departed. The choice persists between runs; each
+palette names its own ring and danger tokens rather than sharing one pair.
+
 5.1 A help and about button on the far right of the top tray.
 
 5.2 About shows the application icon, the name, the version, "Oliver Ernster",
@@ -155,12 +162,13 @@ everywhere.
 1. browse folder
 2. choose editor
 3. view in editor (skipped while disabled)
-4. help and about
-5. the skill list (one stop; Up and Down walk the rows)
-6. the rendered pane, **only while it overflows**
-7. donate
-8. UI licence
-9. model licence
+4. appearance toggle
+5. help and about
+6. the skill list (one stop; Up and Down walk the rows)
+7. the rendered pane, **only while it overflows**
+8. donate
+9. UI licence
+10. model licence
 
 then wrapping back to the browse button.
 

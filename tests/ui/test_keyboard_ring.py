@@ -22,7 +22,7 @@ def live(window: MainWindow) -> list:
     return window.navigator.live_stops()
 
 
-def test_the_ring_is_the_nine_stops_of_the_design_in_order(
+def test_the_ring_is_the_ten_stops_of_the_design_in_order(
     window: MainWindow,
 ) -> None:
     stops = window.ring_stops()
@@ -30,12 +30,13 @@ def test_the_ring_is_the_nine_stops_of_the_design_in_order(
     assert stops[0] is window.top_tray.folder_button
     assert stops[1] is window.top_tray.choose_editor_button
     assert stops[2] is window.top_tray.open_in_editor_button
-    assert stops[3] is window.top_tray.help_button
-    assert stops[4] is window.skill_list
-    assert stops[5] is window.skill_view
-    assert stops[6] is window.bottom_tray.donate_button
-    assert stops[7] is window.bottom_tray.ui_licence_button
-    assert stops[8] is window.bottom_tray.model_licence_button
+    assert stops[3] is window.top_tray.appearance_button
+    assert stops[4] is window.top_tray.help_button
+    assert stops[5] is window.skill_list
+    assert stops[6] is window.skill_view
+    assert stops[7] is window.bottom_tray.donate_button
+    assert stops[8] is window.bottom_tray.ui_licence_button
+    assert stops[9] is window.bottom_tray.model_licence_button
 
 
 def test_each_tray_declares_its_own_order_left_to_right_as_drawn(

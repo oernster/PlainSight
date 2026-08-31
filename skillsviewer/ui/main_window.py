@@ -6,6 +6,7 @@ from pathlib import Path
 
 from PySide6.QtCore import QEvent, Qt
 from PySide6.QtWidgets import (
+    QApplication,
     QFileDialog,
     QHBoxLayout,
     QMainWindow,
@@ -17,7 +18,7 @@ from PySide6.QtWidgets import (
 from .. import version
 from ..application.ports import AssetLocator, MarkdownRenderer
 from ..application.services import SkillLibraryService
-from ..domain.settings import EditorChoice
+from ..domain.settings import Appearance, EditorChoice
 from ..domain.skill import Skill
 from .about_dialog import AboutDialog
 from .bottom_tray import BottomTray
@@ -25,7 +26,7 @@ from .keyboard_nav import KeyboardNavigator, NeutralStart
 from .licence_dialog import LicenceDialog
 from .skill_list import SkillList
 from .skill_view import SkillView
-from .theme import DARK, Palette
+from .theme import Palette, palette_for, stylesheet
 from .top_tray import TopTray
 
 WINDOW_WIDTH_PX = 1100
@@ -54,12 +55,12 @@ class MainWindow(QMainWindow):
         service: SkillLibraryService,
         renderer: MarkdownRenderer,
         assets: AssetLocator,
-        palette: Palette = DARK,
     ) -> None:
         super().__init__()
         self._service = service
         self._assets = assets
-        self._palette = palette
+        self._renderer = renderer
+        self._palette: Palette = palette_for(service.appearance())
         self.setWindowTitle(version.APP_NAME)
         self.resize(WINDOW_WIDTH_PX, WINDOW_HEIGHT_PX)
 
@@ -69,6 +70,7 @@ class MainWindow(QMainWindow):
             on_choose_folder=self.choose_folder,
             on_choose_editor=self.choose_editor,
             on_open_in_editor=self.open_in_editor,
+            on_switch_appearance=self.switch_appearance,
             on_help=self.show_about,
         )
         self.bottom_tray = BottomTray(
@@ -79,7 +81,7 @@ class MainWindow(QMainWindow):
             on_model_licence=self.show_model_licence,
         )
         self.skill_list = SkillList(self)
-        self.skill_view = SkillView(renderer, palette, self)
+        self.skill_view = SkillView(renderer, self._palette, self)
         self.skill_list.skill_selected.connect(self.show_skill)
 
         self._neutral = NeutralStart(self)
@@ -87,7 +89,35 @@ class MainWindow(QMainWindow):
         self.setCentralWidget(self._body())
         self.statusBar().setSizeGripEnabled(False)
         self.navigator = KeyboardNavigator(self, self.ring_stops)
+        self.apply_appearance()
         self.refresh()
+
+    def apply_appearance(self) -> None:
+        """Repaint, re-face the toggle and re-render, in one call.
+
+        Doing the three together is what stops a toggle showing the mode just
+        departed; it is also what stops the rendered document keeping the
+        colours of the palette it was rendered under.
+        """
+        application = QApplication.instance()
+        if application is not None:
+            application.setStyleSheet(stylesheet(self._palette))
+        self.top_tray.face_appearance(self._appearance())
+        self.skill_view.wear(self._palette)
+        self.show_skill(self.skill_list.selected_skill())
+
+    def _appearance(self) -> Appearance:
+        """Which appearance the current palette is."""
+        return (
+            Appearance.LIGHT
+            if self._palette is palette_for(Appearance.LIGHT)
+            else Appearance.DARK
+        )
+
+    def switch_appearance(self) -> None:
+        """Move to the other appearance and remember it."""
+        self._palette = palette_for(self._service.switch_appearance())
+        self.apply_appearance()
 
     def _body(self) -> QWidget:
         """The central column: top tray, the split body, bottom tray."""
