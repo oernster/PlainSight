@@ -6,9 +6,11 @@ nowhere, so focusing it would let the user do nothing.
 
 from __future__ import annotations
 
+from dataclasses import dataclass
 from html import escape
 
-from PySide6.QtCore import QPoint, QTimer
+from PySide6.QtCore import QPoint
+from PySide6.QtGui import QTextDocument
 from PySide6.QtWidgets import QWidget
 
 from ..application.ports import MarkdownRenderer
@@ -28,12 +30,21 @@ AT_THE_TOP = 0
 NO_OVERFLOW = 0
 VIEWPORT_LEFT = 0
 VIEWPORT_TOP = 0
-# The next turn of the event loop. A page that still cannot say where a block
-# sits is asked again on the turn after that, a bounded number of times, since
-# laying out is the toolkit's own work and finishes when it finishes.
-SETTLED_MS = 0
-SETTLE_ATTEMPTS = 8
-NO_ATTEMPTS_LEFT = 0
+NOT_MEASURED = -1
+
+
+@dataclass(frozen=True, slots=True)
+class Place:
+    """Where a reader had reached, said in both of the ways that can be used.
+
+    The pixel is exact while the page keeps its height, which a change of
+    colour does. The character survives a change of size, which the pixel does
+    not, since the same fraction of a reflowed page is different words.
+    """
+
+    pixel: int
+    height: int
+    character: int
 
 
 class SkillView(ReadingPane):
@@ -51,80 +62,63 @@ class SkillView(ReadingPane):
         self._renderer = renderer
         self._palette = palette
         self._showing: Skill | None = None
-        self._resuming: int | None = None
-        self._settling: int | None = None
-        self._attempts_left = NO_ATTEMPTS_LEFT
-        # Owned by this widget rather than a bare singleShot, so it cannot
-        # outlive the pane and fire into a deleted one.
-        self._settle = QTimer(self)
-        self._settle.setSingleShot(True)
-        self._settle.setInterval(SETTLED_MS)
-        self._settle.timeout.connect(self._resume_when_settled)
+        self._place: Place | None = None
+        # The document is held here as well as handed to the widget: Qt does
+        # not take ownership of one it is given, so a document kept only by the
+        # widget is collected out from under it.
+        self._document: QTextDocument | None = None
+        self._measured_at = NOT_MEASURED
         self.show_nothing()
 
     def wear(self, palette: Palette) -> None:
         """Take the colours of this palette; the caller re-renders after.
 
         Forgetting what is shown is what makes that re-render happen: a
-        document keeps the colours it was rendered under, so this is one of the
-        two occasions the same skill must genuinely be drawn again.
-
-        The reader's place is carried across that redraw, from whatever
-        ``remember_place`` took before the change began.
+        document only takes a style sheet as it is parsed, so the same skill
+        must genuinely be drawn again for a change of colour to reach it.
         """
         self._palette = palette
         self._showing = None
-        self.document().setDefaultStyleSheet(document_style(palette))
 
     def remember_place(self) -> None:
         """Take note of where the reader is, before anything moves them.
 
-        Called before the stylesheet changes rather than after. Reading it
-        afterwards was measured capturing the wrong words: a new text size has
-        already reflowed the page by then, so the place recorded is where the
-        reader was thrown to, not where they were.
-        """
-        self._resuming = self._place()
-
-    def _place(self) -> int | None:
-        """The first character the reader can see, as an offset into the text.
-
-        A character rather than a pixel, deliberately. The pixel answer was
-        tried first and is wrong twice over: the document lays out again after
-        the redraw, so the height read at the moment of restoring is stale; at
-        another text size the same fraction of the page is different words
-        anyway. An offset into the text survives both, because the words do not
-        move relative to each other.
+        Before the stylesheet changes rather than after. Read afterwards, it
+        was measured capturing the wrong words: a new text size has already
+        reflowed the page by then, so what it records is where the reader was
+        thrown to rather than where they were.
         """
         bar = self.verticalScrollBar()
         if bar.maximum() == NO_OVERFLOW or bar.value() == AT_THE_TOP:
-            return None
-        return self.cursorForPosition(QPoint(VIEWPORT_LEFT, VIEWPORT_TOP)).position()
+            self._place = None
+            return
+        cursor = self.cursorForPosition(QPoint(VIEWPORT_LEFT, VIEWPORT_TOP))
+        self._place = Place(
+            pixel=bar.value(), height=bar.maximum(), character=cursor.position()
+        )
 
-    def _resume(self, position: int) -> bool:
-        """Bring the words the reader was on back to the top of the page.
+    def _return_to(self, place: Place) -> None:
+        """Put the reader back on the page that has just replaced theirs.
 
-        Reports whether it could. A document that has not finished laying out
-        cannot say where a block sits: it answers with a page of no height and
-        a rect at nothing. Acting on that answer anyway is what sent the reader
-        to the top, because nothing added to a bar that setHtml has just reset
-        is the top. An unanswerable question now moves nothing and is asked
-        again on the next turn instead.
+        The page is laid out before it is ever attached, so the scrollbar has
+        its full range the moment this runs. There is nothing to wait for and
+        no moment at which the position could be lost, which is the point: the
+        earlier attempts all tried to restore a position after it had already
+        been thrown away.
+
+        A page of unchanged height is the same words in new colours, so the
+        pixel is exact. A page of changed height has reflowed under a new text
+        size, where the same pixel would be different words, so the character
+        is followed instead.
         """
         bar = self.verticalScrollBar()
-        # Ask for the size, which makes the toolkit lay the document out rather
-        # than leaving it until it feels like it.
-        self.document().documentLayout().documentSize()
-        if bar.maximum() == NO_OVERFLOW:
-            return False
+        if bar.maximum() == place.height:
+            bar.setValue(place.pixel)
+            return
         cursor = self.textCursor()
-        cursor.setPosition(min(position, self.document().characterCount() - 1))
+        cursor.setPosition(min(place.character, self.document().characterCount() - 1))
         self.setTextCursor(cursor)
-        rect = self.cursorRect(cursor)
-        if rect.isNull():
-            return False
-        bar.setValue(bar.value() + rect.top())
-        return True
+        bar.setValue(bar.value() + self.cursorRect(cursor).top())
 
     def show_nothing(self) -> None:
         """The state before a skill has been picked."""
@@ -166,41 +160,46 @@ class SkillView(ReadingPane):
     def _set(self, html: str) -> None:
         """Show this content, at the start unless a place was kept for it.
 
-        A genuinely new page returns the reading cycle to its start hold. The
-        same page in new colours does not: restarting sets the bar to the top,
-        which is the whole of the defect this guards against.
+        The document is built and laid out here rather than handed to the
+        widget as text. Setting text on the live widget empties its scroll
+        position before the replacement has a shape, so the position has to be
+        put back afterwards; that is the race every earlier attempt at this
+        lost. A document that arrives already laid out never creates the gap.
         """
-        resuming = self._resuming
-        self._resuming = None
-        self.setHtml(html)
-        if resuming is None:
+        place = self._place
+        self._place = None
+
+        # Only when the font has moved. The column is a count of characters and
+        # so a fact about the font; re-measuring it on every redraw reflows
+        # the page for a change of colour too, which was measured shifting the
+        # height by six hundred pixels and pushing an exact restore onto the
+        # approximate path for no reason.
+        wanted = self.readable_width()
+        if wanted != self._measured_at:
+            self._measured_at = wanted
+            self.apply_measure()
+
+        previous = self.document()
+        width = previous.textWidth() if previous is not None else NOT_MEASURED
+        if width <= NO_OVERFLOW:
+            width = self.viewport().width()
+
+        document = QTextDocument(self)
+        document.setDefaultStyleSheet(document_style(self._palette))
+        document.setHtml(html)
+        # Laid out at the width the widget itself was using, not at the raw
+        # viewport width. Those differ; the difference was measured moving
+        # the page height by six hundred pixels on a change of colour alone,
+        # which turned an exact restore into an approximate one for nothing.
+        document.setTextWidth(width)
+        self._document = document
+        self.setDocument(document)
+
+        if place is None:
             self.scroller.restart()
         else:
-            # Twice, on purpose. A document that has finished laying out is put
-            # back correctly by the first call. One that has not reports a zero
-            # rect for a block it has not placed yet; zero plus a bar that
-            # setHtml has just reset is the top of the page, which is the whole
-            # of the reported defect. The height of a fresh document was
-            # measured still moving after this call returns, from 16560 to
-            # 14687, so the second pass is the one that can be trusted.
-            # Re-applying a place already reached moves nothing.
-            self._settling = resuming
-            self._attempts_left = SETTLE_ATTEMPTS
-            if not self._resume(resuming):
-                self._settle.start()
+            self._return_to(place)
         self.sync_focus_policy()
-
-    def _resume_when_settled(self) -> None:
-        """Try again on a page that could not answer the first time."""
-        position = self._settling
-        self._attempts_left -= 1
-        if position is None:
-            return
-        if self._resume(position) or self._attempts_left <= NO_ATTEMPTS_LEFT:
-            self._settling = None
-            self.sync_focus_policy()
-            return
-        self._settle.start()
 
 
 def _header(skill: Skill) -> str:
