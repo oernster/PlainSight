@@ -66,10 +66,26 @@ different folder. The chosen root persists between runs.
 the browse button; so does a root that holds no skills. Neither is an error and
 neither gets a dialog.
 
-2.4 **Out of scope for version 1, deliberately:** plugin skills under
-`~/.claude/plugins` and project-scoped skills under a repository's
-`.claude/skills`. The scanner takes a root and knows nothing about which root it
-is, so a later version adds a source by composition rather than by rewrite.
+2.4 **Plugin skills are read as well**, from the `plugins` tree that sits beside
+the chosen skills folder under the same `.claude` directory. The scanner takes a
+root and knows nothing about which root it is, so this was added by composition
+rather than by rewrite, exactly as this section originally said a later version
+would. Every `SKILL.md` anywhere beneath that tree is a skill, read by the same
+rules and named for the plugin it arrived with. The measured layout buries one
+four levels deep; that shape belongs to the tool, so a depth rule outlives a
+change to it where a path template does not.
+
+2.5 **Skills are gathered by where they came from**, under a heading each, with
+an arrow that opens and closes the group. The axis is origin rather than
+authorship, because authorship is written down nowhere and cannot be read off a
+file. That has one honest consequence worth stating: a skill somebody else wrote
+that sits in the user's own skills folder is listed among his. Where everything
+came from one place the headings are left out and the tree reads as a flat list.
+
+2.6 **Still out of scope:** project-scoped skills under a repository's
+`.claude/skills`, plus any skill that is not a file under the chosen tree.
+Several that a session offers are supplied by the tool rather than stored on
+disk, so nothing here can see them and nothing here pretends to.
 
 ## 3. Displaying a skill
 
@@ -326,8 +342,9 @@ skillsviewer/
   application/     ports.py  services.py  defaults.py
   infrastructure/  skill_repository.py  settings_store.py  editor_launcher.py
                    markdown_renderer.py  resources.py
-  ui/              main_window.py  top_tray.py  bottom_tray.py  skill_list.py
-                   skill_view.py  auto_scroller.py  keyboard_nav.py  theme.py
+  ui/              main_window.py  top_tray.py  bottom_tray.py  skill_tree.py
+                   skill_view.py  reading_pane.py  auto_scroller.py
+                   keyboard_nav.py  theme.py
                    about_dialog.py  licence_dialog.py  links.py
 tests/             mirrors the source tree, plus tests/structural/
 ```

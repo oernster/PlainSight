@@ -237,3 +237,6 @@ __marimo__/
 
 # Local release notes, drafted per release and never committed.
 NOTES.md
+
+# Context snapshot written by /ox and the oxygen panic protocol.
+.claude/resume.md

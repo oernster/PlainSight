@@ -70,9 +70,11 @@ def palette_for(appearance: Appearance) -> Palette:
 def stylesheet(palette: Palette) -> str:
     """The application stylesheet, built from one palette.
 
-    A container class never appears in a ring rule. The skill list is an item
+    A container class never appears in a ring rule. The skill tree is an item
     view, so it takes no ring in any state: its current row is the indicator.
-    The reading pane is a scrolling region, so it rings on focus only.
+    The reading pane is a scrolling region, so it rings on focus only. The
+    group arrows are drawn rather than styled, since Qt renders a stylesheet
+    triangle as nothing at all.
     """
     return f"""
 * {{
@@ -118,17 +120,17 @@ QPushButton#IconButton:disabled {{
     background: {palette.panel};
     border: {BORDER_WIDTH_PX}px solid {palette.danger};
 }}
-QListWidget {{
+QTreeWidget {{
     background: {palette.panel};
     border: {THIN_BORDER_WIDTH_PX}px solid transparent;
     border-radius: {RADIUS_PX}px;
     padding: 4px;
 }}
-QListWidget::item {{
+QTreeWidget::item {{
     padding: 6px 8px;
     border-radius: {RADIUS_PX}px;
 }}
-QListWidget::item:selected {{
+QTreeWidget::item:selected {{
     background: {palette.accent};
     color: {palette.selection_text};
 }}

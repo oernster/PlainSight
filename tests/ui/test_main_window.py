@@ -16,18 +16,18 @@ AN_EDITOR = EditorChoice(path="/usr/bin/vi", display_name="vi")
 
 
 def test_every_skill_beneath_the_root_is_listed(window: MainWindow) -> None:
-    listed = [window.skill_list.item(row).text() for row in range(3)]
+    listed = [item.text(0) for item in window.skill_tree.skill_items()]
 
     assert listed == ["dev", "keeb", "prose"]
 
 
 def test_the_first_skill_is_selected_and_rendered(window: MainWindow) -> None:
-    assert window.skill_list.selected_skill() is not None
+    assert window.skill_tree.selected_skill() is not None
     assert "dev" in window.skill_view.toPlainText()
 
 
 def test_selecting_another_skill_renders_it(window: MainWindow) -> None:
-    window.skill_list.setCurrentRow(2)
+    window.skill_tree.setCurrentItem(window.skill_tree.skill_items()[2])
 
     assert "prose" in window.skill_view.toPlainText()
 
@@ -72,12 +72,17 @@ def test_an_editor_that_will_not_start_is_reported(
 
 
 def test_opening_with_nothing_selected_does_nothing(
-    window: MainWindow, launcher
+    window: MainWindow, launcher, store, tmp_path: Path
 ) -> None:
-    window.skill_list.setCurrentRow(-1)
+    """An empty root is the real form of nothing being selected."""
+    empty = tmp_path / "empty"
+    empty.mkdir()
+    store.settings = Settings(skills_root=str(empty))
+    window.refresh()
 
     window.open_in_editor()
 
+    assert window.skill_tree.selected_skill() is None
     assert launcher.launched == []
 
 
@@ -121,7 +126,7 @@ def test_an_empty_root_invites_the_folder_button(
 
     window.refresh()
 
-    assert window.skill_list.count() == 0
+    assert window.skill_tree.skill_items() == []
     assert "folder button" in window.skill_view.toPlainText()
 
 
@@ -134,7 +139,5 @@ def test_a_skill_that_will_not_read_is_still_listed(
 
     window.refresh()
 
-    labels = [
-        window.skill_list.item(row).text() for row in range(window.skill_list.count())
-    ]
+    labels = [item.text(0) for item in window.skill_tree.skill_items()]
     assert "broken (unreadable)" in labels

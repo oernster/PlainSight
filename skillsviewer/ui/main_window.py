@@ -1,4 +1,4 @@
-"""The window: two trays around a list and a reading pane."""
+"""The window: two trays around the library and a reading pane."""
 
 from __future__ import annotations
 
@@ -24,14 +24,14 @@ from .about_dialog import AboutDialog
 from .bottom_tray import BottomTray
 from .keyboard_nav import KeyboardNavigator, NeutralStart
 from .licence_dialog import LicenceDialog
-from .skill_list import SkillList
+from .skill_tree import SkillTree
 from .skill_view import SkillView
 from .theme import Palette, palette_for, stylesheet
 from .top_tray import TopTray
 
 WINDOW_WIDTH_PX = 1100
 WINDOW_HEIGHT_PX = 760
-LIST_WIDTH_PX = 280
+TREE_WIDTH_PX = 280
 STATUS_TIMEOUT_MS = 6000
 
 UI_LICENCE_TITLE = "User interface licence (LGPL-3.0)"
@@ -79,9 +79,9 @@ class MainWindow(QMainWindow):
             on_ui_licence=self.show_ui_licence,
             on_model_licence=self.show_model_licence,
         )
-        self.skill_list = SkillList(self)
+        self.skill_tree = SkillTree(self._palette, self)
         self.skill_view = SkillView(renderer, self._palette, self)
-        self.skill_list.skill_selected.connect(self.show_skill)
+        self.skill_tree.skill_selected.connect(self.show_skill)
 
         self._neutral = NeutralStart(self)
         self._started = False
@@ -102,8 +102,9 @@ class MainWindow(QMainWindow):
         if application is not None:
             application.setStyleSheet(stylesheet(self._palette))
         self.top_tray.face_appearance(self._appearance())
+        self.skill_tree.wear(self._palette)
         self.skill_view.wear(self._palette)
-        self.show_skill(self.skill_list.selected_skill())
+        self.show_skill(self.skill_tree.selected_skill())
 
     def _appearance(self) -> Appearance:
         """Which appearance the current palette is."""
@@ -122,10 +123,10 @@ class MainWindow(QMainWindow):
         """The central column: top tray, the split body, bottom tray."""
         splitter = QSplitter(Qt.Orientation.Horizontal, self)
         splitter.setFocusPolicy(Qt.FocusPolicy.NoFocus)
-        splitter.addWidget(self.skill_list)
+        splitter.addWidget(self.skill_tree)
         splitter.addWidget(self.skill_view)
         splitter.setStretchFactor(1, 1)
-        self.skill_list.setMinimumWidth(LIST_WIDTH_PX)
+        self.skill_tree.setMinimumWidth(TREE_WIDTH_PX)
 
         middle = QHBoxLayout()
         middle.addWidget(splitter)
@@ -147,7 +148,7 @@ class MainWindow(QMainWindow):
         self.skill_view.sync_focus_policy()
         return (
             *self.top_tray.ring_stops(),
-            self.skill_list,
+            self.skill_tree,
             self.skill_view,
             *self.bottom_tray.ring_stops(),
         )
@@ -172,7 +173,7 @@ class MainWindow(QMainWindow):
     def refresh(self) -> None:
         """Read the current root and show what it holds."""
         catalogue = self._service.load()
-        self.skill_list.show_catalogue(catalogue)
+        self.skill_tree.show_catalogue(catalogue)
         if catalogue.is_empty:
             self.skill_view.show_empty_root()
         self.sync_editor_button()
@@ -187,7 +188,7 @@ class MainWindow(QMainWindow):
 
     def sync_editor_button(self) -> None:
         """Ask the service whether the view in editor control can act."""
-        selected = self.skill_list.selected_skill()
+        selected = self.skill_tree.selected_skill()
         self.top_tray.open_in_editor_button.setEnabled(
             self._service.can_open_in_editor(selected)
         )
@@ -199,7 +200,7 @@ class MainWindow(QMainWindow):
         )
         if not chosen:
             return
-        self.skill_list.show_catalogue(self._service.choose_root(chosen))
+        self.skill_tree.show_catalogue(self._service.choose_root(chosen))
         self.sync_editor_button()
 
     def choose_editor(self) -> None:
@@ -214,7 +215,7 @@ class MainWindow(QMainWindow):
 
     def open_in_editor(self) -> None:
         """Hand the selected skill's document to the chosen editor."""
-        skill = self.skill_list.selected_skill()
+        skill = self.skill_tree.selected_skill()
         if skill is None:
             return
         if not self._service.open_in_editor(skill):

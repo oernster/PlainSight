@@ -2,10 +2,14 @@
 
 from __future__ import annotations
 
+import os
+
 from skillsviewer.application.defaults import default_skills_root
 from skillsviewer.application.services import SkillLibraryService
 from skillsviewer.domain.catalogue import SkillCatalogue
+from skillsviewer.domain.origin import SkillOrigin
 from skillsviewer.domain.settings import Appearance, EditorChoice, Settings
+from skillsviewer.domain.skill import Skill
 
 from .fakes import (
     FakeLauncher,
@@ -163,3 +167,51 @@ def test_a_desktop_that_declines_the_donation_page_is_reported() -> None:
     service = a_service(opener=FakeOpener(accepts=False))
 
     assert not service.open_donation_page(A_DONATION_ADDRESS)
+
+
+def test_loading_reads_the_plugins_tree_beside_the_root_too() -> None:
+    repository = FakeRepository()
+    store = FakeSettingsStore(
+        Settings(skills_root=os.path.join("home", ".claude", "skills"))
+    )
+
+    a_service(repository=repository, store=store).load()
+
+    assert repository.plugin_roots_read == [os.path.join("home", ".claude", "plugins")]
+
+
+def test_both_places_arrive_as_one_catalogue_gathered_by_origin() -> None:
+    mine = Skill(
+        name="prose",
+        description="",
+        directory="/d",
+        document_path="/d/SKILL.md",
+        body="body",
+    )
+    theirs = Skill(
+        name="hookify",
+        description="",
+        directory="/p",
+        document_path="/p/SKILL.md",
+        body="body",
+        origin=SkillOrigin.PLUGIN,
+        source_name="hookify",
+    )
+    repository = FakeRepository(SkillCatalogue.of([mine]), SkillCatalogue.of([theirs]))
+
+    catalogue = a_service(repository=repository).load()
+
+    assert len(catalogue) == 2
+    assert [group.origin for group in catalogue.groups] == [
+        SkillOrigin.PERSONAL,
+        SkillOrigin.PLUGIN,
+    ]
+
+
+def test_choosing_a_root_reads_the_plugins_beside_that_one() -> None:
+    repository = FakeRepository()
+    chosen = os.path.join("other", ".claude", "skills")
+
+    a_service(repository=repository).choose_root(chosen)
+
+    assert repository.plugin_roots_read == [os.path.join("other", ".claude", "plugins")]

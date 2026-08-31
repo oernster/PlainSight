@@ -25,13 +25,25 @@ def a_skill(name: str = "prose") -> Skill:
 class FakeRepository:
     """Reports a fixed catalogue and records every root it was asked for."""
 
-    def __init__(self, catalogue: SkillCatalogue | None = None) -> None:
+    def __init__(
+        self,
+        catalogue: SkillCatalogue | None = None,
+        plugin_catalogue: SkillCatalogue | None = None,
+    ) -> None:
         self.catalogue = catalogue if catalogue is not None else SkillCatalogue()
+        self.plugin_catalogue = (
+            plugin_catalogue if plugin_catalogue is not None else SkillCatalogue()
+        )
         self.roots_read: list[str] = []
+        self.plugin_roots_read: list[str] = []
 
     def list_skills(self, root: str) -> SkillCatalogue:
         self.roots_read.append(root)
         return self.catalogue
+
+    def list_plugin_skills(self, root: str) -> SkillCatalogue:
+        self.plugin_roots_read.append(root)
+        return self.plugin_catalogue
 
 
 class FakeSettingsStore:

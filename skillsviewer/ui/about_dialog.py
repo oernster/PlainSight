@@ -4,11 +4,11 @@ from __future__ import annotations
 
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QPixmap
-from PySide6.QtWidgets import QLabel, QTextBrowser, QVBoxLayout, QWidget
+from PySide6.QtWidgets import QLabel, QVBoxLayout, QWidget
 
 from .. import version
 from ..application.ports import AssetLocator
-from .auto_scroller import AutoScroller
+from .reading_pane import ReadingPane
 from .theme import Palette, document_style
 from .widgets import FirstStopDialog, close_row
 
@@ -56,13 +56,11 @@ class AboutDialog(FirstStopDialog):
         if badge is not None:
             layout.addWidget(badge)
 
-        self.body = QTextBrowser(self)
-        self.body.setObjectName("SkillView")
+        self.body = ReadingPane(self)
         self.body.setOpenExternalLinks(True)
         self.body.setMinimumHeight(BODY_MIN_HEIGHT_PX)
         self.body.document().setDefaultStyleSheet(document_style(palette))
         self.body.setHtml(_html())
-        self.scroller = AutoScroller(self.body)
 
         layout.addWidget(self.body)
         layout.addLayout(close_row(self))

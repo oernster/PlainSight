@@ -12,7 +12,7 @@ from dataclasses import dataclass
 from ..domain.catalogue import SkillCatalogue
 from ..domain.settings import Appearance, EditorChoice, Settings
 from ..domain.skill import Skill
-from .defaults import effective_skills_root
+from .defaults import effective_skills_root, plugins_root_for
 from .ports import (
     EditorLauncher,
     ExternalOpener,
@@ -39,14 +39,24 @@ class SkillLibraryService:
         return effective_skills_root(self.settings_store.load().skills_root, self.paths)
 
     def load(self) -> SkillCatalogue:
-        """Every skill beneath the current root."""
-        return self.repository.list_skills(self.current_root())
+        """Every skill the current root and the plugins beside it hold."""
+        return self._read(self.current_root())
 
     def choose_root(self, root: str) -> SkillCatalogue:
         """Remember this root and read it."""
         settings = self.settings_store.load().with_root(root)
         self.settings_store.save(settings)
-        return self.repository.list_skills(root)
+        return self._read(root)
+
+    def _read(self, root: str) -> SkillCatalogue:
+        """One catalogue from both places a skill can come from.
+
+        They are combined here rather than in the user interface, so grouping
+        stays a property of the library rather than of the widget showing it.
+        """
+        mine = self.repository.list_skills(root)
+        theirs = self.repository.list_plugin_skills(plugins_root_for(root))
+        return SkillCatalogue.of((*mine, *theirs))
 
     def choose_editor(self, editor: EditorChoice) -> None:
         """Remember the editor to launch skills in."""

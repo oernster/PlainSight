@@ -2,15 +2,16 @@
 
 from __future__ import annotations
 
-from PySide6.QtCore import Qt
-from PySide6.QtWidgets import QApplication
+from PySide6.QtCore import QEvent, Qt
+from PySide6.QtGui import QKeyEvent
+from PySide6.QtWidgets import QApplication, QWidget
 
 from skillsviewer.domain.settings import EditorChoice, Settings
 from skillsviewer.infrastructure.resources import BundledAssets
 from skillsviewer.ui.about_dialog import AboutDialog
 from skillsviewer.ui.keyboard_nav import is_live
 from skillsviewer.ui.licence_dialog import LicenceDialog
-from skillsviewer.ui.main_window import MainWindow
+from skillsviewer.ui.main_window import MainWindow, find_licence
 from skillsviewer.ui.theme import DARK
 
 AN_EDITOR = EditorChoice(path="/usr/bin/vi", display_name="vi")
@@ -18,8 +19,17 @@ REALISTIC_WIDTH_PX = 1100
 REALISTIC_HEIGHT_PX = 760
 
 
+A_REAL_LICENCE = find_licence("LICENSE-LGPL-3.0.txt")
+
+
 def live(window: MainWindow) -> list:
     return window.navigator.live_stops()
+
+
+def press(widget: QWidget, key: Qt.Key) -> None:
+    QApplication.sendEvent(
+        widget, QKeyEvent(QEvent.Type.KeyPress, key, Qt.KeyboardModifier.NoModifier)
+    )
 
 
 def test_the_ring_is_the_ten_stops_of_the_design_in_order(
@@ -32,7 +42,7 @@ def test_the_ring_is_the_ten_stops_of_the_design_in_order(
     assert stops[2] is window.top_tray.open_in_editor_button
     assert stops[3] is window.top_tray.appearance_button
     assert stops[4] is window.top_tray.help_button
-    assert stops[5] is window.skill_list
+    assert stops[5] is window.skill_tree
     assert stops[6] is window.skill_view
     assert stops[7] is window.bottom_tray.donate_button
     assert stops[8] is window.bottom_tray.ui_licence_button
@@ -104,10 +114,10 @@ def test_the_window_starts_neutral(window: MainWindow) -> None:
     assert window._neutral not in window.ring_stops()
 
 
-def test_the_list_leaves_in_one_press_rather_than_walking_its_rows(
+def test_the_tree_leaves_in_one_press_rather_than_walking_its_rows(
     window: MainWindow,
 ) -> None:
-    assert not window.skill_list.tabKeyNavigation()
+    assert not window.skill_tree.tabKeyNavigation()
 
 
 def test_the_reading_pane_is_a_stop_only_while_it_overflows(
@@ -151,6 +161,49 @@ def test_a_button_activates_on_enter_and_on_space(window: MainWindow, store) -> 
 def test_activate_does_nothing_when_focus_is_not_on_a_button(
     window: MainWindow,
 ) -> None:
-    window.skill_list.setFocus(Qt.FocusReason.TabFocusReason)
+    window.skill_tree.setFocus(Qt.FocusReason.TabFocusReason)
 
     assert not window.navigator._activate()
+
+
+def test_a_dialog_reading_region_is_a_stop_only_while_it_overflows(
+    window: MainWindow,
+) -> None:
+    """The gate the skill pane has always had, now held by every region.
+
+    A licence that is not bundled is two sentences, so its region scrolls
+    nowhere and must not be reached at all.
+    """
+    long_licence = LicenceDialog("A licence", A_REAL_LICENCE, window)
+    long_licence.show()
+    QApplication.processEvents()
+    short_licence = LicenceDialog("A licence", None, window)
+    short_licence.show()
+    QApplication.processEvents()
+
+    assert is_live(long_licence.text)
+    assert not is_live(short_licence.text)
+    assert short_licence.first_stop() is not short_licence.text
+
+    long_licence.close()
+    short_licence.close()
+
+
+def test_home_and_end_reach_the_ends_of_a_dialog_region(window: MainWindow) -> None:
+    dialog = LicenceDialog("A licence", A_REAL_LICENCE, window)
+    dialog.show()
+    QApplication.processEvents()
+    bar = dialog.text.verticalScrollBar()
+
+    press(dialog.text, Qt.Key.Key_End)
+    at_foot = bar.value()
+    press(dialog.text, Qt.Key.Key_Home)
+
+    assert at_foot == bar.maximum()
+    assert bar.value() == 0
+    dialog.close()
+
+
+def test_the_neutral_start_is_not_on_the_ring(window: MainWindow) -> None:
+    """It absorbs the first focus and is never reachable by stepping."""
+    assert window._neutral not in live(window)

@@ -15,6 +15,10 @@ class SkillRepository(Protocol):
         """Every skill beneath ``root``, in display order."""
         ...
 
+    def list_plugin_skills(self, root: str) -> SkillCatalogue:
+        """Every skill held anywhere beneath a plugins tree."""
+        ...
+
 
 class SettingsStore(Protocol):
     """Remembers the root and the editor between runs."""

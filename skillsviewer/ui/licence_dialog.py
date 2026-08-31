@@ -11,7 +11,7 @@ from pathlib import Path
 
 from PySide6.QtWidgets import QTextBrowser, QVBoxLayout, QWidget
 
-from .auto_scroller import AutoScroller
+from .reading_pane import ReadingPane
 from .widgets import FirstStopDialog, close_row
 
 DIALOG_HEIGHT_PX = 520
@@ -28,11 +28,9 @@ class LicenceDialog(FirstStopDialog):
     def __init__(self, title: str, path: Path | None, parent: QWidget | None) -> None:
         super().__init__(parent)
         self.setWindowTitle(title)
-        self.text = QTextBrowser(self)
-        self.text.setObjectName("SkillView")
+        self.text = ReadingPane(self)
         self.text.setLineWrapMode(QTextBrowser.LineWrapMode.NoWrap)
         self.text.setPlainText(_read(path))
-        self.scroller = AutoScroller(self.text)
 
         layout = QVBoxLayout(self)
         layout.addWidget(self.text)

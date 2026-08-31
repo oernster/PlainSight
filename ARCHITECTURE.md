@@ -118,13 +118,38 @@ Two trays around a split body, exactly as design plan part 2 describes.
   own reset cannot be read as a reader taking hold.
 - `top_tray` and `bottom_tray`: each declares `ring_stops()` left to right as
   drawn, so the ring's order is never inferred from a layout walk.
-- `skill_list`: one stop, walked with Up and Down, with internal cell tab
-  walking turned off so Tab leaves in a single press.
-- `skill_view`: the reading pane, a stop only while it overflows. `wear` gives
-  it a palette; the window re-renders after, because a rendered document keeps
-  the colours it was rendered under.
+- `skill_tree`: one stop, walked with Up and Down, with internal cell tab
+  walking turned off so Tab leaves in a single press. Skills sit under a heading
+  for the origin they came from and Enter or Space opens and closes one, since
+  the horizontal arrows step the window's ring everywhere and cannot also be the
+  tree's own keys. The arrow is drawn at runtime in the palette's colour rather
+  than styled: Qt renders a stylesheet triangle as nothing at all and draws a
+  branch arrow only from an image file, while a text glyph would rest on a font
+  holding it, which this harness cannot verify. Restoring a selection never
+  opens a shut heading, because Qt expands ancestors to reach a row and would
+  otherwise undo the reader's decision on every re-read.
+- `reading_pane`: one home for how a scrolling text region behaves. It attaches
+  the reading cycle, gates its own focus on overflow (a page that fits scrolls
+  nowhere, so it is no stop at all) and answers Home, End, Ctrl+Home and
+  Ctrl+End. Qt binds only the bare pair on a read-only browser, measured rather
+  than assumed, so the two chords a reader reaches for first would otherwise do
+  nothing. The skill pane and both dialogs sit on it, which is what stops the
+  three drifting apart.
+- `skill_view`: the skill on that pane. `wear` gives it a palette; the window
+  re-renders after, because a rendered document keeps the colours it was
+  rendered under. A frontmatter value longer than a few lines is lifted out of
+  the header and given its own section after the body, so a value running to
+  thousands of characters cannot bury the skill the reader opened.
 - `about_dialog`, `licence_dialog`, `widgets`: the dialogs and the pieces they
   share, all on the `FirstStopDialog` base.
+
+`SkillOrigin` in the domain names where a skill was read from and the order the
+groups are shown in; `SkillCatalogue.groups` gathers by it and leaves out an
+origin that contributed nothing, so a machine with no plugins sees one list. The
+axis is origin rather than authorship because authorship is recorded nowhere,
+which means a skill someone else wrote inside the user's own folder is listed
+among theirs. `SkillLibraryService` reads both places and combines them, so
+grouping is a property of the library rather than of the widget showing it.
 
 `MainWindow.apply_appearance` does three things in one call: repaint the
 application stylesheet, re-face the toggle and re-render the open skill. Split

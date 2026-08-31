@@ -13,6 +13,7 @@ from .ports import PlatformPaths
 
 CLAUDE_DIRECTORY = ".claude"
 SKILLS_DIRECTORY = "skills"
+PLUGINS_DIRECTORY = "plugins"
 
 
 def default_skills_root(paths: PlatformPaths) -> str:
@@ -24,3 +25,16 @@ def effective_skills_root(remembered_root: str, paths: PlatformPaths) -> str:
     """The root to read: what the user chose, else the default."""
     chosen = remembered_root.strip()
     return chosen if chosen else default_skills_root(paths)
+
+
+def plugins_root_for(skills_root: str) -> str:
+    """The plugins tree that sits beside a skills folder.
+
+    Both live under the same ``.claude`` directory, so the plugins tree is
+    found from the skills root rather than guessed at separately. Browse
+    somewhere with no plugins beside it and there is simply nothing to read,
+    which is what makes an unrelated folder show one list and no grouping.
+    """
+    return os.path.join(
+        os.path.dirname(os.path.normpath(skills_root)), PLUGINS_DIRECTORY
+    )
