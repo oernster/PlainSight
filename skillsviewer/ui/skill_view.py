@@ -8,6 +8,7 @@ from __future__ import annotations
 
 from html import escape
 
+from PySide6.QtCore import QPoint
 from PySide6.QtWidgets import QWidget
 
 from ..application.ports import MarkdownRenderer
@@ -22,6 +23,11 @@ EMPTY_MESSAGE = (
     "Use the folder button to browse somewhere else.</p>"
 )
 NOTHING_SELECTED = "<h2>Select a skill</h2><p>Pick one from the list to read it.</p>"
+
+AT_THE_TOP = 0
+NO_OVERFLOW = 0
+VIEWPORT_LEFT = 0
+VIEWPORT_TOP = 0
 
 
 class SkillView(ReadingPane):
@@ -39,6 +45,7 @@ class SkillView(ReadingPane):
         self._renderer = renderer
         self._palette = palette
         self._showing: Skill | None = None
+        self._resuming: int | None = None
         self.show_nothing()
 
     def wear(self, palette: Palette) -> None:
@@ -47,10 +54,46 @@ class SkillView(ReadingPane):
         Forgetting what is shown is what makes that re-render happen: a
         document keeps the colours it was rendered under, so this is one of the
         two occasions the same skill must genuinely be drawn again.
+
+        The reader's place is carried across that redraw, from whatever
+        ``remember_place`` took before the change began.
         """
         self._palette = palette
         self._showing = None
         self.document().setDefaultStyleSheet(document_style(palette))
+
+    def remember_place(self) -> None:
+        """Take note of where the reader is, before anything moves them.
+
+        Called before the stylesheet changes rather than after. Reading it
+        afterwards was measured capturing the wrong words: a new text size has
+        already reflowed the page by then, so the place recorded is where the
+        reader was thrown to, not where they were.
+        """
+        self._resuming = self._place()
+
+    def _place(self) -> int | None:
+        """The first character the reader can see, as an offset into the text.
+
+        A character rather than a pixel, deliberately. The pixel answer was
+        tried first and is wrong twice over: the document lays out again after
+        the redraw, so the height read at the moment of restoring is stale; at
+        another text size the same fraction of the page is different words
+        anyway. An offset into the text survives both, because the words do not
+        move relative to each other.
+        """
+        bar = self.verticalScrollBar()
+        if bar.maximum() == NO_OVERFLOW or bar.value() == AT_THE_TOP:
+            return None
+        return self.cursorForPosition(QPoint(VIEWPORT_LEFT, VIEWPORT_TOP)).position()
+
+    def _resume(self, position: int) -> None:
+        """Bring the words the reader was on back to the top of the page."""
+        cursor = self.textCursor()
+        cursor.setPosition(min(position, self.document().characterCount() - 1))
+        self.setTextCursor(cursor)
+        bar = self.verticalScrollBar()
+        bar.setValue(bar.value() + self.cursorRect(cursor).top())
 
     def show_nothing(self) -> None:
         """The state before a skill has been picked."""
@@ -90,9 +133,19 @@ class SkillView(ReadingPane):
         return self._renderer.render(soften(skill.body))
 
     def _set(self, html: str) -> None:
-        """Show this content and return the reading cycle to its start hold."""
+        """Show this content, at the start unless a place was kept for it.
+
+        A genuinely new page returns the reading cycle to its start hold. The
+        same page in new colours does not: restarting sets the bar to the top,
+        which is the whole of the defect this guards against.
+        """
+        resuming = self._resuming
+        self._resuming = None
         self.setHtml(html)
-        self.scroller.restart()
+        if resuming is None:
+            self.scroller.restart()
+        else:
+            self._resume(resuming)
         self.sync_focus_policy()
 
 

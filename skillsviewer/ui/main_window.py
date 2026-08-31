@@ -119,6 +119,9 @@ class MainWindow(QMainWindow):
         departed; it is also what stops the rendered document keeping the
         colours of the palette it was rendered under.
         """
+        # Before the stylesheet, because applying it reflows the page under
+        # the reader; asked afterwards, the pane reports where it was thrown to.
+        self.skill_view.remember_place()
         application = QApplication.instance()
         if application is not None:
             application.setStyleSheet(stylesheet(self._palette, self._font_size))

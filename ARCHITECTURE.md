@@ -137,6 +137,13 @@ Two trays around a split body, exactly as design plan part 2 describes.
   class rather than per dialog. A surface beneath a modal is frozen rather than
   suspended; `suspend` is itself gated on the surface being active, so a modal's
   own reset cannot be read as a reader taking hold.
+- `skill_view`: a redraw forced by a change of colour or of text size keeps
+  the reader's place, taken as an offset into the text rather than a scroll
+  position. A character survives a reflow where a pixel does not: at another
+  size the same fraction of the page is different words. The place is taken by
+  `remember_place` BEFORE the stylesheet is applied, because applying it
+  reflows the page under the reader; asked afterwards the pane reports where it
+  was thrown to, which was measured capturing the wrong paragraph.
 - `top_tray` and `bottom_tray`: each declares `ring_stops()` left to right as
   drawn, so the ring's order is never inferred from a layout walk. The text
   size control sits right of the editor controls behind a `QFrame` hairline

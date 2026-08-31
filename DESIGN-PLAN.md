@@ -298,6 +298,12 @@ the rendered document declares no size of its own, so a change reaches the
 trays, the tree and the skill being read together. It is remembered between
 runs beside the appearance.
 
+15.5 A change of colour or of size redraws the page but does not move the
+reader: they are put back on the words they were on. The place is an offset
+into the text rather than a scroll position, since at another size the same
+point down the page is different words. It is taken before the stylesheet
+changes, because applying it has already reflowed the page.
+
 ---
 
 # Part 2: design
