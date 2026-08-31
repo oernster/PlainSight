@@ -21,6 +21,13 @@ wish.
 | No module exceeds 400 lines | `tests/structural/test_loc_limits.py::test_no_module_is_over_the_cap` |
 | No module sits in the 381 to 399 danger band | `tests/structural/test_loc_limits.py::test_no_module_sits_in_the_danger_band` |
 | Nothing but the settings store writes anything | `tests/structural/test_read_only.py::test_only_the_settings_store_writes_anything` |
+| Only the composition root builds an implementation | `tests/structural/test_composition_root.py::test_only_the_composition_root_builds_an_implementation` |
+| The composition root builds every implementation | `tests/structural/test_composition_root.py::test_the_composition_root_builds_every_implementation` |
+| Nothing is constructed at import time | `tests/structural/test_composition_root.py::test_nothing_is_constructed_at_import_time` |
+| No container class carries a ring rule | `tests/ui/test_focus_rings.py::test_no_container_class_carries_a_ring_rule` |
+| The item view takes no ring in any state | `tests/ui/test_focus_rings.py::test_the_item_view_takes_no_hover_ring` |
+| No container appears in a focus chain | `tests/ui/test_focus_rings.py::test_no_container_is_in_the_main_window_focus_chain` |
+| Each tray's ring order is its drawn order | `tests/ui/test_keyboard_ring.py::test_each_tray_declares_its_own_order_left_to_right_as_drawn` |
 
 Every one of these has been proved to bite by planting a violation and reading
 the exit code.
@@ -88,9 +95,30 @@ selected, an editor was chosen and that editor is still where it was.
 
 ### User interface
 
-Not yet built. Its design is in `DESIGN-PLAN.md` part 2: two trays, a list and a
-rendered pane, one `AutoScroller`, one `KeyboardNavigator` driving the explicit
-ring, plus the dialogs.
+Two trays around a split body, exactly as design plan part 2 describes.
+
+- `theme`: one `Palette` and the stylesheet built from it. The ring model has
+  three states and no more: nothing at rest, green while hovered or focused and
+  enabled, permanent red while disabled. The accent is never a ring.
+- `keyboard_nav`: one `KeyboardNavigator` installed as an application event
+  filter, driving a ring recomputed live on every move. `NeutralStart` is the
+  zero-size sink that absorbs the window's first focus.
+- `auto_scroller`: the reading cycle, one per surface, with the constants on the
+  class rather than per dialog. A surface beneath a modal is frozen rather than
+  suspended; `suspend` is itself gated on the surface being active, so a modal's
+  own reset cannot be read as a reader taking hold.
+- `top_tray` and `bottom_tray`: each declares `ring_stops()` left to right as
+  drawn, so the ring's order is never inferred from a layout walk.
+- `skill_list`: one stop, walked with Up and Down, with internal cell tab
+  walking turned off so Tab leaves in a single press.
+- `skill_view`: the reading pane, a stop only while it overflows.
+- `about_dialog`, `licence_dialog`, `widgets`: the dialogs and the pieces they
+  share, all on the `FirstStopDialog` base.
+
+The user interface reaches the application layer and the domain only. Bundled
+artwork is found through the `AssetLocator` port rather than by importing
+infrastructure, which is how the layer guard caught the first version of the
+trays.
 
 ## Quality enforcement
 

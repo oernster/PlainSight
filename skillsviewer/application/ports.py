@@ -60,6 +60,14 @@ class PlatformPaths(Protocol):
         ...
 
 
+class AssetLocator(Protocol):
+    """Finds the artwork the build bundled, wherever it was packaged into."""
+
+    def find(self, name: str) -> str | None:
+        """The path of the bundled asset of this name; None when absent."""
+        ...
+
+
 class MarkdownRenderer(Protocol):
     """Turns a skill's body into something a reading surface can show."""
 

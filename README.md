@@ -58,6 +58,7 @@ entry point and build scripts are under GPL-3.0. See `LICENSE` for the map.
 
 ## Status
 
-Under construction. The domain, application and infrastructure layers are built
-and gated; the user interface is next. `DESIGN-PLAN.md` holds the requirements
+Every layer is built and gated, including the user interface. What remains is
+the delivery work: the icon master and its generator, the licence texts, the
+donation address and the build scripts. `DESIGN-PLAN.md` holds the requirements
 and the design; `TECH_DEBT.md` holds what is still open.

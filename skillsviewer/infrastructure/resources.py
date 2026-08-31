@@ -45,6 +45,15 @@ def read_version() -> str:
     return FALLBACK_VERSION
 
 
+class BundledAssets:
+    """Locates bundled artwork for the user interface."""
+
+    def find(self, name: str) -> str | None:
+        """The path of the bundled asset of this name; None when absent."""
+        found = find_asset(name)
+        return None if found is None else str(found)
+
+
 def donate_icon_path() -> Path | None:
     """The artwork for the button that offers to buy the author a drink."""
     return find_asset(DONATE_ICON)

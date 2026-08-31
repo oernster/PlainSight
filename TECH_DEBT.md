@@ -33,16 +33,31 @@ single 1024 square RGBA master at the repository root, from which
 `generate_icons.py` derives every size, the Windows `.ico`, the macOS `.icns`
 and the donate mark. Neither the master nor the generator exists yet.
 
+## 4. The button artwork is loaded at full size
+
+Each of the seven pictures in `assets/` is roughly 1.4MB at 1254 pixels square,
+scaled down to a 28 pixel icon at load. It works and it is wasteful.
+
+Resolved by item 3: once `generate_icons.py` exists, the derived button marks
+come out of it at the size they are drawn.
+
+## 5. There is no packaging yet
+
+No `buildexe.py`, `buildinstaller.py`, `build_flatpak.sh`, `clean_flatpak.sh` or
+`builddmg.py`. The application runs from source with `python -m skillsviewer`.
+
 ## Looks like debt, not worth touching
 
 **Paths held as strings in the domain.** It reads as a missed abstraction and is
 not one: the domain reads nothing from disk, so a path object would buy nothing
 and its import would break the purity rule. See `ARCHITECTURE.md`.
 
-**Infrastructure outside the coverage floor.** Deliberate. The floor covers the
-layers reachable with no filesystem, no Qt and no editor, holding those at
-100%. Extending it to infrastructure would mean either a weaker number over
-everything or exclusions that make the number meaningless.
+**Infrastructure and the user interface outside the coverage floor.**
+Deliberate. The floor covers the layers reachable with no filesystem, no Qt and
+no editor, holding those at 100%. Both of the others carry real tests, against a
+temporary directory and against a real offscreen `QApplication`; extending the
+floor to them would mean either a weaker number over everything or a list of
+exclusions that makes the number meaningless.
 
 ## Not debt (do not "fix" these)
 
