@@ -264,8 +264,8 @@ def test_the_place_is_restored_again_once_the_page_has_settled(
     """The second pass is what makes this safe on a real machine.
 
     A document still laying out reports a zero rect for a block it has not
-    placed, and zero against a bar that setHtml has just reset is the top of
-    the page. That state is arranged here directly, because a harness lays out
+    placed; zero against a bar that setHtml has just reset is the top of the
+    page. That state is arranged here directly, because a harness lays out
     synchronously and so never reaches it on its own.
     """
     scroll_halfway(reading)
@@ -278,3 +278,30 @@ def test_the_place_is_restored_again_once_the_page_has_settled(
 
     assert top_character(reading) == before
     assert view._settling is None
+
+
+def test_a_page_that_cannot_answer_is_not_acted_on(reading: MainWindow) -> None:
+    """The guard that matters on a real machine, tested where it can be.
+
+    A document mid-layout reports no height. Refusing to act on that is the
+    whole fix, because the alternative adds nothing to a bar setHtml has just
+    reset, which is the top. The no-height state is reachable here through a
+    page too short to scroll; the mid-layout one is not, since this harness
+    lays out synchronously.
+    """
+    reading.show_skill(_skill(reading, "short"))
+    QApplication.processEvents()
+    view = reading.skill_view
+    assert view.verticalScrollBar().maximum() == AT_THE_TOP
+
+    assert view._resume(100) is False
+    assert view.verticalScrollBar().value() == AT_THE_TOP
+
+
+def test_a_page_that_can_answer_says_so(reading: MainWindow) -> None:
+    scroll_halfway(reading)
+    view = reading.skill_view
+    wanted = top_character(reading)
+
+    assert view._resume(wanted) is True
+    assert top_character(reading) == wanted

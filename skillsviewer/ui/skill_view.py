@@ -28,9 +28,12 @@ AT_THE_TOP = 0
 NO_OVERFLOW = 0
 VIEWPORT_LEFT = 0
 VIEWPORT_TOP = 0
-# The next turn of the event loop, by which time the page has finished laying
-# itself out.
+# The next turn of the event loop. A page that still cannot say where a block
+# sits is asked again on the turn after that, a bounded number of times, since
+# laying out is the toolkit's own work and finishes when it finishes.
 SETTLED_MS = 0
+SETTLE_ATTEMPTS = 8
+NO_ATTEMPTS_LEFT = 0
 
 
 class SkillView(ReadingPane):
@@ -50,6 +53,7 @@ class SkillView(ReadingPane):
         self._showing: Skill | None = None
         self._resuming: int | None = None
         self._settling: int | None = None
+        self._attempts_left = NO_ATTEMPTS_LEFT
         # Owned by this widget rather than a bare singleShot, so it cannot
         # outlive the pane and fire into a deleted one.
         self._settle = QTimer(self)
@@ -97,13 +101,30 @@ class SkillView(ReadingPane):
             return None
         return self.cursorForPosition(QPoint(VIEWPORT_LEFT, VIEWPORT_TOP)).position()
 
-    def _resume(self, position: int) -> None:
-        """Bring the words the reader was on back to the top of the page."""
+    def _resume(self, position: int) -> bool:
+        """Bring the words the reader was on back to the top of the page.
+
+        Reports whether it could. A document that has not finished laying out
+        cannot say where a block sits: it answers with a page of no height and
+        a rect at nothing. Acting on that answer anyway is what sent the reader
+        to the top, because nothing added to a bar that setHtml has just reset
+        is the top. An unanswerable question now moves nothing and is asked
+        again on the next turn instead.
+        """
+        bar = self.verticalScrollBar()
+        # Ask for the size, which makes the toolkit lay the document out rather
+        # than leaving it until it feels like it.
+        self.document().documentLayout().documentSize()
+        if bar.maximum() == NO_OVERFLOW:
+            return False
         cursor = self.textCursor()
         cursor.setPosition(min(position, self.document().characterCount() - 1))
         self.setTextCursor(cursor)
-        bar = self.verticalScrollBar()
-        bar.setValue(bar.value() + self.cursorRect(cursor).top())
+        rect = self.cursorRect(cursor)
+        if rect.isNull():
+            return False
+        bar.setValue(bar.value() + rect.top())
+        return True
 
     def show_nothing(self) -> None:
         """The state before a skill has been picked."""
@@ -157,24 +178,29 @@ class SkillView(ReadingPane):
         else:
             # Twice, on purpose. A document that has finished laying out is put
             # back correctly by the first call. One that has not reports a zero
-            # rect for a block it has not placed yet, and zero plus a bar that
+            # rect for a block it has not placed yet; zero plus a bar that
             # setHtml has just reset is the top of the page, which is the whole
             # of the reported defect. The height of a fresh document was
             # measured still moving after this call returns, from 16560 to
             # 14687, so the second pass is the one that can be trusted.
             # Re-applying a place already reached moves nothing.
-            self._resume(resuming)
             self._settling = resuming
-            self._settle.start()
+            self._attempts_left = SETTLE_ATTEMPTS
+            if not self._resume(resuming):
+                self._settle.start()
         self.sync_focus_policy()
 
     def _resume_when_settled(self) -> None:
-        """The second pass, once the page has stopped changing shape."""
+        """Try again on a page that could not answer the first time."""
         position = self._settling
-        self._settling = None
-        if position is not None:
-            self._resume(position)
-        self.sync_focus_policy()
+        self._attempts_left -= 1
+        if position is None:
+            return
+        if self._resume(position) or self._attempts_left <= NO_ATTEMPTS_LEFT:
+            self._settling = None
+            self.sync_focus_policy()
+            return
+        self._settle.start()
 
 
 def _header(skill: Skill) -> str:
