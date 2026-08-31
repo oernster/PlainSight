@@ -215,3 +215,48 @@ def test_choosing_a_root_reads_the_plugins_beside_that_one() -> None:
     a_service(repository=repository).choose_root(chosen)
 
     assert repository.plugin_roots_read == [os.path.join("other", ".claude", "plugins")]
+
+
+def test_a_remembered_editor_beats_the_machine_default() -> None:
+    chosen = EditorChoice(path="/usr/bin/vi", display_name="vi")
+    store = FakeSettingsStore(Settings(editor=chosen))
+    paths = FakePaths(programs=("/programs",), system="/system")
+
+    service = a_service(
+        store=store, paths=paths, probe=FakeProbe(("/system/notepad.exe",))
+    )
+
+    assert service.effective_editor() == chosen
+
+
+def test_with_nothing_remembered_the_machine_default_is_used() -> None:
+    notepad = os.path.join("/system", "notepad.exe")
+    service = a_service(
+        paths=FakePaths(programs=(), system="/system"),
+        probe=FakeProbe((notepad,)),
+    )
+
+    assert service.effective_editor().path == notepad
+
+
+def test_the_control_can_act_on_a_default_nobody_chose() -> None:
+    notepad = os.path.join("/system", "notepad.exe")
+    service = a_service(
+        paths=FakePaths(programs=(), system="/system"),
+        probe=FakeProbe((notepad,)),
+    )
+
+    assert service.can_open_in_editor(a_skill())
+
+
+def test_a_skill_opens_in_the_default_when_nothing_was_chosen() -> None:
+    notepad = os.path.join("/system", "notepad.exe")
+    launcher = FakeLauncher()
+    service = a_service(
+        launcher=launcher,
+        paths=FakePaths(programs=(), system="/system"),
+        probe=FakeProbe((notepad,)),
+    )
+
+    assert service.open_in_editor(a_skill())
+    assert launcher.launched[0][0].path == notepad

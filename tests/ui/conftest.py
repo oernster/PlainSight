@@ -89,3 +89,7 @@ def window(
     main.show()
     yield main
     main.close()
+    # Deleted rather than only closed: a window left alive leaks into the next
+    # test; enough of them together took the process down.
+    main.deleteLater()
+    QApplication.processEvents()

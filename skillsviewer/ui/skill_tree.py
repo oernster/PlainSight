@@ -27,7 +27,9 @@ UNREADABLE_SUFFIX = " (unreadable)"
 ONE_GROUP = 1
 TOGGLE_KEYS = (Qt.Key.Key_Return, Qt.Key.Key_Enter, Qt.Key.Key_Space)
 FIRST_COLUMN = 0
-ARROW_PX = 12
+# Twice the size it began at: at half this the triangle read as a speck
+# rather than as the control it is.
+ARROW_PX = 24
 COUNT_OPENER = " ("
 
 SHUT_POINTS = ((0.30, 0.15), (0.75, 0.50), (0.30, 0.85))
@@ -56,6 +58,7 @@ class SkillTree(QTreeWidget):
         self.currentItemChanged.connect(self._announce)
         self.itemExpanded.connect(self._remember_open)
         self.itemCollapsed.connect(self._remember_shut)
+        self.itemClicked.connect(self._toggle_heading)
 
     def wear(self, palette: Palette) -> None:
         """Take the colours of this palette and redraw the arrows in them."""
@@ -156,6 +159,15 @@ class SkillTree(QTreeWidget):
     def _remember_shut(self, item: QTreeWidgetItem) -> None:
         self._shut.add(_heading_label(item))
         self._face(item, False)
+
+    def _toggle_heading(self, item: QTreeWidgetItem, _column: int) -> None:
+        """A click anywhere on a heading opens or closes its group.
+
+        The whole row rather than the triangle alone: the triangle is the sign
+        of what a click does, never the only part of the row that does it.
+        """
+        if item.data(FIRST_COLUMN, SKILL_ROLE) is None:
+            item.setExpanded(not item.isExpanded())
 
     def keyPressEvent(self, event: QKeyEvent) -> None:
         """Enter and Space open and close a heading.

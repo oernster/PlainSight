@@ -101,13 +101,25 @@ class KeyboardNavigator(QObject):
 
 
 class NeutralStart(QWidget):
-    """A stop of no size that absorbs the window's first focus.
+    """A stop of no size that absorbs the window's first focus, once.
 
     The main window starts neutral: nothing is highlighted until the first Tab
-    or Right press enters the ring.
+    or Right press enters the ring. It leaves the tab chain the moment focus
+    moves on, so the toolkit's own chain holds none of it either.
     """
 
     def __init__(self, parent: QWidget) -> None:
         super().__init__(parent)
         self.setFixedSize(0, 0)
         self.setFocusPolicy(Qt.FocusPolicy.TabFocus)
+
+    def absorb(self) -> None:
+        """Take the first focus, then leave the chain for good.
+
+        The policy is dropped while the focus is still held, which Qt allows
+        and which is why this is not done from a focus event: an event handler
+        that touches the widget as the window is torn down crashes the process,
+        measured rather than guessed.
+        """
+        self.setFocus(Qt.FocusReason.OtherFocusReason)
+        self.setFocusPolicy(Qt.FocusPolicy.NoFocus)

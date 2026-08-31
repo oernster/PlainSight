@@ -30,6 +30,7 @@ class Palette:
     text: str
     muted: str
     accent: str
+    selection: str
     ring: str
     danger: str
     selection_text: str
@@ -42,7 +43,8 @@ DARK = Palette(
     control="#232936",
     text="#e6e9f0",
     muted="#96a0b5",
-    accent="#7c6cf0",
+    accent="#a78bfa",
+    selection="#4c2a9e",
     ring="#22c55e",
     danger="#ef4444",
     selection_text="#ffffff",
@@ -52,6 +54,13 @@ DARK = Palette(
 # The ring and danger tokens are per theme rather than shared. A pastel green
 # that reads on near-black is weak on white, so light names a saturated one of
 # its own; the same goes for the red.
+#
+# The dark theme carries a separate selection fill because one accent cannot do
+# both of its jobs there. A heading drawn on the panel wants a lighter violet
+# and white drawn on the selected row wants a darker one; asking a single token
+# for both left the headings at 4.14 to 1 and the selected row at 3.99, each
+# under the 4.5 that is readable. The light theme has no such tension, so its
+# two are the same value and stay so honestly rather than by coincidence.
 LIGHT = Palette(
     window="#f5f6fa",
     panel="#ffffff",
@@ -59,7 +68,8 @@ LIGHT = Palette(
     text="#161a22",
     muted="#5b6478",
     accent="#5a49d6",
-    ring="#059669",
+    selection="#5a49d6",
+    ring="#047857",
     danger="#b91c1c",
     selection_text="#ffffff",
     code_background="#eef0f6",
@@ -135,7 +145,7 @@ QTreeWidget::item {{
     border-radius: {RADIUS_PX}px;
 }}
 QTreeWidget::item:selected {{
-    background: {palette.accent};
+    background: {palette.selection};
     color: {palette.selection_text};
 }}
 QTextBrowser {{

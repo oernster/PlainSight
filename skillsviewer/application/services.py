@@ -12,7 +12,7 @@ from dataclasses import dataclass
 from ..domain.catalogue import SkillCatalogue
 from ..domain.settings import Appearance, EditorChoice, Settings
 from ..domain.skill import Skill
-from .defaults import effective_skills_root, plugins_root_for
+from .defaults import default_editor, effective_skills_root, plugins_root_for
 from .ports import (
     EditorLauncher,
     ExternalOpener,
@@ -76,6 +76,11 @@ class SkillLibraryService:
         """What is remembered right now."""
         return self.settings_store.load()
 
+    def effective_editor(self) -> EditorChoice | None:
+        """The editor to use: the one chosen, else the machine's own default."""
+        chosen = self.settings_store.load().editor
+        return chosen if chosen is not None else default_editor(self.paths, self.probe)
+
     def can_open_in_editor(self, skill: Skill | None) -> bool:
         """Whether the view in editor control has anything it could do.
 
@@ -85,7 +90,7 @@ class SkillLibraryService:
         """
         if skill is None:
             return False
-        editor = self.settings_store.load().editor
+        editor = self.effective_editor()
         if editor is None:
             return False
         return self.probe.exists(editor.path)
@@ -96,7 +101,7 @@ class SkillLibraryService:
         False when there is no usable editor or the desktop declined to start
         it, which the caller reports rather than swallowing.
         """
-        editor = self.settings_store.load().editor
+        editor = self.effective_editor()
         if editor is None:
             return False
         return self.launcher.launch(editor, skill.document_path)

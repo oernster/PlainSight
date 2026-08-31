@@ -8,13 +8,14 @@ from __future__ import annotations
 
 from PySide6.QtCore import QEvent, Qt
 from PySide6.QtGui import QKeyEvent
+from PySide6.QtTest import QTest
 from PySide6.QtWidgets import QApplication
 
 from skillsviewer.domain.skill import HEADER_FIELD_LIMIT, Skill
 from skillsviewer.infrastructure.markdown_renderer import PythonMarkdownRenderer
 from skillsviewer.ui.auto_scroller import START_HOLD_MS, TICK_MS, Phase
 from skillsviewer.ui.skill_view import SkillView
-from skillsviewer.ui.theme import DARK
+from skillsviewer.ui.theme import DARK, LIGHT
 
 BODY_MARKER = "the body of the skill"
 WALL = "w" * (HEADER_FIELD_LIMIT + 1)
@@ -141,3 +142,63 @@ def test_an_unhandled_key_is_left_to_the_toolkit(application) -> None:
     press(view, Qt.Key.Key_A, Qt.KeyboardModifier.NoModifier)
 
     assert bar.value() == bar.maximum()
+
+
+def test_clicking_the_text_focuses_the_pane_it_is_in(application) -> None:
+    """Tab alone was the whole of it, so the keys went somewhere else."""
+    view = a_view(application)
+    view.show_skill(a_skill())
+    QApplication.processEvents()
+
+    QTest.mouseClick(view.viewport(), Qt.MouseButton.LeftButton)
+
+    assert QApplication.focusWidget() is view
+
+
+def test_a_page_that_fits_still_takes_no_click(application) -> None:
+    view = a_view(application)
+    view.setHtml("<p>short</p>")
+    view.sync_focus_policy()
+
+    assert view.focusPolicy() is Qt.FocusPolicy.NoFocus
+
+
+def test_showing_the_same_skill_again_leaves_the_reader_where_they_were(
+    application,
+) -> None:
+    """The library is re-read on every activation; that must not lose the place."""
+    view = a_view(application)
+    skill = a_skill()
+    view.show_skill(skill)
+    bar = view.verticalScrollBar()
+    bar.setValue(bar.maximum() // HALF)
+    reached = bar.value()
+
+    view.show_skill(a_skill())
+
+    assert reached > 0
+    assert bar.value() == reached
+
+
+def test_a_skill_edited_on_disk_is_drawn_again(application) -> None:
+    view = a_view(application)
+    view.show_skill(a_skill())
+    bar = view.verticalScrollBar()
+    bar.setValue(bar.maximum() // HALF)
+
+    view.show_skill(a_skill(body="# Changed\n\n" + ("other words. " * 400)))
+
+    assert bar.value() == 0
+
+
+def test_a_change_of_palette_draws_the_same_skill_again(application) -> None:
+    view = a_view(application)
+    skill = a_skill()
+    view.show_skill(skill)
+    bar = view.verticalScrollBar()
+    bar.setValue(bar.maximum() // HALF)
+
+    view.wear(LIGHT)
+    view.show_skill(skill)
+
+    assert bar.value() == 0

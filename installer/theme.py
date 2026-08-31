@@ -42,12 +42,18 @@ class Palette:
     accent: str
     accent_soft: str
     selection: str
+    selection_text: str
     ring: str
     danger: str
     danger_soft: str
     hairline: str
 
 
+# The text on the primary button is a token of its own rather than the accent.
+# The accent on the selection fill measured 3.34 to 1, under the 4.5 that is
+# readable; a blue is both what was asked for and what clears the bar. It is
+# named per theme, since a blue light enough to read on the dark fill would
+# disappear on the pale one.
 DARK = Palette(
     window="#12151c",
     surface="#1a1f29",
@@ -57,8 +63,12 @@ DARK = Palette(
     accent="#7c6cf0",
     accent_soft="#2a2547",
     selection="#2f2a52",
+    selection_text="#8fc7ff",
     ring="#22c55e",
-    danger="#ef4444",
+    # A step lighter than the red the light theme uses. On the dark danger fill
+    # the darker one measured 3.99 to 1, under the 4.5 that is readable; it also
+    # carries the disabled ring, which the lighter red only makes plainer.
+    danger="#f87171",
     danger_soft="#3a1f22",
     hairline="#2b3240",
 )
@@ -72,6 +82,7 @@ LIGHT = Palette(
     accent="#5a49d6",
     accent_soft="#e6e2fb",
     selection="#ded8fa",
+    selection_text="#1e40af",
     ring="#059669",
     danger="#b91c1c",
     danger_soft="#fbe3e3",
@@ -149,7 +160,7 @@ QPushButton:disabled {{
 }}
 QPushButton#Primary {{
     background: {palette.selection};
-    color: {palette.accent};
+    color: {palette.selection_text};
     border: {BORDER_PX}px solid transparent;
 }}
 QPushButton#Primary:enabled:hover, QPushButton#Primary:enabled:focus {{

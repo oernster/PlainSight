@@ -12,12 +12,15 @@ from __future__ import annotations
 
 from PySide6.QtWidgets import QApplication, QTextBrowser
 
+from skillsviewer.ui import licence_dialog
+from skillsviewer.ui.main_window import find_licence
 from skillsviewer.ui.reading_pane import MAX_LINE_CHARACTERS, ReadingPane
 from skillsviewer.ui.theme import (
     DARK,
     LINE_HEIGHT_PERCENT,
     PARAGRAPH_GAP_PX,
     document_style,
+    stylesheet,
 )
 
 WALL = "word " * 900
@@ -26,6 +29,8 @@ WIDE_PX = 1400
 WIDER_PX = 2000
 TALL_PX = 700
 NO_MARGIN = 0
+NO_OVERFLOW = 0
+A_REAL_LICENCE = find_licence("LICENSE-LGPL-3.0.txt")
 
 
 def a_pane(application: QApplication, width: int, wrapped: bool = True) -> ReadingPane:
@@ -98,3 +103,60 @@ def test_open_spacing_makes_a_wall_of_text_taller_than_bare_colours(
     QApplication.processEvents()
 
     assert with_typography > pane.document().size().height()
+
+
+def test_text_is_shown_in_full_when_the_screen_can_take_it(
+    application, tmp_path
+) -> None:
+    """No horizontal scrollbar under text its author already wrapped.
+
+    The cap was a flat 900 pixels, narrower than either licence this project
+    ships, so both opened with a horizontal scrollbar under hard wrapped text.
+    It follows the screen now, which is the only width a dialog genuinely
+    cannot exceed. The document here is narrow enough that the cap cannot bind,
+    so what is measured is the fitting rather than the cap.
+    """
+    # The stylesheet is set here rather than left to whichever test ran last:
+    # it carries the padding and the font size the measurement has to account
+    # for; the dialog is never used in the application without it.
+    QApplication.instance().setStyleSheet(stylesheet(DARK))
+    narrow = tmp_path / "LICENCE.txt"
+    narrow.write_text("A short licence line.\n" * 40, encoding="utf-8")
+
+    dialog = licence_dialog.LicenceDialog("A licence", narrow, None)
+    dialog.show()
+    QApplication.processEvents()
+
+    assert dialog.text.horizontalScrollBar().maximum() == NO_OVERFLOW
+
+
+def test_a_document_wider_than_the_screen_is_held_to_the_cap(
+    application, tmp_path
+) -> None:
+    wide = tmp_path / "LICENCE.txt"
+    wide.write_text("word " * 400, encoding="utf-8")
+
+    dialog = licence_dialog.LicenceDialog("A licence", wide, None)
+    dialog.show()
+    QApplication.processEvents()
+
+    assert dialog.width() == licence_dialog._cap(dialog)
+
+
+def test_the_width_never_runs_past_what_the_screen_can_show(application) -> None:
+    dialog = licence_dialog.LicenceDialog("A licence", A_REAL_LICENCE, None)
+    dialog.show()
+    QApplication.processEvents()
+
+    assert dialog.width() <= licence_dialog._cap(dialog)
+
+
+def test_the_cap_is_taken_from_the_screen_rather_than_written_down(
+    application,
+) -> None:
+    dialog = licence_dialog.LicenceDialog("A licence", None, None)
+    screen = dialog.screen()
+
+    expected = int(screen.availableGeometry().width() * licence_dialog.SCREEN_FRACTION)
+
+    assert licence_dialog._cap(dialog) == max(licence_dialog.MINIMUM_WIDTH_PX, expected)

@@ -13,6 +13,7 @@ from skillsviewer.ui.skill_tree import ARROW_PX, FIRST_COLUMN, SkillTree, arrow_
 from skillsviewer.ui.theme import DARK, LIGHT
 
 BOTH_GROUPS = 2
+MINIMUM_TARGET_PX = 20
 
 
 def a_skill(name: str, origin: SkillOrigin, plugin: str = "") -> Skill:
@@ -165,3 +166,38 @@ def test_the_arrows_are_redrawn_in_the_palette_being_worn(application) -> None:
     after = tree.headings()[0].icon(FIRST_COLUMN).pixmap(ARROW_PX, ARROW_PX).toImage()
 
     assert before != after
+
+
+def test_clicking_a_heading_opens_and_closes_its_group(application) -> None:
+    tree = a_tree(application, MIXED)
+    heading = tree.headings()[0]
+
+    tree.itemClicked.emit(heading, FIRST_COLUMN)
+    shut = heading.isExpanded()
+    tree.itemClicked.emit(heading, FIRST_COLUMN)
+
+    assert not shut
+    assert heading.isExpanded()
+
+
+def test_clicking_a_skill_does_not_toggle_anything(application) -> None:
+    tree = a_tree(application, MIXED)
+    heading = tree.headings()[0]
+    skill_row = heading.child(0)
+
+    tree.itemClicked.emit(skill_row, FIRST_COLUMN)
+
+    assert heading.isExpanded()
+
+
+def test_the_arrow_is_big_enough_to_read_as_a_control(application) -> None:
+    """It is something you click, so it needs a target rather than a glyph.
+
+    The figure is a stated minimum rather than a measurement: this harness has
+    no real fonts, so its text metrics cannot be used to justify one. At the
+    twelve pixels it began at, the arrow read as a speck.
+    """
+    tree = a_tree(application, MIXED)
+
+    assert ARROW_PX >= MINIMUM_TARGET_PX
+    assert tree.iconSize().width() == ARROW_PX

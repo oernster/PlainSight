@@ -26,6 +26,7 @@ _WATCHED_EVENTS = (
     QEvent.Type.Wheel,
     QEvent.Type.MouseButtonPress,
     QEvent.Type.KeyPress,
+    QEvent.Type.FocusIn,
 )
 
 
@@ -146,22 +147,18 @@ class AutoScroller(QObject):
         return modal is window or modal.isAncestorOf(window)
 
     def _watch(self) -> None:
-        """Every way a reader can take hold of this surface."""
+        """Every way a reader can take hold of this surface.
+
+        All of it is local to the surface. Listening to the application for
+        focus instead reached back to a surface that could already be gone,
+        which took the whole process down on teardown; the surface's own focus
+        event says the same thing and cannot outlive it.
+        """
         self._area.installEventFilter(self)
         self._area.viewport().installEventFilter(self)
         self._bar.sliderPressed.connect(self.suspend)
         self._bar.sliderReleased.connect(self.suspend)
         self._bar.sliderMoved.connect(lambda _: self.suspend())
-        application = QApplication.instance()
-        if application is not None:
-            application.focusChanged.connect(self._on_focus_changed)
-
-    def _on_focus_changed(self, _old: QObject, new: QObject) -> None:
-        """Focus arriving inside the surface counts as a reader taking hold."""
-        if new is None:
-            return
-        if new is self._area or self._area.isAncestorOf(new):
-            self.suspend()
 
     def eventFilter(self, watched: QObject, event: QEvent) -> bool:
         """Wheel, click and key on the surface all count as reading by hand."""

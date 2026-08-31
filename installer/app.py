@@ -124,9 +124,7 @@ class SetupWindow(QWidget):
         column.addWidget(shell.rule(self))
         column.addWidget(self.footer)
 
-        self._neutral = QWidget(self)
-        self._neutral.setFixedSize(0, 0)
-        self._neutral.setFocusPolicy(Qt.FocusPolicy.TabFocus)
+        self._neutral = shell.NeutralStart(self)
 
     def apply_appearance(self) -> None:
         """Repaint and re-face the toggle together, so it never lags.
@@ -154,7 +152,7 @@ class SetupWindow(QWidget):
     def showEvent(self, event: object) -> None:
         """Neutral start: no control wears a ring until one is asked for."""
         super().showEvent(event)  # type: ignore[arg-type]
-        self._neutral.setFocus(Qt.FocusReason.OtherFocusReason)
+        self._neutral.absorb()
 
     def show_route(self) -> None:
         """The route screen, dressed for the one reading of the machine."""

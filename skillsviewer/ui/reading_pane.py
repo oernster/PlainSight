@@ -46,10 +46,15 @@ class ReadingPane(QTextBrowser):
 
         A page that fits scrolls nowhere, so focusing it would let the reader
         do nothing. Recomputed on every resize and every fresh document.
+
+        Reachable by a click as well as by Tab. Tab alone was measured to be
+        the whole of it, which meant clicking the text you were reading did
+        not focus it, so the keys that move around a document went to whatever
+        held focus instead and looked broken.
         """
         overflows = self.verticalScrollBar().maximum() > NO_OVERFLOW
         self.setFocusPolicy(
-            Qt.FocusPolicy.TabFocus if overflows else Qt.FocusPolicy.NoFocus
+            Qt.FocusPolicy.StrongFocus if overflows else Qt.FocusPolicy.NoFocus
         )
 
     def resizeEvent(self, event: object) -> None:

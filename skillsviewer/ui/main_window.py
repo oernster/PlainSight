@@ -158,7 +158,7 @@ class MainWindow(QMainWindow):
         super().showEvent(event)  # type: ignore[arg-type]
         if not self._started:
             self._started = True
-            self._neutral.setFocus(Qt.FocusReason.OtherFocusReason)
+            self._neutral.absorb()
 
     def changeEvent(self, event: QEvent) -> None:
         """Re-read the library whenever the window is activated again.

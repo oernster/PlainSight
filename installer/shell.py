@@ -108,3 +108,23 @@ def header(
 
     row.addWidget(names, 1)
     return band
+
+
+class NeutralStart(QWidget):
+    """A stop of no size that absorbs the window's first focus, once.
+
+    It leaves the tab chain the moment focus moves on. Kept in the chain it is
+    a stop of nothing at all: a press of Tab that lands on a widget with no
+    size, no ring and nothing to do, which is the shape this application
+    forbids everywhere else.
+    """
+
+    def __init__(self, parent: QWidget) -> None:
+        super().__init__(parent)
+        self.setFixedSize(0, 0)
+        self.setFocusPolicy(Qt.FocusPolicy.TabFocus)
+
+    def absorb(self) -> None:
+        """Take the first focus, then leave the chain for good."""
+        self.setFocus(Qt.FocusReason.OtherFocusReason)
+        self.setFocusPolicy(Qt.FocusPolicy.NoFocus)

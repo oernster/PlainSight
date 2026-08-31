@@ -9,6 +9,7 @@ from PySide6.QtWidgets import QApplication, QWidget
 from skillsviewer.domain.settings import EditorChoice, Settings
 from skillsviewer.infrastructure.resources import BundledAssets
 from skillsviewer.ui.about_dialog import AboutDialog
+from skillsviewer.ui.auto_scroller import AutoScroller
 from skillsviewer.ui.keyboard_nav import is_live
 from skillsviewer.ui.licence_dialog import LicenceDialog
 from skillsviewer.ui.main_window import MainWindow, find_licence
@@ -20,6 +21,19 @@ REALISTIC_HEIGHT_PX = 760
 
 
 A_REAL_LICENCE = find_licence("LICENSE-LGPL-3.0.txt")
+SEVERAL = 10
+
+
+def _chain_stops(window: MainWindow) -> list:
+    """Every stop the toolkit's own focus chain would reach."""
+    found, seen, walker = [], set(), window
+    while True:
+        walker = walker.nextInFocusChain()
+        if id(walker) in seen:
+            return found
+        seen.add(id(walker))
+        if walker.focusPolicy() & Qt.FocusPolicy.TabFocus:
+            found.append(walker)
 
 
 def live(window: MainWindow) -> list:
@@ -207,3 +221,33 @@ def test_home_and_end_reach_the_ends_of_a_dialog_region(window: MainWindow) -> N
 def test_the_neutral_start_is_not_on_the_ring(window: MainWindow) -> None:
     """It absorbs the first focus and is never reachable by stepping."""
     assert window._neutral not in live(window)
+
+
+def test_the_neutral_start_leaves_the_chain_once_it_has_been_used(
+    window: MainWindow,
+) -> None:
+    """A sink of no size must never be something Tab can land on.
+
+    It absorbs the first focus so the window opens with nothing ringed, then
+    drops out, so the toolkit's own chain holds no stop with nothing to do.
+    """
+    assert window._neutral.focusPolicy() is Qt.FocusPolicy.NoFocus
+    assert window._neutral not in live(window)
+    assert window._neutral not in _chain_stops(window)
+
+
+def test_a_dialog_is_gone_once_it_is_closed(window: MainWindow) -> None:
+    """Kept alive it took its reading cycle with it, ticking, all session.
+
+    Measured before the fix: ten openings of a licence left ten dialogs and
+    ten forty millisecond timers running behind the window.
+    """
+    for _ in range(SEVERAL):
+        dialog = LicenceDialog("A licence", A_REAL_LICENCE, window)
+        dialog.show()
+        QApplication.processEvents()
+        dialog.close()
+        QApplication.processEvents()
+
+    assert window.findChildren(LicenceDialog) == []
+    assert window.findChildren(AutoScroller) == [window.skill_view.scroller]

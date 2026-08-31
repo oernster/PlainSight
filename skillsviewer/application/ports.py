@@ -63,6 +63,14 @@ class PlatformPaths(Protocol):
         """The current user's home directory."""
         ...
 
+    def program_directories(self) -> tuple[str, ...]:
+        """Where installed programs live; empty where that has no meaning."""
+        ...
+
+    def system_directory(self) -> str:
+        """Where the operating system keeps its own programs; empty if none."""
+        ...
+
 
 class AssetLocator(Protocol):
     """Finds the artwork the build bundled, wherever it was packaged into."""

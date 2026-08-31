@@ -98,8 +98,21 @@ class FakeProbe:
 class FakePaths:
     """A home directory chosen by the test rather than by the machine."""
 
-    def __init__(self, home: str = "/home/oliver") -> None:
+    def __init__(
+        self,
+        home: str = "/home/oliver",
+        programs: tuple[str, ...] = (),
+        system: str = "",
+    ) -> None:
         self.home = home
+        self.programs = programs
+        self.system = system
 
     def home_directory(self) -> str:
         return self.home
+
+    def program_directories(self) -> tuple[str, ...]:
+        return self.programs
+
+    def system_directory(self) -> str:
+        return self.system

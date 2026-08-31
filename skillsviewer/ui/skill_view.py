@@ -38,23 +38,44 @@ class SkillView(ReadingPane):
         self.document().setDefaultStyleSheet(document_style(palette))
         self._renderer = renderer
         self._palette = palette
+        self._showing: Skill | None = None
         self.show_nothing()
 
     def wear(self, palette: Palette) -> None:
-        """Take the colours of this palette; the caller re-renders after."""
+        """Take the colours of this palette; the caller re-renders after.
+
+        Forgetting what is shown is what makes that re-render happen: a
+        document keeps the colours it was rendered under, so this is one of the
+        two occasions the same skill must genuinely be drawn again.
+        """
         self._palette = palette
+        self._showing = None
         self.document().setDefaultStyleSheet(document_style(palette))
 
     def show_nothing(self) -> None:
         """The state before a skill has been picked."""
+        self._showing = None
         self._set(NOTHING_SELECTED)
 
     def show_empty_root(self) -> None:
         """The state when the chosen folder holds no skills."""
+        self._showing = None
         self._set(EMPTY_MESSAGE)
 
     def show_skill(self, skill: Skill) -> None:
-        """Render one skill: header, then body or failure, then any long field."""
+        """Render one skill: header, then body or failure, then any long field.
+
+        A skill already on screen and unchanged is left exactly as it is, half
+        read and at the place the reader had reached. The library is re-read
+        every time the window is activated; each re-read used to redraw and send
+        the page back to the top, so leaving to look something up and
+        coming back lost your place; scrolling looked as though it had simply
+        been ignored. A skill compares by value, so a document edited on disk
+        is a different skill and is drawn again as it should be.
+        """
+        if skill == self._showing:
+            return
+        self._showing = skill
         self._set(_header(skill) + self._body(skill) + _long_fields(skill))
 
     def _body(self, skill: Skill) -> str:

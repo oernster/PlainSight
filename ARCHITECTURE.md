@@ -128,6 +128,11 @@ Two trays around a split body, exactly as design plan part 2 describes.
   holding it, which this harness cannot verify. Restoring a selection never
   opens a shut heading, because Qt expands ancestors to reach a row and would
   otherwise undo the reader's decision on every re-read.
+- A skill already on screen and unchanged is not drawn again. The library is
+  re-read on every activation of the window; each re-read used to send the page
+  back to the top, so leaving to look something up lost your place and
+  scrolling looked as though it had been ignored. A skill compares by value, so
+  a document edited on disk is a different skill and is redrawn as it should be.
 - `reading_pane`: one home for how a scrolling text region behaves. It attaches
   the reading cycle, gates its own focus on overflow (a page that fits scrolls
   nowhere, so it is no stop at all) and answers Home, End, Ctrl+Home and
@@ -142,6 +147,9 @@ Two trays around a split body, exactly as design plan part 2 describes.
   enormous: the longest measured runs past four thousand characters unbroken.
   Nothing here may rewrite what an author wrote, so the levers are the ones a
   reader owns, open line spacing, air between blocks and a capped measure.
+  It is reachable by a click as well as by Tab while it overflows, since Tab
+  alone meant clicking the text you were reading did not focus it and the keys
+  that move around a document went somewhere else and looked broken.
 - `skill_view`: the skill on that pane. `wear` gives it a palette; the window
   re-renders after, because a rendered document keeps the colours it was
   rendered under. A frontmatter value longer than a few lines is lifted out of
@@ -161,6 +169,20 @@ as over invented ones. Measured over the real library, the longest block a
 reader meets falls from 5604 characters to 1893; blocks past 1500 fall from 26
 to 4. It runs in the pane rather than anywhere nearer the file, because it
 is a decision about presenting text and never about storing it.
+
+Every colour pairing that carries text is held to the WCAG AA ratio by a test in
+the application as well as in the setup program. Three were under it and each
+looked deliberate: the selected row, every heading in a rendered skill and a
+link in the light theme. The dark theme carries a separate selection fill
+because one accent cannot do both jobs there; a heading on the panel wants the
+lighter violet and white on the selected row wants the darker one.
+
+A dialog is destroyed when it closes rather than left parented and hidden.
+Measured before that: ten openings of a licence left ten dialogs alive with ten
+forty millisecond reading cycles still ticking behind the window. The reading
+cycle also watches only its own surface now; listening to the application for
+focus reached back to a surface that could already be gone and took the process
+down on teardown.
 
 `SkillOrigin` in the domain names where a skill was read from and the order the
 groups are shown in; `SkillCatalogue.groups` gathers by it and leaves out an
@@ -204,6 +226,12 @@ application. It follows the house setup model.
   beside the mark. Boxed under the name it took the name's width, broke a line
   early and stranded its last word, while the room it needed sat unused beside
   the controls. The focus order is unchanged by that, measured either side.
+- Every colour pairing that carries text is held to the WCAG AA ratio by a test
+  rather than judged by eye. The primary button drew the accent on the selection
+  fill at 3.34 to 1 and the destructive button its red at 3.99, both under the
+  4.5 that is readable and both looking deliberate. The primary button now has a
+  token of its own, a blue named per theme, since one light enough for the dark
+  fill would vanish on the pale one.
 - The licence is a text button and the appearance toggle is artwork, which is
   the deliberate asymmetry of the house header. Both marks are staged beside the
   payload rather than left inside the bundle the setup program has not extracted

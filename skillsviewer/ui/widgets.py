@@ -55,6 +55,10 @@ class FirstStopDialog(QDialog):
 
     def __init__(self, parent: QWidget | None = None) -> None:
         super().__init__(parent)
+        # Closed means gone. Parented to the window and merely hidden, every
+        # dialog ever opened stayed alive with its reading cycle still ticking:
+        # ten openings of a licence measured as ten dialogs and ten timers.
+        self.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
         self._entered = False
 
     def showEvent(self, event: object) -> None:

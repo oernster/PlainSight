@@ -9,9 +9,14 @@ from __future__ import annotations
 
 import os
 
-from .ports import PlatformPaths
+from ..domain.settings import EditorChoice
+from .ports import PathProbe, PlatformPaths
 
 CLAUDE_DIRECTORY = ".claude"
+NOTEPAD_PLUS_NAME = "Notepad++"
+NOTEPAD_PLUS_FILE = "notepad++.exe"
+NOTEPAD_NAME = "Notepad"
+NOTEPAD_FILE = "notepad.exe"
 SKILLS_DIRECTORY = "skills"
 PLUGINS_DIRECTORY = "plugins"
 
@@ -37,4 +42,28 @@ def plugins_root_for(skills_root: str) -> str:
     """
     return os.path.join(
         os.path.dirname(os.path.normpath(skills_root)), PLUGINS_DIRECTORY
+    )
+
+
+def default_editor(paths: PlatformPaths, probe: PathProbe) -> EditorChoice | None:
+    """The editor to hand a skill to when the user has not chosen one.
+
+    Notepad++ where it is installed, since anyone who has it prefers it to what
+    the system ships; otherwise the one every Windows machine already has. A
+    machine that names neither a programs directory nor a system one gets no
+    default at all, which leaves the control disabled and honest rather than
+    pointing at something that is not there.
+    """
+    for directory in paths.program_directories():
+        found = os.path.join(directory, NOTEPAD_PLUS_NAME, NOTEPAD_PLUS_FILE)
+        if probe.exists(found):
+            return EditorChoice(path=found, display_name=NOTEPAD_PLUS_NAME)
+    system = paths.system_directory()
+    if not system:
+        return None
+    plain = os.path.join(system, NOTEPAD_FILE)
+    return (
+        EditorChoice(path=plain, display_name=NOTEPAD_NAME)
+        if probe.exists(plain)
+        else None
     )
