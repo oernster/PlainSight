@@ -9,7 +9,18 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from ..domain.settings import Appearance
+from ..domain.settings import DEFAULT_FONT_SIZE, Appearance, FontSize
+
+# The three text sizes, derived from one base and one step rather than written
+# out separately, so they cannot drift apart. The rendered document sets no size
+# of its own, so it inherits this and scales with everything else.
+BASE_FONT_PX = 14
+FONT_STEP_PX = 3
+FONT_SIZE_PX = {
+    FontSize.MEDIUM: BASE_FONT_PX,
+    FontSize.LARGE: BASE_FONT_PX + FONT_STEP_PX,
+    FontSize.EXTRA_LARGE: BASE_FONT_PX + FONT_STEP_PX + FONT_STEP_PX,
+}
 
 BORDER_WIDTH_PX = 2
 THIN_BORDER_WIDTH_PX = 1
@@ -81,8 +92,8 @@ def palette_for(appearance: Appearance) -> Palette:
     return LIGHT if appearance is Appearance.LIGHT else DARK
 
 
-def stylesheet(palette: Palette) -> str:
-    """The application stylesheet, built from one palette.
+def stylesheet(palette: Palette, font_size: FontSize = DEFAULT_FONT_SIZE) -> str:
+    """The application stylesheet, built from one palette and one text size.
 
     A container class never appears in a ring rule. The skill tree is an item
     view, so it takes no ring in any state: its current row is the indicator.
@@ -97,7 +108,7 @@ def stylesheet(palette: Palette) -> str:
 QWidget {{
     background: {palette.window};
     color: {palette.text};
-    font-size: 14px;
+    font-size: {FONT_SIZE_PX[font_size]}px;
 }}
 QMainWindow, QDialog {{
     background: {palette.window};
@@ -133,6 +144,10 @@ QPushButton#IconButton:enabled:hover, QPushButton#IconButton:enabled:focus {{
 QPushButton#IconButton:disabled {{
     background: {palette.panel};
     border: {BORDER_WIDTH_PX}px solid {palette.danger};
+}}
+QFrame#TraySeparator {{
+    background: {palette.control};
+    border: none;
 }}
 QMenu {{
     background: {palette.panel};

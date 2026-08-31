@@ -15,6 +15,7 @@ from pathlib import Path
 from ..domain.settings import (
     Appearance,
     EditorChoice,
+    FontSize,
     InvalidEditorChoice,
     Settings,
 )
@@ -26,6 +27,7 @@ EDITOR_KEY = "editor"
 EDITOR_PATH_KEY = "path"
 EDITOR_NAME_KEY = "display_name"
 APPEARANCE_KEY = "appearance"
+FONT_SIZE_KEY = "font_size"
 OPENED_KEY = "opened_groups"
 SKIPPED_UPDATE_KEY = "skipped_update_version"
 
@@ -48,6 +50,7 @@ class JsonSettingsStore:
             skills_root=_text(raw.get(ROOT_KEY)),
             editor=_editor(raw.get(EDITOR_KEY)),
             appearance=Appearance.of(_text(raw.get(APPEARANCE_KEY))),
+            font_size=FontSize.of(_text(raw.get(FONT_SIZE_KEY))),
             opened_groups=_names(raw.get(OPENED_KEY)),
             skipped_update_version=_text(raw.get(SKIPPED_UPDATE_KEY)),
         )
@@ -58,6 +61,7 @@ class JsonSettingsStore:
             VERSION_KEY: FORMAT_VERSION,
             ROOT_KEY: settings.skills_root,
             APPEARANCE_KEY: settings.appearance.value,
+            FONT_SIZE_KEY: settings.font_size.value,
             OPENED_KEY: list(settings.opened_groups),
             SKIPPED_UPDATE_KEY: settings.skipped_update_version,
             EDITOR_KEY: (

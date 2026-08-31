@@ -19,7 +19,7 @@ from .. import version
 from ..application.ports import AssetLocator, MarkdownRenderer
 from ..application.services import SkillLibraryService
 from ..application.update import UpdateService
-from ..domain.settings import Appearance, EditorChoice
+from ..domain.settings import Appearance, EditorChoice, FontSize
 from ..domain.skill import Skill
 from .about_dialog import AboutDialog
 from .bottom_tray import BottomTray
@@ -63,6 +63,7 @@ class MainWindow(QMainWindow):
         self._assets = assets
         self._renderer = renderer
         self._palette: Palette = palette_for(service.appearance())
+        self._font_size: FontSize = service.font_size()
         self.setWindowTitle(version.APP_NAME)
         self.resize(WINDOW_WIDTH_PX, WINDOW_HEIGHT_PX)
 
@@ -72,6 +73,7 @@ class MainWindow(QMainWindow):
             on_choose_folder=self.choose_folder,
             on_choose_editor=self.choose_editor,
             on_open_in_editor=self.open_in_editor,
+            on_cycle_font_size=self.cycle_font_size,
             on_switch_appearance=self.switch_appearance,
             on_about=self.show_about,
             on_check_updates=self.check_for_updates,
@@ -119,8 +121,9 @@ class MainWindow(QMainWindow):
         """
         application = QApplication.instance()
         if application is not None:
-            application.setStyleSheet(stylesheet(self._palette))
+            application.setStyleSheet(stylesheet(self._palette, self._font_size))
         self.top_tray.face_appearance(self._appearance())
+        self.top_tray.face_font_size(self._font_size)
         self.skill_tree.wear(self._palette)
         self.skill_view.wear(self._palette)
         self.show_skill(self.skill_tree.selected_skill())
@@ -136,6 +139,15 @@ class MainWindow(QMainWindow):
     def switch_appearance(self) -> None:
         """Move to the other appearance and remember it."""
         self._palette = palette_for(self._service.switch_appearance())
+        self.apply_appearance()
+
+    def cycle_font_size(self) -> None:
+        """Step to the next text size and remember it.
+
+        It goes through the same repaint as an appearance change, since the
+        size lives in the one stylesheet and the rendered document inherits it.
+        """
+        self._font_size = self._service.cycle_font_size()
         self.apply_appearance()
 
     def _body(self) -> QWidget:

@@ -123,7 +123,10 @@ raise a prompt.
 Two trays around a split body, exactly as design plan part 2 describes.
 
 - `theme`: two `Palette` values and the one stylesheet template built from
-  either. The ring model has three states and no more: nothing at rest, green
+  either, together with a text size. The three sizes derive from one base and
+  one step rather than being written out separately, so they cannot drift
+  apart; the rendered document sets no size of its own, so it inherits this and
+  scales with everything else. The ring model has three states and no more: nothing at rest, green
   while hovered or focused and enabled, permanent red while disabled. The accent
   is never a ring. `ring` and `danger` are named per palette rather than shared,
   since a pastel green that reads on near-black is weak on white.
@@ -135,7 +138,11 @@ Two trays around a split body, exactly as design plan part 2 describes.
   suspended; `suspend` is itself gated on the surface being active, so a modal's
   own reset cannot be read as a reader taking hold.
 - `top_tray` and `bottom_tray`: each declares `ring_stops()` left to right as
-  drawn, so the ring's order is never inferred from a layout walk. The help
+  drawn, so the ring's order is never inferred from a layout walk. The text
+  size control sits right of the editor controls behind a `QFrame` hairline
+  which, being a container, takes no focus and appears in no ring. Both cycling
+  controls wear the state they would move to rather than the current one; both
+  put it on through the same `_wear` helper. The help
   control drops a menu holding About and Check for Updates. It is popped by
   hand rather than set on the button, because a button carrying a menu grows an
   arrow indicator and every other control in that tray is a picture and nothing

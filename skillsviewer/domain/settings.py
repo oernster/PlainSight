@@ -29,6 +29,39 @@ class Appearance(enum.Enum):
 DEFAULT_APPEARANCE = Appearance.DARK
 
 
+class FontSize(enum.Enum):
+    """How large the application draws its text.
+
+    Three sizes rather than a continuous scale: the control is one button that
+    steps through them, so the set has to be small enough to walk in a moment.
+    """
+
+    MEDIUM = "medium"
+    LARGE = "large"
+    EXTRA_LARGE = "extra_large"
+
+    @property
+    def next_in_cycle(self) -> FontSize:
+        """The size the button would move to, which is what the button shows.
+
+        The cycle wraps, so the largest steps back to the smallest rather than
+        stopping and leaving a control that does nothing.
+        """
+        order = tuple(FontSize)
+        return order[(order.index(self) + 1) % len(order)]
+
+    @staticmethod
+    def of(value: str) -> FontSize:
+        """The size this recorded value names; the default when it names none."""
+        for size in FontSize:
+            if size.value == value:
+                return size
+        return DEFAULT_FONT_SIZE
+
+
+DEFAULT_FONT_SIZE = FontSize.MEDIUM
+
+
 class InvalidEditorChoice(ValueError):
     """An editor was chosen in a way that cannot be acted on."""
 
@@ -62,6 +95,7 @@ class Settings:
     skills_root: str = ""
     editor: EditorChoice | None = None
     appearance: Appearance = DEFAULT_APPEARANCE
+    font_size: FontSize = DEFAULT_FONT_SIZE
     opened_groups: tuple[str, ...] = ()
     skipped_update_version: str = ""
 
@@ -77,6 +111,10 @@ class Settings:
         """A copy remembering this appearance."""
         return self._but(appearance=appearance)
 
+    def with_font_size(self, size: FontSize) -> Settings:
+        """A copy remembering this text size."""
+        return self._but(font_size=size)
+
     def with_opened_groups(self, opened: tuple[str, ...]) -> Settings:
         """A copy remembering which groups the user has open."""
         return self._but(opened_groups=opened)
@@ -91,6 +129,7 @@ class Settings:
             "skills_root": self.skills_root,
             "editor": self.editor,
             "appearance": self.appearance,
+            "font_size": self.font_size,
             "opened_groups": self.opened_groups,
             "skipped_update_version": self.skipped_update_version,
         }

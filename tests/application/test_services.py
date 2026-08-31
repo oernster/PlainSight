@@ -8,7 +8,12 @@ from skillsviewer.application.defaults import default_skills_root
 from skillsviewer.application.services import SkillLibraryService
 from skillsviewer.domain.catalogue import SkillCatalogue
 from skillsviewer.domain.origin import SkillOrigin
-from skillsviewer.domain.settings import Appearance, EditorChoice, Settings
+from skillsviewer.domain.settings import (
+    Appearance,
+    EditorChoice,
+    FontSize,
+    Settings,
+)
 from skillsviewer.domain.skill import Skill
 
 from .fakes import (
@@ -312,3 +317,34 @@ def test_a_page_the_desktop_declines_is_reported_as_declined() -> None:
     service = a_service(opener=FakeOpener(accepts=False))
 
     assert service.open_page("https://example.invalid/release") is False
+
+
+def test_text_starts_at_the_middle_size() -> None:
+    assert a_service().font_size() is FontSize.MEDIUM
+
+
+def test_cycling_the_text_size_steps_it_and_remembers_it() -> None:
+    store = FakeSettingsStore()
+    service = a_service(store=store)
+
+    assert service.cycle_font_size() is FontSize.LARGE
+    assert store.settings.font_size is FontSize.LARGE
+    assert service.font_size() is FontSize.LARGE
+
+
+def test_cycling_past_the_largest_returns_to_the_smallest() -> None:
+    service = a_service(
+        store=FakeSettingsStore(Settings(font_size=FontSize.EXTRA_LARGE))
+    )
+
+    assert service.cycle_font_size() is FontSize.MEDIUM
+
+
+def test_cycling_the_text_size_keeps_everything_else_remembered() -> None:
+    store = FakeSettingsStore(Settings(skills_root="/skills", editor=AN_EDITOR))
+    service = a_service(store=store)
+
+    service.cycle_font_size()
+
+    assert store.settings.skills_root == "/skills"
+    assert store.settings.editor == AN_EDITOR

@@ -5,7 +5,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from skillsviewer.domain.settings import EditorChoice, Settings
+from skillsviewer.domain.settings import EditorChoice, FontSize, Settings
 from skillsviewer.infrastructure.settings_store import FORMAT_VERSION, JsonSettingsStore
 
 AN_EDITOR = EditorChoice(path="/usr/bin/vi", display_name="vi")
@@ -99,3 +99,29 @@ def test_a_skipped_release_recorded_as_something_other_than_text_is_ignored(
     )
 
     assert JsonSettingsStore(path).load().skipped_update_version == ""
+
+
+def test_a_text_size_survives_a_round_trip(tmp_path: Path) -> None:
+    store = JsonSettingsStore(tmp_path / "settings.json")
+
+    store.save(Settings().with_font_size(FontSize.EXTRA_LARGE))
+
+    assert store.load().font_size is FontSize.EXTRA_LARGE
+
+
+def test_a_file_written_before_the_text_sizes_reads_as_the_default(
+    tmp_path: Path,
+) -> None:
+    path = tmp_path / "settings.json"
+    path.write_text(
+        json.dumps({"version": 1, "skills_root": "/skills"}), encoding="utf-8"
+    )
+
+    assert JsonSettingsStore(path).load().font_size is FontSize.MEDIUM
+
+
+def test_a_text_size_recorded_as_nonsense_reads_as_the_default(tmp_path: Path) -> None:
+    path = tmp_path / "settings.json"
+    path.write_text(json.dumps({"version": 1, "font_size": 9}), encoding="utf-8")
+
+    assert JsonSettingsStore(path).load().font_size is FontSize.MEDIUM

@@ -10,7 +10,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 from ..domain.catalogue import SkillCatalogue
-from ..domain.settings import Appearance, EditorChoice, Settings
+from ..domain.settings import Appearance, EditorChoice, FontSize, Settings
 from ..domain.skill import Skill
 from .defaults import default_editor, effective_skills_root, plugins_root_for
 from .ports import (
@@ -88,6 +88,16 @@ class SkillLibraryService:
         """Remember the other appearance; report which it now is."""
         wanted = self.settings_store.load().appearance.other
         self.settings_store.save(self.settings_store.load().with_appearance(wanted))
+        return wanted
+
+    def font_size(self) -> FontSize:
+        """The size the application should draw its text at now."""
+        return self.settings_store.load().font_size
+
+    def cycle_font_size(self) -> FontSize:
+        """Step to the next size and remember it; report which it now is."""
+        wanted = self.settings_store.load().font_size.next_in_cycle
+        self.settings_store.save(self.settings_store.load().with_font_size(wanted))
         return wanted
 
     def settings(self) -> Settings:

@@ -34,6 +34,7 @@ Nothing is fetched or sent without that click.
   the files that travel with it.
 - Reads itself down the page gently; hands control back the moment you scroll.
 - Light and dark, switched from the tray and remembered between runs.
+- Three text sizes, stepped by one button in the tray and remembered too.
 - Full keyboard navigation.
 - Opens the selected skill in your chosen editor.
 - Tells you when a newer release is out, from the Help menu or on its own; skip

@@ -207,6 +207,7 @@ def test_each_menu_item_calls_its_own_handler(application: QApplication) -> None
         on_choose_folder=lambda: pressed.append("folder"),
         on_choose_editor=lambda: pressed.append("choose"),
         on_open_in_editor=lambda: pressed.append("open"),
+        on_cycle_font_size=lambda: pressed.append("font"),
         on_switch_appearance=lambda: pressed.append("appearance"),
         on_about=lambda: pressed.append("about"),
         on_check_updates=lambda: pressed.append("updates"),

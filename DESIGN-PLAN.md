@@ -279,6 +279,25 @@ one release tag, so the next release still reaches the user.
 every claim to the contrary in the README, the release notes and the code
 comments is corrected in the same change rather than left to be found.
 
+## 15. Text size
+
+15.1 Three sizes, medium then large then extra large, stepped by one button in
+the top tray and wrapping back to medium. A cycle rather than a continuous
+scale, since the control is a single button and the set has to be walkable in a
+moment.
+
+15.2 The button sits to the right of the view in editor control, behind a
+hairline separator that keeps the editor controls together as a group. The
+separator is a container, so it takes no focus and appears in no ring.
+
+15.3 It wears the size it would move to rather than the size in force, exactly
+as the appearance toggle does, so the picture answers what pressing it will do.
+
+15.4 The size lives in the one stylesheet the application is painted from and
+the rendered document declares no size of its own, so a change reaches the
+trays, the tree and the skill being read together. It is remembered between
+runs beside the appearance.
+
 ---
 
 # Part 2: design
