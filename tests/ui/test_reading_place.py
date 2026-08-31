@@ -256,3 +256,25 @@ def test_the_same_holds_when_nothing_is_selected(reading: MainWindow) -> None:
 
     assert reading.skill_view.verticalScrollBar().value() == AT_THE_TOP
     assert reading.skill_view._resuming is None
+
+
+def test_the_place_is_restored_again_once_the_page_has_settled(
+    reading: MainWindow,
+) -> None:
+    """The second pass is what makes this safe on a real machine.
+
+    A document still laying out reports a zero rect for a block it has not
+    placed, and zero against a bar that setHtml has just reset is the top of
+    the page. That state is arranged here directly, because a harness lays out
+    synchronously and so never reaches it on its own.
+    """
+    scroll_halfway(reading)
+    view = reading.skill_view
+    before = top_character(reading)
+
+    view._settling = before
+    view.verticalScrollBar().setValue(AT_THE_TOP)
+    view._resume_when_settled()
+
+    assert top_character(reading) == before
+    assert view._settling is None

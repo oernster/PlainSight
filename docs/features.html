@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Skills Viewer features: every skill on the machine, in one list</title>
+  <meta name="description" content="Finds every Claude skill on your machine, separates the ones you wrote from the ones your plugins brought, renders the one you pick with its fields and companion files; it never writes to any of them.">
+  <link rel="canonical" href="https://ernster.dev/SkillsViewer/features.html">
+  <meta name="theme-color" content="#1e1e2e">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Skills Viewer">
+  <meta property="og:url" content="https://ernster.dev/SkillsViewer/features.html">
+  <meta property="og:title" content="Skills Viewer features: every skill on the machine, in one list">
+  <meta property="og:description" content="Finds every Claude skill on your machine, separates the ones you wrote from the ones your plugins brought, renders the one you pick with its fields and companion files; it never writes to any of them.">
+  <meta property="og:image" content="https://ernster.dev/SkillsViewer/skillsviewer-512.png">
+  <meta property="og:image:width" content="512">
+  <meta property="og:image:height" content="512">
+  <meta property="og:image:alt" content="Skills Viewer app icon">
+  <meta property="og:locale" content="en_GB">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="Skills Viewer features: every skill on the machine, in one list">
+  <meta name="twitter:description" content="Finds every Claude skill on your machine, separates the ones you wrote from the ones your plugins brought, renders the one you pick with its fields and companion files; it never writes to any of them.">
+  <meta name="twitter:image" content="https://ernster.dev/SkillsViewer/skillsviewer-512.png">
+  <link rel="icon" href="favicon.ico" sizes="any">
+  <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
+  <link rel="apple-touch-icon" href="apple-touch-icon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<nav>
+  <a class="nav-brand" href="./">
+    <img src="skillsviewer-512.png" alt="Skills Viewer icon">
+    <span>Skills Viewer</span>
+  </a>
+  <div class="nav-right">
+    <a class="nav-link" href="features.html">Features</a>
+    <a class="nav-link" href="why.html">Why</a>
+    <a class="nav-link" href="download.html">Download</a>
+    <a class="btn-primary" href="download.html">Download</a>
+  </div>
+</nav>
+
+<section class="section">
+  <div class="section-label">Features</div>
+  <h1 class="section-title">Everything it does.</h1>
+  <p class="section-sub">All of it in service of one thing: showing you a set of documents you own but have never seen together.</p>
+
+  <h2 class="section-title" style="margin-top:2.5rem;">Finding them</h2>
+  <ul>
+    <li>Looks in the usual place for your operating system, with no configuration to do first.</li>
+    <li>Browse to any other folder instead; the choice is remembered for next time.</li>
+    <li>A skill is a directory holding a <code>SKILL.md</code>. A loose <code>SKILL.md</code> at the top of the tree counts as one too.</li>
+    <li>Directories with no skill document, along with hidden and cache directories, are passed over rather than listed as empty entries.</li>
+    <li>Plugin skills are read from the tree beside your skills folder, at whatever depth they sit.</li>
+  </ul>
+
+  <h2 class="section-title" style="margin-top:2.5rem;">Telling them apart</h2>
+  <ul>
+    <li>Skills you wrote and skills that arrived with a plugin are listed under a heading each, so ownership is never a guess.</li>
+    <li>Each group opens and closes with an arrow; Enter or Space works it from the keyboard.</li>
+    <li>A group you close stays closed when the library is read again.</li>
+    <li>Where everything came from one place there is nothing to separate, so the headings do not appear at all.</li>
+    <li>The plugin a skill came with is named on the skill itself.</li>
+  </ul>
+
+  <h2 class="section-title" style="margin-top:2.5rem;">Reading one</h2>
+  <ul>
+    <li>The selected skill is rendered to be read, not shown as raw text.</li>
+    <li>The fields it declares are laid out plainly; an oversized field gets a heading of its own after the body rather than crowding the top.</li>
+    <li>The other files sitting beside the document are named, so a multi file skill says so.</li>
+    <li>A skill whose frontmatter will not parse is still listed, with the failure shown in the pane rather than raised as a dialog.</li>
+    <li>The text column is held to a readable line length, so a wide window gives margins rather than longer lines.</li>
+    <li>The page reads itself gently down and hands control straight back the moment you scroll.</li>
+  </ul>
+
+  <h2 class="section-title" style="margin-top:2.5rem;">Reading it your way</h2>
+  <ul>
+    <li>Light and dark, switched from the tray and remembered between runs.</li>
+    <li>Three text sizes, stepped by one button that always shows the size it would move to.</li>
+    <li>Changing either keeps your place: you stay on the words you were reading rather than being thrown to the top.</li>
+    <li>Full keyboard navigation, as one explicit ring that wraps at both ends.</li>
+  </ul>
+
+  <h2 class="section-title" style="margin-top:2.5rem;">Editing, elsewhere</h2>
+  <ul>
+    <li>Open the selected skill in the editor you choose; on Windows one is already picked for you.</li>
+    <li>The control stays disabled until there is genuinely something to do: a skill selected, an editor chosen and that editor still where you left it.</li>
+    <li>Come back to the window and the library is re-read, so an edit made outside shows up without a refresh button.</li>
+    <li>It never writes to a skill itself, which a structural test enforces rather than leaving to discipline.</li>
+  </ul>
+
+  <h2 class="section-title" style="margin-top:2.5rem;">Staying current</h2>
+  <ul>
+    <li>Asks GitHub whether a newer release exists, a few seconds after opening and once a day after that.</li>
+    <li>It speaks only when there is something to download. Ask from the Help menu and it answers either way.</li>
+    <li>Skip a release and it is never mentioned again; the next one still reaches you.</li>
+    <li>That is the only request it makes of its own accord; nothing about you goes with it.</li>
+  </ul>
+
+  <div class="hero-cta" style="margin-top:2.5rem;">
+    <a class="btn-primary" href="download.html">Download</a>
+    <a class="btn-secondary" href="why.html">Why it exists</a>
+  </div>
+</section>
+
+<footer>
+  <div class="footer-inner">
+    <div class="footer-top">
+      <a class="footer-brand" href="./">
+        <img src="skillsviewer-512.png" alt="Skills Viewer">
+        <span>Skills Viewer</span>
+      </a>
+      <nav class="footer-links">
+        <a href="features.html">Features</a>
+        <a href="why.html">Why</a>
+        <a href="download.html">Download</a>
+        <a href="https://github.com/oernster/SkillsViewer">GitHub</a>
+        <a href="https://github.com/oernster/SkillsViewer/releases">Releases</a>
+        <a href="https://github.com/oernster/SkillsViewer/blob/main/ARCHITECTURE.md">Architecture</a>
+        <a href="https://github.com/oernster/SkillsViewer/blob/main/LICENSE">Licence</a>
+      </nav>
+    </div>
+    <div class="footer-bottom">
+      <p>A local-first reader that makes your Claude skills visible. Read only, open source, no cloud. Designed for Claude AI by Anthropic and for no other AI; not affiliated with Anthropic and not endorsed by them.</p>
+      <div class="chips">
+        <span class="chip">Version <!--VERSION-->0.1.0<!--/VERSION--></span>
+        <span class="chip">Python</span>
+        <span class="chip">PySide6</span>
+        <span class="chip">GPL-3.0</span>
+        <span class="chip">LGPL-3.0</span>
+      </div>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>

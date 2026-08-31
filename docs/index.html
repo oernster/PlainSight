@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Skills Viewer: see the skills you cannot see</title>
+  <meta name="description" content="Your Claude skills are invisible. They sit in directories you rarely open and are read without ever being shown to you. Skills Viewer finds every one on your machine, lists them in one place and renders the one you pick. Local-first, read only, no account, no cloud.">
+  <link rel="canonical" href="https://ernster.dev/SkillsViewer/">
+  <meta name="theme-color" content="#1e1e2e">
+  <!-- Social link previews. og:image must be an absolute URL and a raster
+       format; Discord and X will not resolve a relative path or render SVG. -->
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Skills Viewer">
+  <meta property="og:url" content="https://ernster.dev/SkillsViewer/">
+  <meta property="og:title" content="Skills Viewer: see the skills you cannot see">
+  <meta property="og:description" content="Your Claude skills are invisible: read without ever being shown to you, accumulating out of sight. Skills Viewer makes the whole set visible, in one list, without changing a thing.">
+  <meta property="og:image" content="https://ernster.dev/SkillsViewer/skillsviewer-512.png">
+  <meta property="og:image:width" content="512">
+  <meta property="og:image:height" content="512">
+  <meta property="og:image:alt" content="Skills Viewer app icon">
+  <meta property="og:locale" content="en_GB">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="Skills Viewer: see the skills you cannot see">
+  <meta name="twitter:description" content="Your Claude skills are invisible. Skills Viewer makes the whole set visible, in one list, without changing a thing.">
+  <meta name="twitter:image" content="https://ernster.dev/SkillsViewer/skillsviewer-512.png">
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    "name": "Skills Viewer",
+    "alternateName": "SkillsViewer",
+    "operatingSystem": "Windows, Linux, macOS",
+    "applicationCategory": "DeveloperApplication",
+    "applicationSubCategory": "Skill library reader",
+    "description": "A local-first reader that makes your Claude skills visible. It finds every skill on your machine, lists them in one place and renders the one you pick. Read only: it never writes to a skill.",
+    "url": "https://ernster.dev/SkillsViewer/",
+    "downloadUrl": "https://github.com/oernster/SkillsViewer/releases",
+    "softwareHelp": "https://github.com/oernster/SkillsViewer",
+    "license": ["https://www.gnu.org/licenses/gpl-3.0.html", "https://www.gnu.org/licenses/lgpl-3.0.html"],
+    "image": "https://ernster.dev/SkillsViewer/skillsviewer-512.png",
+    "offers": {"@type": "Offer", "price": "0", "priceCurrency": "USD"},
+    "author": {"@type": "Person", "name": "Oliver Ernster", "url": "https://github.com/oernster"}
+  }
+  </script>
+  <link rel="icon" href="favicon.ico" sizes="any">
+  <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
+  <link rel="apple-touch-icon" href="apple-touch-icon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<!-- Nav -->
+<nav>
+  <a class="nav-brand" href="./">
+    <img src="skillsviewer-512.png" alt="Skills Viewer icon">
+    <span>Skills Viewer</span>
+  </a>
+  <div class="nav-right">
+    <a class="nav-link" href="features.html">Features</a>
+    <a class="nav-link" href="why.html">Why</a>
+    <a class="nav-link" href="download.html">Download</a>
+    <a class="btn-primary" href="download.html">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+      Download
+    </a>
+  </div>
+</nav>
+
+<!-- Hero -->
+<section class="hero">
+  <img class="hero-icon fade" src="skillsviewer-512.png" width="168" height="168" alt="Skills Viewer app icon" fetchpriority="high" decoding="async">
+
+  <div class="badge fade">
+    <span class="badge-dot"></span>
+    Windows &middot; Linux &middot; macOS
+  </div>
+
+  <h1 class="fade d1">The skills you wrote<br>are <span class="accent">invisible</span>.</h1>
+
+  <p class="hero-desc fade d2">
+    They sit in directories you rarely open. Claude reads them without ever showing them to you.
+    They accumulate quietly: some written months ago, some arrived with a plugin, most long out of mind.
+    <strong>You cannot review what you cannot see.</strong>
+    Skills Viewer makes the whole set visible, in one list, on your own machine.
+  </p>
+
+  <div class="hero-cta fade d3">
+    <a class="btn-primary" href="download.html">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+      Download
+    </a>
+    <a class="btn-secondary" href="https://github.com/oernster/SkillsViewer">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg>
+      GitHub
+    </a>
+  </div>
+
+  <div class="hero-shot fade d4">
+    <div class="shot">
+      <img src="screenshots/skillsviewer.png" alt="Skills Viewer: the skill library listed on the left, grouped into the skills you wrote and the skills that arrived with a plugin, with the selected skill rendered on the right.">
+    </div>
+    <p class="shot-caption">Every skill on the machine in one list, with the one you pick rendered beside it.</p>
+  </div>
+</section>
+
+<!-- Stats bar -->
+<div class="stats-bar">
+  <div class="stats-inner">
+    <div class="stat"><div class="stat-value">All of them</div><div class="stat-label">Yours and your plugins'</div></div>
+    <div class="stat"><div class="stat-value">Read only</div><div class="stat-label">Enforced by a test</div></div>
+    <div class="stat"><div class="stat-value">Local</div><div class="stat-label">Nothing leaves the machine</div></div>
+    <div class="stat"><div class="stat-value">0</div><div class="stat-label">Accounts or cloud</div></div>
+    <div class="stat"><div class="stat-value">GPL + LGPL</div><div class="stat-label">Open source</div></div>
+  </div>
+</div>
+
+<!-- What it reveals -->
+<div class="split-band">
+  <section class="section">
+    <div class="split-grid">
+      <div class="split-text">
+        <div class="section-label">What it reveals</div>
+        <h2 class="section-title" style="margin-bottom:1.25rem;">Things you own<br>but have never read.</h2>
+        <p>A skill library grows the way a drawer fills. Nothing announces itself, nothing asks to be reviewed, so the set that shapes every answer you get is the one set you have never looked at. Skills Viewer opens the drawer.</p>
+        <ul>
+          <li><strong>Which skills are actually here.</strong> Not which you meant to write: which are on this machine, right now.</li>
+          <li><strong>What each one still says.</strong> Rendered to read, with the fields it declares laid out plainly.</li>
+          <li><strong>Whose it is.</strong> Skills you wrote and skills that arrived with a plugin are separated under a heading each, so you can tell instantly which is which.</li>
+          <li><strong>What travels with it.</strong> The other files sitting beside the document are named, so a multi file skill says so.</li>
+          <li><strong>What is broken.</strong> A skill whose frontmatter will not parse is still listed, with the failure shown rather than quietly dropped.</li>
+        </ul>
+        <a class="btn-secondary" href="features.html">Everything it does</a>
+      </div>
+      <div>
+        <div class="shot">
+          <img src="screenshots/skillsviewer.png" alt="The skill list grouped into your own skills and plugin skills, beside the rendered text of the selected skill.">
+        </div>
+        <p class="shot-caption">Your own skills and your plugins' skills, told apart at a glance.</p>
+      </div>
+    </div>
+  </section>
+</div>
+
+<!-- Looking changes nothing -->
+<section class="section" style="text-align:center;">
+  <h2 class="section-title">Looking changes nothing.</h2>
+  <p class="section-sub" style="margin-left:auto;margin-right:auto;">
+    Skills Viewer never writes to a skill. That is not a promise made in a readme: a structural test reads the whole
+    program and fails the build if any part of it but the settings file calls a writing operation. When you want to
+    change something, it hands the document to the editor you chose and stands back.
+  </p>
+  <div class="hero-cta">
+    <a class="btn-primary" href="download.html">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+      Download
+    </a>
+    <a class="btn-secondary" href="features.html">Features</a>
+    <a class="btn-secondary" href="why.html">Why it exists</a>
+  </div>
+</section>
+
+<!-- Supporting the project -->
+<section class="section" id="support" style="text-align:center;">
+  <h2 class="section-title">Supporting Skills Viewer</h2>
+  <p class="section-sub" style="margin-left:auto;margin-right:auto;">Skills Viewer is free and stays free. There is no paid tier, no licence key and no feature held back behind a donation. If it has shown you something you needed to see, a contribution supports its maintenance and continued development. The same button sits in the window's own bottom tray.</p>
+  <div class="hero-cta">
+    <a class="btn-secondary" href="https://www.paypal.com/ncp/payment/BCZF8TZTUGTEA">
+      <img src="donate.png" alt="">
+      Donate
+    </a>
+  </div>
+</section>
+
+<!-- Footer -->
+<footer>
+  <div class="footer-inner">
+    <div class="footer-top">
+      <a class="footer-brand" href="./">
+        <img src="skillsviewer-512.png" alt="Skills Viewer">
+        <span>Skills Viewer</span>
+      </a>
+      <nav class="footer-links">
+        <a href="features.html">Features</a>
+        <a href="why.html">Why</a>
+        <a href="download.html">Download</a>
+        <a href="https://github.com/oernster/SkillsViewer">GitHub</a>
+        <a href="https://github.com/oernster/SkillsViewer/releases">Releases</a>
+        <a href="https://github.com/oernster/SkillsViewer/blob/main/ARCHITECTURE.md">Architecture</a>
+        <a href="https://github.com/oernster/SkillsViewer/blob/main/LICENSE">Licence</a>
+      </nav>
+    </div>
+    <div class="footer-bottom">
+      <p>A local-first reader that makes your Claude skills visible. Read only, open source, no cloud. Designed for Claude AI by Anthropic and for no other AI; not affiliated with Anthropic and not endorsed by them.</p>
+      <div class="chips">
+        <span class="chip">Version <!--VERSION-->0.1.0<!--/VERSION--></span>
+        <span class="chip">Python</span>
+        <span class="chip">PySide6</span>
+        <span class="chip">GPL-3.0</span>
+        <span class="chip">LGPL-3.0</span>
+      </div>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>

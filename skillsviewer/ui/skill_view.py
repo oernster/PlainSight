@@ -8,7 +8,7 @@ from __future__ import annotations
 
 from html import escape
 
-from PySide6.QtCore import QPoint
+from PySide6.QtCore import QPoint, QTimer
 from PySide6.QtWidgets import QWidget
 
 from ..application.ports import MarkdownRenderer
@@ -28,6 +28,9 @@ AT_THE_TOP = 0
 NO_OVERFLOW = 0
 VIEWPORT_LEFT = 0
 VIEWPORT_TOP = 0
+# The next turn of the event loop, by which time the page has finished laying
+# itself out.
+SETTLED_MS = 0
 
 
 class SkillView(ReadingPane):
@@ -46,6 +49,13 @@ class SkillView(ReadingPane):
         self._palette = palette
         self._showing: Skill | None = None
         self._resuming: int | None = None
+        self._settling: int | None = None
+        # Owned by this widget rather than a bare singleShot, so it cannot
+        # outlive the pane and fire into a deleted one.
+        self._settle = QTimer(self)
+        self._settle.setSingleShot(True)
+        self._settle.setInterval(SETTLED_MS)
+        self._settle.timeout.connect(self._resume_when_settled)
         self.show_nothing()
 
     def wear(self, palette: Palette) -> None:
@@ -145,7 +155,25 @@ class SkillView(ReadingPane):
         if resuming is None:
             self.scroller.restart()
         else:
+            # Twice, on purpose. A document that has finished laying out is put
+            # back correctly by the first call. One that has not reports a zero
+            # rect for a block it has not placed yet, and zero plus a bar that
+            # setHtml has just reset is the top of the page, which is the whole
+            # of the reported defect. The height of a fresh document was
+            # measured still moving after this call returns, from 16560 to
+            # 14687, so the second pass is the one that can be trusted.
+            # Re-applying a place already reached moves nothing.
             self._resume(resuming)
+            self._settling = resuming
+            self._settle.start()
+        self.sync_focus_policy()
+
+    def _resume_when_settled(self) -> None:
+        """The second pass, once the page has stopped changing shape."""
+        position = self._settling
+        self._settling = None
+        if position is not None:
+            self._resume(position)
         self.sync_focus_policy()
 
 

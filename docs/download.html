@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Download Skills Viewer for Windows, Linux and macOS</title>
+  <meta name="description" content="Free and open source, installed per user with no administrator rights. Windows setup program, Linux Flatpak, macOS disk image, else run it from source with Python 3.11 or newer.">
+  <link rel="canonical" href="https://ernster.dev/SkillsViewer/download.html">
+  <meta name="theme-color" content="#1e1e2e">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Skills Viewer">
+  <meta property="og:url" content="https://ernster.dev/SkillsViewer/download.html">
+  <meta property="og:title" content="Download Skills Viewer for Windows, Linux and macOS">
+  <meta property="og:description" content="Free and open source, installed per user with no administrator rights. Windows setup program, Linux Flatpak, macOS disk image, else run it from source with Python 3.11 or newer.">
+  <meta property="og:image" content="https://ernster.dev/SkillsViewer/skillsviewer-512.png">
+  <meta property="og:image:width" content="512">
+  <meta property="og:image:height" content="512">
+  <meta property="og:image:alt" content="Skills Viewer app icon">
+  <meta property="og:locale" content="en_GB">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="Download Skills Viewer for Windows, Linux and macOS">
+  <meta name="twitter:description" content="Free and open source, installed per user with no administrator rights. Windows setup program, Linux Flatpak, macOS disk image, else run it from source with Python 3.11 or newer.">
+  <meta name="twitter:image" content="https://ernster.dev/SkillsViewer/skillsviewer-512.png">
+  <link rel="icon" href="favicon.ico" sizes="any">
+  <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
+  <link rel="apple-touch-icon" href="apple-touch-icon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<nav>
+  <a class="nav-brand" href="./">
+    <img src="skillsviewer-512.png" alt="Skills Viewer icon">
+    <span>Skills Viewer</span>
+  </a>
+  <div class="nav-right">
+    <a class="nav-link" href="features.html">Features</a>
+    <a class="nav-link" href="why.html">Why</a>
+    <a class="nav-link" href="download.html">Download</a>
+    <a class="btn-primary" href="download.html">Download</a>
+  </div>
+</nav>
+
+<section class="section">
+  <div class="section-label">Download</div>
+  <h1 class="section-title">Get Skills Viewer.</h1>
+  <p class="section-sub">
+    Free and open source. Installed per user, so no administrator rights are needed on any of the three platforms.
+    Every build is on the releases page.
+  </p>
+
+  <div class="hero-cta" style="margin-top:2rem;">
+    <a class="btn-primary" href="https://github.com/oernster/SkillsViewer/releases">All releases</a>
+    <a class="btn-secondary" href="https://github.com/oernster/SkillsViewer">Source on GitHub</a>
+  </div>
+
+  <h2 class="section-title" style="margin-top:2.5rem;">Windows</h2>
+  <p>Run the setup program from the releases page. It installs for the current user under your local application data, offers Desktop and Start Menu shortcuts and registers itself so it uninstalls the ordinary way.</p>
+  <p>Windows may show a SmartScreen warning the first time, because the installer is not code signed. <a href="https://ernster.dev/windows-smartscreen.html">Why that happens, then how to proceed safely.</a></p>
+
+  <h2 class="section-title" style="margin-top:2.5rem;">Linux</h2>
+  <p>A Flatpak bundle is on the releases page. It runs sandboxed, with access to your home folder so it can read your skills, plus network access for the update check and nothing else.</p>
+
+  <h2 class="section-title" style="margin-top:2.5rem;">macOS</h2>
+  <p>A disk image is on the releases page. Drag the application to your Applications folder.</p>
+
+  <h2 class="section-title" style="margin-top:2.5rem;">From source</h2>
+  <p>Python 3.11 or newer, then:</p>
+  <pre><code>git clone https://github.com/oernster/SkillsViewer.git
+cd SkillsViewer
+python -m pip install -r requirements.txt
+python main.py</code></pre>
+
+  <h2 class="section-title" style="margin-top:2.5rem;">Licence</h2>
+  <p>The user interface is under LGPL-3.0. Everything beneath it, along with the setup program and the build scripts, is under GPL-3.0. Both texts ship with the application and both are reachable from the buttons in its bottom tray.</p>
+
+  <div class="hero-cta" style="margin-top:2.5rem;">
+    <a class="btn-secondary" href="features.html">Features</a>
+    <a class="btn-secondary" href="why.html">Why it exists</a>
+  </div>
+</section>
+
+<footer>
+  <div class="footer-inner">
+    <div class="footer-top">
+      <a class="footer-brand" href="./">
+        <img src="skillsviewer-512.png" alt="Skills Viewer">
+        <span>Skills Viewer</span>
+      </a>
+      <nav class="footer-links">
+        <a href="features.html">Features</a>
+        <a href="why.html">Why</a>
+        <a href="download.html">Download</a>
+        <a href="https://github.com/oernster/SkillsViewer">GitHub</a>
+        <a href="https://github.com/oernster/SkillsViewer/releases">Releases</a>
+        <a href="https://github.com/oernster/SkillsViewer/blob/main/ARCHITECTURE.md">Architecture</a>
+        <a href="https://github.com/oernster/SkillsViewer/blob/main/LICENSE">Licence</a>
+      </nav>
+    </div>
+    <div class="footer-bottom">
+      <p>A local-first reader that makes your Claude skills visible. Read only, open source, no cloud. Designed for Claude AI by Anthropic and for no other AI; not affiliated with Anthropic and not endorsed by them.</p>
+      <div class="chips">
+        <span class="chip">Version <!--VERSION-->0.1.0<!--/VERSION--></span>
+        <span class="chip">Python</span>
+        <span class="chip">PySide6</span>
+        <span class="chip">GPL-3.0</span>
+        <span class="chip">LGPL-3.0</span>
+      </div>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>

@@ -1,13 +1,27 @@
 # Skills Viewer
 
-A reader for the skills used by Claude AI. It finds the skills on your machine,
-lists them, renders the one you pick and hands editing to the editor you choose.
+Your skills are invisible. They sit in directories you rarely open; Claude
+reads them without ever showing them to you; they accumulate quietly, some
+written months ago, some arrived with a plugin, most long out of mind. You
+cannot review what you cannot see.
+
+Skills Viewer makes that set visible. It finds every skill on your machine,
+puts the whole lot in one list and renders the one you pick, so the
+instructions you have been giving Claude stop being something you have to take
+on trust. Skills you wrote and skills that came with a plugin are separated, so
+you can see which is which.
+
+Nothing is changed by looking. It never writes to a skill; editing is handed to
+the editor you choose.
 
 ## Who it is for
 
-Anyone who keeps a set of Claude skills and wants to read them without opening a
-file manager first. It is designed for Claude AI by Anthropic and for no other
-AI. It is not affiliated with Anthropic and is not endorsed by them.
+Anyone who keeps a set of Claude skills and has lost track of what is in them.
+If you have ever wondered which skills are actually on this machine, what a
+skill you wrote three months ago still says, what arrived with a plugin you
+installed once, this is the answer to all three. It is designed for Claude AI by
+Anthropic and for no other AI. It is not affiliated with Anthropic and is not
+endorsed by them.
 
 ## What it is not
 
