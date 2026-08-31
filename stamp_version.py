@@ -1,8 +1,11 @@
-"""Write the version from VERSION into every static file that quotes one.
+"""Write the version from VERSION into the GitHub Pages site.
 
-Markdown and a served page cannot read VERSION when they are rendered, so each
-carries a delimited token this overwrites. It is idempotent: stamping a current
-file changes nothing, so the build scripts can call it every time.
+A served page cannot read VERSION when it is rendered, so it carries a delimited
+token this overwrites. It is idempotent: stamping a current file changes
+nothing, so the build scripts can call it every time.
+
+Scope is the site and nothing else. No document outside it carries a version at
+all, which is why there is no root glob here.
 
     python stamp_version.py
 """
@@ -21,9 +24,10 @@ OPEN_TOKEN = "<!--VERSION-->"
 CLOSE_TOKEN = "<!--/VERSION-->"
 TOKEN = re.compile(re.escape(OPEN_TOKEN) + r".*?" + re.escape(CLOSE_TOKEN), re.DOTALL)
 
-# Where a version may legitimately appear. NOTES.md is never touched: it is
-# outside the shipped surface.
-STAMPED_GLOBS = ("*.md", "docs/**/*.html", "docs/**/*.md")
+# The GitHub Pages tree only. No document outside the site may carry version
+# data at all, so there is nothing at the repository root to stamp; a root glob
+# here would invite exactly the version strings that rule forbids.
+STAMPED_GLOBS = ("docs/**/*.html", "docs/**/*.md")
 EXCLUDED_NAMES = frozenset({"NOTES.md"})
 
 

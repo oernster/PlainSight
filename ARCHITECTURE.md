@@ -27,7 +27,8 @@ wish.
 | Every tool invoked as a subprocess is declared | `tests/structural/test_declared_dependencies.py::test_every_tool_invoked_as_a_subprocess_is_declared` |
 | Nothing is constructed at import time | `tests/structural/test_composition_root.py::test_nothing_is_constructed_at_import_time` |
 | No container class carries a ring rule | `tests/ui/test_focus_rings.py::test_no_container_class_carries_a_ring_rule` |
-| The item view takes no ring in any state | `tests/ui/test_focus_rings.py::test_the_item_view_takes_no_hover_ring` |
+| The item view takes no hover ring | `tests/ui/test_focus_rings.py::test_the_item_view_takes_no_hover_ring` |
+| The item view takes no focus ring either | `tests/ui/test_focus_rings.py::test_the_item_view_takes_no_focus_ring_either` |
 | No container appears in a focus chain | `tests/ui/test_focus_rings.py::test_no_container_is_in_the_main_window_focus_chain` |
 | Each tray's ring order is its drawn order | `tests/ui/test_keyboard_ring.py::test_each_tray_declares_its_own_order_left_to_right_as_drawn` |
 
@@ -93,7 +94,9 @@ selected, an editor was chosen and that editor is still where it was.
 - `platform`: the home directory and the path probe.
 - `markdown_renderer`: rendering through the `markdown` package.
 - `resources`: finds the bundled assets and the `VERSION` file across
-  development, PyInstaller, Nuitka and a flatpak.
+  development, a PyInstaller bundle (`sys._MEIPASS`) and a flatpak, where the
+  launcher's own path locates them. It carries no Nuitka branch, because
+  nothing here builds with Nuitka.
 
 ### User interface
 
@@ -149,7 +152,13 @@ is a skills root; it writes only under `%LOCALAPPDATA%\Programs` and `HKCU`.
 ## Quality enforcement
 
 The coverage floor is 100% over `domain` plus `application`, the layers reachable
-with no filesystem, no Qt and no editor. Infrastructure carries real tests
-against a temporary directory but sits outside the floor rather than dragging it
-to a number that would mean nothing. `black --check`, `flake8`, `ruff check` and
-the pytest gate are all read by exit code.
+with no filesystem, no Qt and no editor.
+
+Infrastructure, the user interface and the setup program all carry real tests,
+against a temporary directory and against a real offscreen `QApplication`. All
+three sit outside the floor rather than dragging it to a number that would mean
+nothing.
+
+`black --check`, `flake8`, `ruff check` and the pytest gate are four separate
+commands, each read by exit code. None of them is wired into the suite as an
+assertion.

@@ -234,3 +234,6 @@ __marimo__/
 /.flatpak-builder/
 /.flatpak-wheels/
 /packaging/
+
+# Local release notes, drafted per release and never committed.
+NOTES.md

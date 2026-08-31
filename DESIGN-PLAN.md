@@ -191,9 +191,10 @@ The artwork is derived from a single master by the icon generator.
 
 9.4 The tooltip says the browser opens, since the picture alone does not.
 
-9.5 **Open before implementation:** `donate.png` currently sits at the repository
-root and belongs in `assets/` for this lineage; and Skills Viewer needs its own
-payment address, generated for this application and never borrowed from another.
+9.5 The artwork is in place: `assets/donate-master.png` is the master and the
+icon generator derives `assets/donate.png` from it, cropped to its artwork and
+scaled by height. Still open: Skills Viewer needs its own payment address,
+generated for this application and never borrowed from another.
 
 ## 10. UI licence
 
@@ -294,12 +295,13 @@ both licence buttons, each derived from the first-stop dialog base.
 
 ## Assets
 
-The master is a square 1024 RGBA `skillsviewer.png` at the repository root; the
-current `assets/*.png` are 1254 square and there is no root master, so this is a
-step to take. `generate_icons.py` derives the whole set into `assets/`: the sized
-PNGs, the canonical 256, a multi-size Windows `.ico`, a macOS `.icns` and the
-donate mark, which is cropped to its artwork and scaled by height alone rather
-than squared.
+The master is `skillsviewer.png` at the repository root, square RGBA at 1254
+pixels. `generate_icons.py` derives the whole set into `assets/`: the sized PNGs,
+the canonical 256, a multi-size Windows `.ico`, a macOS `.icns`, the six tray
+marks and the donate mark. Nothing is ever upscaled: a master smaller than a
+wanted size is reported rather than stretched. The donate mark does not go
+through the squaring path the icon takes; it is cropped to its artwork and
+scaled by height alone.
 
 ## Files
 

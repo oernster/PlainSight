@@ -6,17 +6,7 @@ Every item here is a behaviour-preserving internal concern. Nothing in this file
 reverts a feature or changes how the application behaves for its user. Read it
 against `ARCHITECTURE.md` and the structural tests.
 
-## 1. The LGPL-3.0 licence text is not in the repository
-
-The licence split needs three files: `LICENSE` carrying the overview and the
-directory to licence map, `LICENSE-GPL-3.0.txt` and `LICENSE-LGPL-3.0.txt`. The
-first two are present; the third is not.
-
-The official LGPL-3.0 text must be copied in verbatim rather than written from
-memory, so this is blocked on that file being fetched and dropped in. Until it
-is, the UI licence button shows the note that the text is not bundled.
-
-## 2. The donation address is not yet known
+## 1. The donation address is not yet known
 
 `skillsviewer/version.py` holds `DONATE_URL` as an empty string. Skills Viewer
 needs its own payment address, generated for this application; borrowing
@@ -27,7 +17,7 @@ no address is set, so the state is honest rather than silent. The structural
 test asserting the address literally cannot be written until there is an
 address to assert.
 
-## 3. The setup program has never been run
+## 2. The setup program has never been run
 
 `buildexe.py` and `buildinstaller.py` both build, the application starts from
 the bundle and the payload archive is well formed. The setup program itself has
@@ -38,7 +28,7 @@ machine.
 Blocked on a build-and-launch pass, which the sandbox must not do: it would
 write to `%LOCALAPPDATA%` and `HKCU` on this machine.
 
-## 4. The shortcut writer has no test
+## 3. The shortcut writer has no test
 
 `installer/registry.py` writes shortcuts through the shell, with a PowerShell
 fallback when the COM bindings are absent from the bundle. Neither path is

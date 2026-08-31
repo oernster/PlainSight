@@ -13,8 +13,13 @@ AI. It is not affiliated with Anthropic and is not endorsed by them.
 
 It is not a text editor and it never writes to a skill. Editing is handed to an
 editor you choose, which is enforced by a structural test rather than left to
-discipline. It sends nothing anywhere: the only address it knows is the donation
-page; that is handed to your desktop to open rather than fetched.
+discipline.
+
+It makes no network request of its own: there is no HTTP client, no socket and
+no telemetry anywhere in it. What it does do is hand an address to your desktop
+for your browser to open, in exactly two places: the donation button, then a
+link you click inside a skill you are reading. Nothing is fetched or sent without
+that click.
 
 ## Capabilities
 
@@ -60,8 +65,12 @@ python -m pip install -r requirements-dev.txt
 
 The icons all derive from one master: `python generate_icons.py` reads
 `skillsviewer.png` at the repository root and writes the whole set into
-`assets/`. `python stamp_version.py` writes the version from `VERSION` into
-every static file that quotes one; both build scripts call it first.
+`assets/`, along with the tray marks and the donate mark.
+
+`python stamp_version.py` writes the version from `VERSION` into the delimited
+tokens of a GitHub Pages site. There is no site yet, so it currently reports
+that nothing needed stamping; all three build scripts call it first regardless,
+so a site can never ship behind the version.
 
 The setup program installs into your own account only. It writes under
 `%LOCALAPPDATA%\Programs` and `HKCU`, so Windows never asks for an
@@ -74,16 +83,29 @@ python -m pytest
 ```
 
 The gate is 100% coverage over the domain and application layers, read by exit
-code. `black --check`, `flake8` and `ruff check` run alongside it.
+code rather than by the last line of output.
+
+The formatters and linters are separate commands, not assertions inside the
+suite. Run all four:
+
+```
+python -m pytest
+python -m black --check .
+python -m flake8 .
+python -m ruff check .
+```
 
 ## Licence
 
 The user interface is under LGPL-3.0. The domain, application, infrastructure,
-entry point and build scripts are under GPL-3.0. See `LICENSE` for the map.
+entry point, the setup program and the build scripts are under GPL-3.0. Both
+texts are in the repository and both are reachable from the buttons in the
+bottom tray. See `LICENSE` for the map.
 
 ## Status
 
 Every layer is built and gated, with all four delivery paths written. The
-Windows pair has been run end to end; the Linux and macOS scripts have not,
-since neither platform is to hand. `DESIGN-PLAN.md` holds the requirements and
-the design; `TECH_DEBT.md` holds what is still open.
+Windows pair has been run end to end and the built application starts; the Linux
+and macOS scripts have not been run, since neither platform is to hand; the
+setup program has not been installed from either. `DESIGN-PLAN.md` holds the
+requirements and the design; `TECH_DEBT.md` holds what is still open.
