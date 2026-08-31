@@ -15,11 +15,16 @@ It is not a text editor and it never writes to a skill. Editing is handed to an
 editor you choose, which is enforced by a structural test rather than left to
 discipline.
 
-It makes no network request of its own: there is no HTTP client, no socket and
-no telemetry anywhere in it. What it does do is hand an address to your desktop
-for your browser to open, in exactly two places: the donate button, then a link
-you click inside a skill you are reading. Nothing is fetched or sent without
-that click.
+It makes exactly one network request of its own, never any other: it
+asks GitHub whether a newer release of Skills Viewer has been published. That
+happens a few seconds after the window opens, once a day while it stays open
+and whenever you ask for it from the Help menu. Nothing about you goes with the
+question and there is no telemetry anywhere in it.
+
+Everything else it opens, it opens by handing an address to your desktop for
+your browser to fetch, in three places: the donate button, a link you click
+inside a skill you are reading, then the Download button on an update prompt.
+Nothing is fetched or sent without that click.
 
 ## Capabilities
 
@@ -31,6 +36,8 @@ that click.
 - Light and dark, switched from the tray and remembered between runs.
 - Full keyboard navigation.
 - Opens the selected skill in your chosen editor.
+- Tells you when a newer release is out, from the Help menu or on its own; skip
+  a release and it is never mentioned again.
 
 ## Stack
 
@@ -102,8 +109,9 @@ Skills Viewer is free and stays free. There is no paid tier, no licence key and
 no feature held back behind a donation.
 
 The donate button sits at the left of the bottom tray. Pressing it hands one
-address to your desktop for your browser to open; the application itself fetches
-nothing, so the button changes none of what is said above about the network.
+address to your desktop for your browser to open; the application fetches
+nothing itself there, so the button adds nothing to what is said above about
+the network.
 
 ## Licence
 

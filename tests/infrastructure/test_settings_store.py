@@ -69,3 +69,33 @@ def test_an_editor_record_missing_its_path_is_ignored(tmp_path: Path) -> None:
     path.write_text(json.dumps({"editor": {"display_name": "vi"}}), encoding="utf-8")
 
     assert JsonSettingsStore(path).load().editor is None
+
+
+def test_a_skipped_release_survives_a_round_trip(tmp_path: Path) -> None:
+    store = JsonSettingsStore(tmp_path / "settings.json")
+
+    store.save(Settings().with_skipped_update_version("0.2.0"))
+
+    assert store.load().skipped_update_version == "0.2.0"
+
+
+def test_a_file_written_before_the_update_check_reads_as_nothing_skipped(
+    tmp_path: Path,
+) -> None:
+    path = tmp_path / "settings.json"
+    path.write_text(
+        json.dumps({"version": 1, "skills_root": "/skills"}), encoding="utf-8"
+    )
+
+    assert JsonSettingsStore(path).load().skipped_update_version == ""
+
+
+def test_a_skipped_release_recorded_as_something_other_than_text_is_ignored(
+    tmp_path: Path,
+) -> None:
+    path = tmp_path / "settings.json"
+    path.write_text(
+        json.dumps({"version": 1, "skipped_update_version": 3}), encoding="utf-8"
+    )
+
+    assert JsonSettingsStore(path).load().skipped_update_version == ""

@@ -254,6 +254,31 @@ exclusively the external editor's job.
 13.2 This is enforced by a structural test rather than by convention, in the same
 spirit as the no-network test in `postal-gambit`.
 
+## 14. Telling the user a newer release exists
+
+14.1 The help control in the top tray drops a menu of two: About Skills Viewer,
+then Check for Updates. There is no menu bar to hang the second on and the tray
+is where the actions already live.
+
+14.2 The check asks the GitHub releases endpoint for the latest published
+release of this repository and nothing else. That endpoint answers only with a
+published, non-draft, non-prerelease release, so a tag pushed mid-development
+cannot raise a prompt. Nothing about the user goes with the question.
+
+14.3 It runs a few seconds after the window shows, then once a day, always off
+the interface thread with a five second limit and no retries. A check nobody
+asked for speaks only when there is something to download; one the user asked
+for reports every outcome, including that it could not reach GitHub.
+
+14.4 A newer release offers three answers: Download, Skip This Version, Later.
+Download hands the file for this operating system to the desktop, falling back
+to the release page; the application fetches nothing itself. Skip remembers that
+one release tag, so the next release still reaches the user.
+
+14.5 This is the one connection the application opens of its own accord, so
+every claim to the contrary in the README, the release notes and the code
+comments is corrected in the same change rather than left to be found.
+
 ---
 
 # Part 2: design

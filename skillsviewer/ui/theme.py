@@ -134,6 +134,21 @@ QPushButton#IconButton:disabled {{
     background: {palette.panel};
     border: {BORDER_WIDTH_PX}px solid {palette.danger};
 }}
+QMenu {{
+    background: {palette.panel};
+    color: {palette.text};
+    border: {THIN_BORDER_WIDTH_PX}px solid {palette.control};
+    border-radius: {RADIUS_PX}px;
+    padding: 4px;
+}}
+QMenu::item {{
+    padding: 6px 16px;
+    border-radius: {RADIUS_PX}px;
+}}
+QMenu::item:selected {{
+    background: {palette.selection};
+    color: {palette.selection_text};
+}}
 QTreeWidget {{
     background: {palette.panel};
     border: {THIN_BORDER_WIDTH_PX}px solid transparent;

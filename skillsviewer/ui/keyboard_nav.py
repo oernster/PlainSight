@@ -52,6 +52,12 @@ class KeyboardNavigator(QObject):
             return super().eventFilter(watched, event)
         if QApplication.activeModalWidget() is not None:
             return super().eventFilter(watched, event)
+        # An open menu is a popup rather than a modal. While one is up the
+        # focus widget is None, so the ring would read that as focus sitting
+        # nowhere then jump to its first stop under the open menu. Measured, not
+        # assumed: a popped QMenu is reported here and not by the modal check.
+        if QApplication.activePopupWidget() is not None:
+            return super().eventFilter(watched, event)
         return self._handle(event) or super().eventFilter(watched, event)
 
     def _handle(self, event: QEvent) -> bool:

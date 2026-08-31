@@ -70,6 +70,16 @@ class SkillLibraryService:
         """Remember which groups are open, so a run opens as the last one closed."""
         self.settings_store.save(self.settings_store.load().with_opened_groups(opened))
 
+    def skipped_update_version(self) -> str:
+        """The release tag the user asked not to hear about again."""
+        return self.settings_store.load().skipped_update_version
+
+    def skip_update_version(self, tag: str) -> None:
+        """Remember not to mention this release again."""
+        self.settings_store.save(
+            self.settings_store.load().with_skipped_update_version(tag)
+        )
+
     def appearance(self) -> Appearance:
         """The palette the application should draw with now."""
         return self.settings_store.load().appearance
@@ -114,6 +124,14 @@ class SkillLibraryService:
             return False
         return self.launcher.launch(editor, skill.document_path)
 
+    def open_page(self, address: str) -> bool:
+        """Hand an address to the desktop; False when it declined.
+
+        The application asks for nothing itself here: the address goes out and
+        the browser does the fetching.
+        """
+        return self.opener.open(address)
+
     def open_donation_page(self, address: str) -> bool:
         """Hand the donation address to the desktop; False when it declined."""
-        return self.opener.open(address)
+        return self.open_page(address)

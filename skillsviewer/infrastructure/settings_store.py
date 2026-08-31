@@ -27,6 +27,7 @@ EDITOR_PATH_KEY = "path"
 EDITOR_NAME_KEY = "display_name"
 APPEARANCE_KEY = "appearance"
 OPENED_KEY = "opened_groups"
+SKIPPED_UPDATE_KEY = "skipped_update_version"
 
 
 class JsonSettingsStore:
@@ -48,6 +49,7 @@ class JsonSettingsStore:
             editor=_editor(raw.get(EDITOR_KEY)),
             appearance=Appearance.of(_text(raw.get(APPEARANCE_KEY))),
             opened_groups=_names(raw.get(OPENED_KEY)),
+            skipped_update_version=_text(raw.get(SKIPPED_UPDATE_KEY)),
         )
 
     def save(self, settings: Settings) -> None:
@@ -57,6 +59,7 @@ class JsonSettingsStore:
             ROOT_KEY: settings.skills_root,
             APPEARANCE_KEY: settings.appearance.value,
             OPENED_KEY: list(settings.opened_groups),
+            SKIPPED_UPDATE_KEY: settings.skipped_update_version,
             EDITOR_KEY: (
                 None
                 if settings.editor is None

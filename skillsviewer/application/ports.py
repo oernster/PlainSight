@@ -2,10 +2,16 @@
 
 from __future__ import annotations
 
-from typing import Protocol
+from typing import TYPE_CHECKING, Protocol
 
 from ..domain.catalogue import SkillCatalogue
 from ..domain.settings import EditorChoice, Settings
+
+if TYPE_CHECKING:  # pragma: no cover
+    # Imported for the annotation only. The release types live beside the
+    # service that uses them, which imports this module, so a runtime import
+    # here would close a circle.
+    from .update import ReleaseInfo
 
 
 class SkillRepository(Protocol):
@@ -85,4 +91,12 @@ class MarkdownRenderer(Protocol):
 
     def render(self, body: str) -> str:
         """The body as HTML."""
+        ...
+
+
+class ReleaseSource(Protocol):
+    """Reports the latest published release of this application."""
+
+    def latest_release(self) -> ReleaseInfo | None:
+        """The newest release; None when the source could not be asked."""
         ...

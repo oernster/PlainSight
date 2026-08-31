@@ -6,7 +6,9 @@ import sys
 
 from PySide6.QtWidgets import QApplication
 
+from . import version
 from .application.services import SkillLibraryService
+from .application.update import UpdateService, platform_key_for
 from .infrastructure.desktop import DesktopEditorLauncher, QtExternalOpener
 from .infrastructure.markdown_renderer import PythonMarkdownRenderer
 from .infrastructure.platform import (
@@ -17,6 +19,7 @@ from .infrastructure.platform import (
 from .infrastructure.resources import BundledAssets
 from .infrastructure.settings_store import JsonSettingsStore
 from .infrastructure.skill_repository import FileSystemSkillRepository
+from .infrastructure.update_source import GitHubReleaseSource
 from .ui.main_window import MainWindow
 
 
@@ -32,10 +35,24 @@ def build_service() -> SkillLibraryService:
     )
 
 
+def build_update_service() -> UpdateService:
+    """The update check, told which release file this machine can run."""
+    return UpdateService(
+        source=GitHubReleaseSource(),
+        current_version=version.__version__,
+        platform_key=platform_key_for(sys.platform),
+    )
+
+
 def main() -> int:
     """Start the application."""
     application = QApplication(sys.argv)
-    window = MainWindow(build_service(), PythonMarkdownRenderer(), BundledAssets())
+    window = MainWindow(
+        build_service(),
+        PythonMarkdownRenderer(),
+        BundledAssets(),
+        build_update_service(),
+    )
     window.show()
     return application.exec()
 

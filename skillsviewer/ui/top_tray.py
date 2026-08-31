@@ -5,8 +5,9 @@ from __future__ import annotations
 from collections.abc import Callable
 
 from PySide6.QtCore import Qt
-from PySide6.QtWidgets import QHBoxLayout, QPushButton, QWidget
+from PySide6.QtWidgets import QHBoxLayout, QMenu, QPushButton, QWidget
 
+from .. import version
 from ..application.ports import AssetLocator
 from ..domain.settings import Appearance
 from .widgets import icon_button
@@ -21,9 +22,12 @@ DARK_MODE_ICON = "dark-mode.png"
 FOLDER_TOOLTIP = "Choose the folder your skills live in"
 CHOOSE_EDITOR_TOOLTIP = "Choose the editor to open a skill in"
 LAUNCH_EDITOR_TOOLTIP = "Open the selected skill in your editor"
-HELP_TOOLTIP = "About Skills Viewer"
+HELP_TOOLTIP = "About Skills Viewer; check for updates"
 TO_LIGHT_TOOLTIP = "Switch to the light appearance"
 TO_DARK_TOOLTIP = "Switch to the dark appearance"
+
+ABOUT_ITEM = f"About {version.APP_NAME}"
+CHECK_UPDATES_ITEM = "Check for Updates"
 
 TRAY_SCALE = 2.0
 TRAY_MARGIN_PX = 8
@@ -41,7 +45,8 @@ class TopTray(QWidget):
         on_choose_editor: Callable[[], None],
         on_open_in_editor: Callable[[], None],
         on_switch_appearance: Callable[[], None],
-        on_help: Callable[[], None],
+        on_about: Callable[[], None],
+        on_check_updates: Callable[[], None],
     ) -> None:
         super().__init__(parent)
         self._assets = assets
@@ -77,8 +82,15 @@ class TopTray(QWidget):
             TRAY_SCALE,
         )
         self.help_button = icon_button(
-            self, assets.find(HELP_ICON), HELP_TOOLTIP, on_help, TRAY_SCALE
+            self, assets.find(HELP_ICON), HELP_TOOLTIP, self.show_help_menu, TRAY_SCALE
         )
+        # Built here rather than on each press, so the same menu is shown every
+        # time and the button owns it for as long as the button lives.
+        self.help_menu = QMenu(self.help_button)
+        self.about_action = self.help_menu.addAction(ABOUT_ITEM)
+        self.about_action.triggered.connect(on_about)
+        self.check_updates_action = self.help_menu.addAction(CHECK_UPDATES_ITEM)
+        self.check_updates_action.triggered.connect(on_check_updates)
 
         row = QHBoxLayout(self)
         row.setContentsMargins(
@@ -91,6 +103,16 @@ class TopTray(QWidget):
         row.addStretch()
         row.addWidget(self.appearance_button)
         row.addWidget(self.help_button)
+
+    def show_help_menu(self) -> None:
+        """Drop the menu under the button rather than beside the pointer.
+
+        Popped by hand instead of set on the button, because a button carrying
+        a menu grows an arrow indicator; every other control in this tray is a
+        picture and nothing else.
+        """
+        below = self.help_button.rect().bottomLeft()
+        self.help_menu.popup(self.help_button.mapToGlobal(below))
 
     def ring_stops(self) -> tuple[QPushButton, ...]:
         """This tray's controls, left to right as they are drawn."""

@@ -24,6 +24,7 @@ IMPLEMENTATIONS = frozenset(
         "HomePlatformPaths",
         "PythonMarkdownRenderer",
         "BundledAssets",
+        "GitHubReleaseSource",
     }
 )
 

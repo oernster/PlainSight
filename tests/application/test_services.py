@@ -274,3 +274,41 @@ def test_the_groups_a_reader_opens_are_remembered() -> None:
 
     assert service.opened_groups() == ("Your skills",)
     assert store.settings.opened_groups == ("Your skills",)
+
+
+def test_nothing_is_skipped_until_something_is() -> None:
+    assert a_service().skipped_update_version() == ""
+
+
+def test_a_skipped_release_is_remembered() -> None:
+    store = FakeSettingsStore()
+    service = a_service(store=store)
+
+    service.skip_update_version("0.2.0")
+
+    assert service.skipped_update_version() == "0.2.0"
+    assert store.settings.skipped_update_version == "0.2.0"
+
+
+def test_skipping_a_release_keeps_everything_else_remembered() -> None:
+    store = FakeSettingsStore(Settings(skills_root="/skills", editor=AN_EDITOR))
+    service = a_service(store=store)
+
+    service.skip_update_version("0.2.0")
+
+    assert store.settings.skills_root == "/skills"
+    assert store.settings.editor == AN_EDITOR
+
+
+def test_a_page_goes_to_the_desktop_and_says_whether_it_was_taken() -> None:
+    opener = FakeOpener(accepts=True)
+    service = a_service(opener=opener)
+
+    assert service.open_page("https://example.invalid/release") is True
+    assert opener.opened == ["https://example.invalid/release"]
+
+
+def test_a_page_the_desktop_declines_is_reported_as_declined() -> None:
+    service = a_service(opener=FakeOpener(accepts=False))
+
+    assert service.open_page("https://example.invalid/release") is False

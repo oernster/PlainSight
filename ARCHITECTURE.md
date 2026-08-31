@@ -74,8 +74,11 @@ external opener asks the desktop to open an address and touches no file.
 ### Application
 
 `ports` declares the seams as Protocols: `SkillRepository`, `SettingsStore`,
-`EditorLauncher`, `ExternalOpener`, `PathProbe`, `PlatformPaths` and
-`MarkdownRenderer`.
+`EditorLauncher`, `ExternalOpener`, `PathProbe`, `PlatformPaths`,
+`MarkdownRenderer` and `ReleaseSource`. `ReleaseSource` returns a release type
+declared in `update`, which imports `ports` in turn, so the annotation is
+imported under `TYPE_CHECKING` alone; a runtime import there would close a
+circle.
 
 `defaults` holds the one rule for where skills live when the user has not said
 otherwise. The home directory is injected through `PlatformPaths`, which is what
@@ -87,6 +90,14 @@ predicate for the view in editor control, so the user interface asks rather than
 works it out. That predicate needs three things to be true at once: a skill is
 selected, an editor was chosen and that editor is still where it was.
 
+`update` holds the whole update decision above both the toolkit and the network:
+the release types, the comparison, the platform-to-file mapping, `UpdateService`
+and `outcome_for`. Every part of it is pure, so the one thing the check has to
+get right, when to speak and when to stay quiet, is settled by a table of cases
+rather than by a running application. The comparison reads dotted integers only:
+anything it cannot read compares as not newer, so a malformed tag can never
+raise a prompt.
+
 ### Infrastructure
 
 - `skill_repository`: applies the discovery rules of design plan section 1.
@@ -95,6 +106,13 @@ selected, an editor was chosen and that editor is still where it was.
   intact.
 - `platform`: the home directory and the path probe.
 - `markdown_renderer`: rendering through the `markdown` package.
+- `update_source`: the one place the application opens a connection of its own.
+  It asks the GitHub releases endpoint for the latest published release of this
+  repository and nothing else. That endpoint returns only a published,
+  non-draft, non-prerelease release, so a tag pushed mid-development is
+  invisible here by the endpoint's own contract rather than by a check made
+  after the fact. The opener is injected, so no test leaves the machine; every
+  failure answers None and there are no retries.
 - `resources`: finds the bundled assets and the `VERSION` file across
   development, a PyInstaller bundle (`sys._MEIPASS`) and a flatpak, where the
   launcher's own path locates them. It carries no Nuitka branch, because
@@ -117,7 +135,18 @@ Two trays around a split body, exactly as design plan part 2 describes.
   suspended; `suspend` is itself gated on the surface being active, so a modal's
   own reset cannot be read as a reader taking hold.
 - `top_tray` and `bottom_tray`: each declares `ring_stops()` left to right as
-  drawn, so the ring's order is never inferred from a layout walk.
+  drawn, so the ring's order is never inferred from a layout walk. The help
+  control drops a menu holding About and Check for Updates. It is popped by
+  hand rather than set on the button, because a button carrying a menu grows an
+  arrow indicator and every other control in that tray is a picture and nothing
+  else.
+- `update_check`: the controller that runs a check off the interface thread and
+  reports what it found. Its result crosses back on a signal connected to a
+  bound method of an object living on the interface thread, which is the whole
+  reason the class exists: a signal connected to a bare callable runs in the
+  sender's thread; no widget may be touched from there. `MainWindow` takes
+  the update service as an optional dependency, so a test can build a window
+  that asks nothing of the network; the composition root always supplies one.
 - `skill_tree`: one stop, walked with Up and Down, with internal cell tab
   walking turned off so Tab leaves in a single press. Skills sit under a heading
   for the origin they came from and Enter or Space opens and closes one, since

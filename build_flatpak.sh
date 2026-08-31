@@ -130,6 +130,9 @@ build-options:
   no-debuginfo: true
 
 finish-args:
+  # The update check asks GitHub for the latest release. Without this the
+  # sandbox refuses the call and every check reports itself unreachable.
+  - --share=network
   - --share=ipc
   - --socket=fallback-x11
   - --socket=wayland

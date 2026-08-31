@@ -18,6 +18,7 @@ from PySide6.QtWidgets import (
 from .. import version
 from ..application.ports import AssetLocator, MarkdownRenderer
 from ..application.services import SkillLibraryService
+from ..application.update import UpdateService
 from ..domain.settings import Appearance, EditorChoice
 from ..domain.skill import Skill
 from .about_dialog import AboutDialog
@@ -28,6 +29,7 @@ from .skill_tree import SkillTree
 from .skill_view import SkillView
 from .theme import Palette, palette_for, stylesheet
 from .top_tray import TopTray
+from .update_check import install_update_check
 
 WINDOW_WIDTH_PX = 1100
 WINDOW_HEIGHT_PX = 760
@@ -54,6 +56,7 @@ class MainWindow(QMainWindow):
         service: SkillLibraryService,
         renderer: MarkdownRenderer,
         assets: AssetLocator,
+        updates: UpdateService | None = None,
     ) -> None:
         super().__init__()
         self._service = service
@@ -70,7 +73,8 @@ class MainWindow(QMainWindow):
             on_choose_editor=self.choose_editor,
             on_open_in_editor=self.open_in_editor,
             on_switch_appearance=self.switch_appearance,
-            on_help=self.show_about,
+            on_about=self.show_about,
+            on_check_updates=self.check_for_updates,
         )
         self.bottom_tray = BottomTray(
             self,
@@ -89,8 +93,22 @@ class MainWindow(QMainWindow):
         self.setCentralWidget(self._body())
         self.statusBar().setSizeGripEnabled(False)
         self.navigator = KeyboardNavigator(self, self.ring_stops)
+        # The window works with no update check at all, which is how a test
+        # gets a window that asks nothing of the network. The composition root
+        # always supplies one.
+        self.update_check = (
+            None
+            if updates is None
+            else install_update_check(
+                self, updates, service, version.APP_NAME, self.report_status
+            )
+        )
         self.apply_appearance()
         self.refresh()
+
+    def report_status(self, message: str) -> None:
+        """Say something in the status bar for a few seconds."""
+        self.statusBar().showMessage(message, STATUS_TIMEOUT_MS)
 
     def apply_appearance(self) -> None:
         """Repaint, re-face the toggle and re-render, in one call.
@@ -229,7 +247,7 @@ class MainWindow(QMainWindow):
         if skill is None:
             return
         if not self._service.open_in_editor(skill):
-            self.statusBar().showMessage(NO_EDITOR_MESSAGE, STATUS_TIMEOUT_MS)
+            self.report_status(NO_EDITOR_MESSAGE)
 
     def open_donation(self) -> None:
         """Hand the donation page to whatever the desktop opens links with.
@@ -238,7 +256,12 @@ class MainWindow(QMainWindow):
         the browser does the asking, so nothing here opens a connection.
         """
         if not self._service.open_donation_page(version.DONATE_URL):
-            self.statusBar().showMessage(NO_BROWSER_MESSAGE, STATUS_TIMEOUT_MS)
+            self.report_status(NO_BROWSER_MESSAGE)
+
+    def check_for_updates(self) -> None:
+        """The Help menu's own check: it reports whatever it finds."""
+        if self.update_check is not None:
+            self.update_check.check_manually()
 
     def show_about(self) -> None:
         """Open the About dialog."""

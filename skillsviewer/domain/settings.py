@@ -54,13 +54,16 @@ class Settings:
     An empty root means the user has never chosen one, so the per-operating-system
     default applies. ``opened_groups`` names the groups the user has opened, so
     the empty tuple a fresh install carries is every group shut, which is how it
-    opens by design rather than by accident.
+    opens by design rather than by accident. ``skipped_update_version`` holds the
+    exact release tag the user asked not to be told about again; empty means
+    every release is worth mentioning.
     """
 
     skills_root: str = ""
     editor: EditorChoice | None = None
     appearance: Appearance = DEFAULT_APPEARANCE
     opened_groups: tuple[str, ...] = ()
+    skipped_update_version: str = ""
 
     def with_root(self, root: str) -> Settings:
         """A copy remembering this root."""
@@ -78,6 +81,10 @@ class Settings:
         """A copy remembering which groups the user has open."""
         return self._but(opened_groups=opened)
 
+    def with_skipped_update_version(self, tag: str) -> Settings:
+        """A copy that will not mention this release again."""
+        return self._but(skipped_update_version=tag)
+
     def _but(self, **changed: object) -> Settings:
         """A copy with these fields replaced and every other one carried over."""
         fields = {
@@ -85,6 +92,7 @@ class Settings:
             "editor": self.editor,
             "appearance": self.appearance,
             "opened_groups": self.opened_groups,
+            "skipped_update_version": self.skipped_update_version,
         }
         fields.update(changed)
         return Settings(**fields)  # type: ignore[arg-type]

@@ -77,3 +77,25 @@ def test_an_editor_needs_a_path() -> None:
 def test_an_editor_needs_a_display_name() -> None:
     with pytest.raises(InvalidEditorChoice):
         EditorChoice(path="/usr/bin/vi", display_name=" ")
+
+
+def test_nothing_is_skipped_by_default() -> None:
+    assert Settings().skipped_update_version == ""
+
+
+def test_a_skipped_release_replaces_only_itself() -> None:
+    settings = Settings(skills_root="/skills", opened_groups=("prose",))
+
+    changed = settings.with_skipped_update_version("0.2.0")
+
+    assert changed.skipped_update_version == "0.2.0"
+    assert changed.skills_root == "/skills"
+    assert changed.opened_groups == ("prose",)
+    assert settings.skipped_update_version == ""
+
+
+def test_every_other_copy_carries_the_skipped_release_over() -> None:
+    settings = Settings().with_skipped_update_version("0.2.0")
+
+    assert settings.with_root("/skills").skipped_update_version == "0.2.0"
+    assert settings.with_opened_groups(()).skipped_update_version == "0.2.0"
