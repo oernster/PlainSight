@@ -52,27 +52,39 @@ class Settings:
     """Everything the application carries from one run to the next.
 
     An empty root means the user has never chosen one, so the per-operating-system
-    default applies.
+    default applies. ``opened_groups`` names the groups the user has opened, so
+    the empty tuple a fresh install carries is every group shut, which is how it
+    opens by design rather than by accident.
     """
 
     skills_root: str = ""
     editor: EditorChoice | None = None
     appearance: Appearance = DEFAULT_APPEARANCE
+    opened_groups: tuple[str, ...] = ()
 
     def with_root(self, root: str) -> Settings:
         """A copy remembering this root."""
-        return Settings(
-            skills_root=root, editor=self.editor, appearance=self.appearance
-        )
+        return self._but(skills_root=root)
 
     def with_editor(self, editor: EditorChoice) -> Settings:
         """A copy remembering this editor."""
-        return Settings(
-            skills_root=self.skills_root, editor=editor, appearance=self.appearance
-        )
+        return self._but(editor=editor)
 
     def with_appearance(self, appearance: Appearance) -> Settings:
         """A copy remembering this appearance."""
-        return Settings(
-            skills_root=self.skills_root, editor=self.editor, appearance=appearance
-        )
+        return self._but(appearance=appearance)
+
+    def with_opened_groups(self, opened: tuple[str, ...]) -> Settings:
+        """A copy remembering which groups the user has open."""
+        return self._but(opened_groups=opened)
+
+    def _but(self, **changed: object) -> Settings:
+        """A copy with these fields replaced and every other one carried over."""
+        fields = {
+            "skills_root": self.skills_root,
+            "editor": self.editor,
+            "appearance": self.appearance,
+            "opened_groups": self.opened_groups,
+        }
+        fields.update(changed)
+        return Settings(**fields)  # type: ignore[arg-type]

@@ -40,8 +40,14 @@ class SkillTree(QTreeWidget):
     """Every skill in the current library, gathered by where it came from."""
 
     skill_selected = Signal(object)
+    groups_changed = Signal(tuple)
 
-    def __init__(self, palette: Palette, parent: QWidget | None = None) -> None:
+    def __init__(
+        self,
+        palette: Palette,
+        opened: tuple[str, ...] = (),
+        parent: QWidget | None = None,
+    ) -> None:
         super().__init__(parent)
         self.setObjectName("SkillTree")
         self.setFocusPolicy(Qt.FocusPolicy.TabFocus)
@@ -54,7 +60,9 @@ class SkillTree(QTreeWidget):
         self.setIconSize(QSize(ARROW_PX, ARROW_PX))
         self._palette = palette
         self._selected: Skill | None = None
-        self._shut: set[str] = set()
+        # What is open is remembered rather than what is shut, so a library
+        # opens with every group closed until the reader opens one.
+        self._opened: set[str] = set(opened)
         self.currentItemChanged.connect(self._announce)
         self.itemExpanded.connect(self._remember_open)
         self.itemCollapsed.connect(self._remember_shut)
@@ -104,7 +112,7 @@ class SkillTree(QTreeWidget):
         item.setText(FIRST_COLUMN, f"{group.origin.label}{COUNT_OPENER}{len(group)})")
         for skill in group:
             self._add_skill(item, skill)
-        item.setExpanded(group.origin.label not in self._shut)
+        item.setExpanded(group.origin.label in self._opened)
         self._face(item, item.isExpanded())
 
     def _add_skill(self, parent: QTreeWidget | QTreeWidgetItem, skill: Skill) -> None:
@@ -153,12 +161,14 @@ class SkillTree(QTreeWidget):
         self.skill_selected.emit(skill)
 
     def _remember_open(self, item: QTreeWidgetItem) -> None:
-        self._shut.discard(_heading_label(item))
+        self._opened.add(_heading_label(item))
         self._face(item, True)
+        self.groups_changed.emit(tuple(sorted(self._opened)))
 
     def _remember_shut(self, item: QTreeWidgetItem) -> None:
-        self._shut.add(_heading_label(item))
+        self._opened.discard(_heading_label(item))
         self._face(item, False)
+        self.groups_changed.emit(tuple(sorted(self._opened)))
 
     def _toggle_heading(self, item: QTreeWidgetItem, _column: int) -> None:
         """A click anywhere on a heading opens or closes its group.

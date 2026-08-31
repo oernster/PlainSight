@@ -62,6 +62,14 @@ class SkillLibraryService:
         """Remember the editor to launch skills in."""
         self.settings_store.save(self.settings_store.load().with_editor(editor))
 
+    def opened_groups(self) -> tuple[str, ...]:
+        """The groups the user has open; none at all until one is opened."""
+        return self.settings_store.load().opened_groups
+
+    def remember_opened_groups(self, opened: tuple[str, ...]) -> None:
+        """Remember which groups are open, so a run opens as the last one closed."""
+        self.settings_store.save(self.settings_store.load().with_opened_groups(opened))
+
     def appearance(self) -> Appearance:
         """The palette the application should draw with now."""
         return self.settings_store.load().appearance

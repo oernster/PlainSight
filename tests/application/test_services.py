@@ -260,3 +260,17 @@ def test_a_skill_opens_in_the_default_when_nothing_was_chosen() -> None:
 
     assert service.open_in_editor(a_skill())
     assert launcher.launched[0][0].path == notepad
+
+
+def test_a_fresh_install_has_every_group_shut() -> None:
+    assert a_service().opened_groups() == ()
+
+
+def test_the_groups_a_reader_opens_are_remembered() -> None:
+    store = FakeSettingsStore()
+    service = a_service(store=store)
+
+    service.remember_opened_groups(("Your skills",))
+
+    assert service.opened_groups() == ("Your skills",)
+    assert store.settings.opened_groups == ("Your skills",)

@@ -25,6 +25,7 @@ HELP_TOOLTIP = "About Skills Viewer"
 TO_LIGHT_TOOLTIP = "Switch to the light appearance"
 TO_DARK_TOOLTIP = "Switch to the dark appearance"
 
+TRAY_SCALE = 2.0
 TRAY_MARGIN_PX = 8
 TRAY_SPACING_PX = 6
 
@@ -47,19 +48,21 @@ class TopTray(QWidget):
         # A container is never a stop, so it is said rather than assumed.
         self.setFocusPolicy(Qt.FocusPolicy.NoFocus)
         self.folder_button = icon_button(
-            self, assets.find(FOLDER_ICON), FOLDER_TOOLTIP, on_choose_folder
+            self, assets.find(FOLDER_ICON), FOLDER_TOOLTIP, on_choose_folder, TRAY_SCALE
         )
         self.choose_editor_button = icon_button(
             self,
             assets.find(CHOOSE_EDITOR_ICON),
             CHOOSE_EDITOR_TOOLTIP,
             on_choose_editor,
+            TRAY_SCALE,
         )
         self.open_in_editor_button = icon_button(
             self,
             assets.find(LAUNCH_EDITOR_ICON),
             LAUNCH_EDITOR_TOOLTIP,
             on_open_in_editor,
+            TRAY_SCALE,
         )
         # Disabled by default, per design plan 7.3. The ring skips it and it
         # paints the permanent red ring while it stays that way.
@@ -67,10 +70,14 @@ class TopTray(QWidget):
         # It shows the appearance it would move TO, so the sun appears while
         # you are in the dark.
         self.appearance_button = icon_button(
-            self, assets.find(LIGHT_MODE_ICON), TO_LIGHT_TOOLTIP, on_switch_appearance
+            self,
+            assets.find(LIGHT_MODE_ICON),
+            TO_LIGHT_TOOLTIP,
+            on_switch_appearance,
+            TRAY_SCALE,
         )
         self.help_button = icon_button(
-            self, assets.find(HELP_ICON), HELP_TOOLTIP, on_help
+            self, assets.find(HELP_ICON), HELP_TOOLTIP, on_help, TRAY_SCALE
         )
 
         row = QHBoxLayout(self)

@@ -19,14 +19,20 @@ def icon_button(
     artwork: str | None,
     tooltip: str,
     on_press: Callable[[], None],
+    scale: float = 1.0,
 ) -> QPushButton:
-    """A picture button, sized the same as every other one in a tray."""
+    """A picture button, sized the same as every other one in its own tray.
+
+    The scale belongs to the tray rather than to the button: the two trays are
+    read at different distances and carry different weight, so they are sized
+    apart on purpose rather than sharing one figure.
+    """
     button = QPushButton(parent)
     button.setObjectName(ICON_BUTTON_NAME)
     button.setToolTip(tooltip)
     button.setAccessibleName(tooltip)
-    button.setFixedSize(BUTTON_SIZE_PX, BUTTON_SIZE_PX)
-    button.setIconSize(QSize(ICON_SIZE_PX, ICON_SIZE_PX))
+    button.setFixedSize(round(BUTTON_SIZE_PX * scale), round(BUTTON_SIZE_PX * scale))
+    button.setIconSize(QSize(round(ICON_SIZE_PX * scale), round(ICON_SIZE_PX * scale)))
     button.setFocusPolicy(Qt.FocusPolicy.TabFocus)
     if artwork is not None:
         button.setIcon(QIcon(QPixmap(artwork)))

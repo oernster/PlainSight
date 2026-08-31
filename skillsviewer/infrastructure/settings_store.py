@@ -26,6 +26,7 @@ EDITOR_KEY = "editor"
 EDITOR_PATH_KEY = "path"
 EDITOR_NAME_KEY = "display_name"
 APPEARANCE_KEY = "appearance"
+OPENED_KEY = "opened_groups"
 
 
 class JsonSettingsStore:
@@ -46,6 +47,7 @@ class JsonSettingsStore:
             skills_root=_text(raw.get(ROOT_KEY)),
             editor=_editor(raw.get(EDITOR_KEY)),
             appearance=Appearance.of(_text(raw.get(APPEARANCE_KEY))),
+            opened_groups=_names(raw.get(OPENED_KEY)),
         )
 
     def save(self, settings: Settings) -> None:
@@ -54,6 +56,7 @@ class JsonSettingsStore:
             VERSION_KEY: FORMAT_VERSION,
             ROOT_KEY: settings.skills_root,
             APPEARANCE_KEY: settings.appearance.value,
+            OPENED_KEY: list(settings.opened_groups),
             EDITOR_KEY: (
                 None
                 if settings.editor is None
@@ -94,3 +97,10 @@ def _editor(value: object) -> EditorChoice | None:
         )
     except InvalidEditorChoice:
         return None
+
+
+def _names(value: object) -> tuple[str, ...]:
+    """Group names from a recorded list; nothing at all from anything else."""
+    if not isinstance(value, list):
+        return ()
+    return tuple(entry for entry in value if isinstance(entry, str) and entry.strip())

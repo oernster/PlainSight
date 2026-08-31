@@ -72,17 +72,47 @@ def test_a_plugin_row_says_which_plugin_it_came_with(application) -> None:
     assert "hookify (hookify)" in labels
 
 
-def test_enter_shuts_a_heading_and_opens_it_again(application) -> None:
+def test_every_group_opens_shut(application) -> None:
+    """A library of fifty is a wall of rows; it opens as a short list instead."""
+    tree = a_tree(application, MIXED)
+
+    assert [item.isExpanded() for item in tree.headings()] == [False, False]
+
+
+def test_a_group_the_reader_left_open_opens_open(application) -> None:
+    tree = SkillTree(DARK, (SkillOrigin.PLUGIN.label,))
+    tree.show_catalogue(MIXED)
+    tree.show()
+    QApplication.processEvents()
+
+    assert [item.isExpanded() for item in tree.headings()] == [False, True]
+
+
+def test_opening_and_shutting_a_group_is_reported_for_remembering(
+    application,
+) -> None:
+    tree = a_tree(application, MIXED)
+    reported: list[tuple] = []
+    tree.groups_changed.connect(reported.append)
+    heading = tree.headings()[0]
+
+    heading.setExpanded(True)
+    heading.setExpanded(False)
+
+    assert reported == [(SkillOrigin.PERSONAL.label,), ()]
+
+
+def test_enter_opens_a_heading_and_shuts_it_again(application) -> None:
     tree = a_tree(application, MIXED)
     heading = tree.headings()[0]
     tree.setCurrentItem(heading)
 
     press(tree, Qt.Key.Key_Return)
-    shut = heading.isExpanded()
+    opened = heading.isExpanded()
     press(tree, Qt.Key.Key_Return)
 
-    assert not shut
-    assert heading.isExpanded()
+    assert opened
+    assert not heading.isExpanded()
 
 
 def test_space_toggles_a_heading_too(application) -> None:
@@ -92,18 +122,18 @@ def test_space_toggles_a_heading_too(application) -> None:
 
     press(tree, Qt.Key.Key_Space)
 
-    assert not heading.isExpanded()
+    assert heading.isExpanded()
 
 
-def test_a_shut_heading_stays_shut_when_the_library_is_read_again(
+def test_a_heading_the_reader_opened_stays_open_on_a_re_read(
     application,
 ) -> None:
     tree = a_tree(application, MIXED)
-    tree.headings()[0].setExpanded(False)
+    tree.headings()[0].setExpanded(True)
 
     tree.show_catalogue(MIXED)
 
-    assert not tree.headings()[0].isExpanded()
+    assert tree.headings()[0].isExpanded()
 
 
 def test_landing_on_a_heading_leaves_the_reader_where_they_were(
@@ -111,6 +141,8 @@ def test_landing_on_a_heading_leaves_the_reader_where_they_were(
 ) -> None:
     """A heading is not a skill, so choosing one reports no change."""
     tree = a_tree(application, MIXED)
+    tree.headings()[0].setExpanded(True)
+    tree.setCurrentItem(tree.skill_items()[0])
     announced: list[Skill] = []
     tree.skill_selected.connect(announced.append)
 
@@ -124,6 +156,8 @@ def test_the_selected_skill_survives_the_library_being_read_again(
     application,
 ) -> None:
     tree = a_tree(application, MIXED)
+    for heading in tree.headings():
+        heading.setExpanded(True)
     tree.setCurrentItem(tree.skill_items()[1])
     chosen = tree.selected_skill()
 
@@ -173,16 +207,17 @@ def test_clicking_a_heading_opens_and_closes_its_group(application) -> None:
     heading = tree.headings()[0]
 
     tree.itemClicked.emit(heading, FIRST_COLUMN)
-    shut = heading.isExpanded()
+    opened = heading.isExpanded()
     tree.itemClicked.emit(heading, FIRST_COLUMN)
 
-    assert not shut
-    assert heading.isExpanded()
+    assert opened
+    assert not heading.isExpanded()
 
 
 def test_clicking_a_skill_does_not_toggle_anything(application) -> None:
     tree = a_tree(application, MIXED)
     heading = tree.headings()[0]
+    heading.setExpanded(True)
     skill_row = heading.child(0)
 
     tree.itemClicked.emit(skill_row, FIRST_COLUMN)

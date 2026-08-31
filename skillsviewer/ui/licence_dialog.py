@@ -1,16 +1,18 @@
 """One licence, shown at the width of its own text and reading itself down.
 
-Licence texts arrive hard wrapped, so the dialog is sized to the document rather
-than to a guessed minimum: wrapping them again would break lines twice.
+Licence texts arrive hard wrapped, so the dialog is sized to that wrapping
+rather than to a guessed minimum. It is sized to the line nearly every line is
+rather than to the longest, since fitting the longest leaves a band of empty
+space beside all the others; the handful that run past it wrap, which costs a
+line here and there and is what keeps the text off a sideways scrollbar.
 """
 
 from __future__ import annotations
 
-import math
 from pathlib import Path
 
-from PySide6.QtGui import QGuiApplication
-from PySide6.QtWidgets import QTextBrowser, QVBoxLayout, QWidget
+from PySide6.QtGui import QFontMetrics, QGuiApplication
+from PySide6.QtWidgets import QVBoxLayout, QWidget
 
 from .reading_pane import ReadingPane
 from .widgets import FirstStopDialog, close_row
@@ -22,6 +24,13 @@ DIALOG_HEIGHT_PX = 520
 # application ships, which put a horizontal scrollbar under text that had been
 # wrapped by its author already.
 SCREEN_FRACTION = 0.9
+# Sized to the line most of the text is, not to the longest line in it. Fitting
+# the longest left a wide band of empty space beside every ordinary line, since
+# a licence is hard wrapped to about seventy characters with a handful of
+# stragglers. The few that run past this wrap, which is why the text wraps at
+# all: it is the only way to have neither a sideways scrollbar nor a dialog
+# mostly full of nothing.
+TYPICAL_LINE_FRACTION = 0.95
 MINIMUM_WIDTH_PX = 640
 SLACK_PX = 2
 MISSING_LICENCE = (
@@ -37,7 +46,6 @@ class LicenceDialog(FirstStopDialog):
         super().__init__(parent)
         self.setWindowTitle(title)
         self.text = ReadingPane(self)
-        self.text.setLineWrapMode(QTextBrowser.LineWrapMode.NoWrap)
         self.text.setPlainText(_read(path))
 
         layout = QVBoxLayout(self)
@@ -46,12 +54,11 @@ class LicenceDialog(FirstStopDialog):
         self.resize(self._fitted_width(), DIALOG_HEIGHT_PX)
 
     def _fitted_width(self) -> int:
-        """The document's own width, plus the chrome around it, capped.
+        """The width the body of the text wants, plus the chrome, capped.
 
         Polished first. A fresh widget carries the fallback font and none of
         the stylesheet's padding until it is, so measuring before that reports
-        a document narrower than the one that gets drawn and the dialog opens
-        with a horizontal scrollbar under text that was wrapped already.
+        a document narrower than the one that gets drawn.
         """
         self.ensurePolished()
         self.text.ensurePolished()
@@ -62,8 +69,18 @@ class LicenceDialog(FirstStopDialog):
             + margins.left()
             + margins.right()
         )
-        wanted = math.ceil(self.text.document().idealWidth()) + chrome + SLACK_PX
-        return min(wanted, _cap(self))
+        return min(self._typical_line() + chrome + SLACK_PX, _cap(self))
+
+    def _typical_line(self) -> int:
+        """How wide nearly every line is, ignoring the few that run past it."""
+        metrics = QFontMetrics(self.text.document().defaultFont())
+        widths = sorted(
+            metrics.horizontalAdvance(line)
+            for line in self.text.toPlainText().splitlines()
+        )
+        if not widths:
+            return MINIMUM_WIDTH_PX
+        return widths[min(len(widths) - 1, int(len(widths) * TYPICAL_LINE_FRACTION))]
 
 
 def _cap(dialog: QWidget) -> int:

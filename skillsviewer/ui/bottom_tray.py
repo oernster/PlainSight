@@ -18,6 +18,7 @@ DONATE_TOOLTIP = "Buy the author a drink (opens your browser)"
 UI_LICENCE_TOOLTIP = "The user interface licence (LGPL-3.0)"
 MODEL_LICENCE_TOOLTIP = "The model licence (GPL-3.0)"
 
+TRAY_SCALE = 1.5
 TRAY_MARGIN_PX = 8
 TRAY_SPACING_PX = 6
 
@@ -37,19 +38,21 @@ class BottomTray(QWidget):
         # A container is never a stop, so it is said rather than assumed.
         self.setFocusPolicy(Qt.FocusPolicy.NoFocus)
         self.donate_button = icon_button(
-            self, assets.find(DONATE_ICON), DONATE_TOOLTIP, on_donate
+            self, assets.find(DONATE_ICON), DONATE_TOOLTIP, on_donate, TRAY_SCALE
         )
         self.ui_licence_button = icon_button(
             self,
             assets.find(UI_LICENCE_ICON),
             UI_LICENCE_TOOLTIP,
             on_ui_licence,
+            TRAY_SCALE,
         )
         self.model_licence_button = icon_button(
             self,
             assets.find(MODEL_LICENCE_ICON),
             MODEL_LICENCE_TOOLTIP,
             on_model_licence,
+            TRAY_SCALE,
         )
 
         row = QHBoxLayout(self)

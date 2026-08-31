@@ -79,9 +79,10 @@ class MainWindow(QMainWindow):
             on_ui_licence=self.show_ui_licence,
             on_model_licence=self.show_model_licence,
         )
-        self.skill_tree = SkillTree(self._palette, self)
+        self.skill_tree = SkillTree(self._palette, service.opened_groups(), self)
         self.skill_view = SkillView(renderer, self._palette, self)
         self.skill_tree.skill_selected.connect(self.show_skill)
+        self.skill_tree.groups_changed.connect(self.remember_groups)
 
         self._neutral = NeutralStart(self)
         self._started = False
@@ -185,6 +186,15 @@ class MainWindow(QMainWindow):
         else:
             self.skill_view.show_skill(skill)
         self.sync_editor_button()
+
+    def remember_groups(self, opened: tuple[str, ...]) -> None:
+        """Carry the reader's open and shut groups into the next run.
+
+        Routed through the window rather than connected straight to the
+        service: the service is a frozen object with slots, which Qt cannot
+        take the weak reference to that a bound method connection needs.
+        """
+        self._service.remember_opened_groups(opened)
 
     def sync_editor_button(self) -> None:
         """Ask the service whether the view in editor control can act."""

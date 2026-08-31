@@ -6,11 +6,14 @@ from pathlib import Path
 
 from skillsviewer import version
 from skillsviewer.domain.settings import EditorChoice, Settings
+from skillsviewer.ui.bottom_tray import TRAY_SCALE as BOTTOM_SCALE
 from skillsviewer.ui.main_window import (
     NO_BROWSER_MESSAGE,
     NO_EDITOR_MESSAGE,
     MainWindow,
 )
+from skillsviewer.ui.top_tray import TRAY_SCALE as TOP_SCALE
+from skillsviewer.ui.widgets import ICON_SIZE_PX
 
 AN_EDITOR = EditorChoice(path="/usr/bin/vi", display_name="vi")
 
@@ -141,3 +144,28 @@ def test_a_skill_that_will_not_read_is_still_listed(
 
     labels = [item.text(0) for item in window.skill_tree.skill_items()]
     assert "broken (unreadable)" in labels
+
+
+def test_the_top_tray_reads_larger_than_the_bottom_one(window: MainWindow) -> None:
+    """Two trays, read at different distances, so sized apart on purpose."""
+    top = window.top_tray.ring_stops()[0]
+    bottom = window.bottom_tray.ring_stops()[0]
+
+    assert top.iconSize().width() == round(ICON_SIZE_PX * TOP_SCALE)
+    assert bottom.iconSize().width() == round(ICON_SIZE_PX * BOTTOM_SCALE)
+    assert top.width() > bottom.width() > 0
+
+
+def test_opening_a_group_is_carried_into_the_next_run(
+    window: MainWindow, store
+) -> None:
+    """The fixture library has one origin, so the wiring is driven directly."""
+    window.skill_tree.groups_changed.emit(("Your skills",))
+
+    assert store.settings.opened_groups == ("Your skills",)
+
+
+def test_the_tree_is_built_from_the_groups_that_were_left_open(
+    window: MainWindow,
+) -> None:
+    assert window.skill_tree._opened == set(window._service.opened_groups())
