@@ -14,6 +14,10 @@ from ..domain.settings import Appearance
 BORDER_WIDTH_PX = 2
 THIN_BORDER_WIDTH_PX = 1
 RADIUS_PX = 6
+LINE_HEIGHT_PERCENT = 155
+PARAGRAPH_GAP_PX = 10
+ITEM_GAP_PX = 6
+HEADING_GAP_PX = 20
 
 
 @dataclass(frozen=True, slots=True)
@@ -174,10 +178,24 @@ QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {{
 
 
 def document_style(palette: Palette) -> str:
-    """The style sheet applied to rendered skill documents."""
+    """The style sheet applied to rendered documents.
+
+    The typography is here because a skill's own paragraphs can be enormous:
+    the longest measured runs past four thousand characters unbroken. Nothing
+    here may rewrite what an author wrote, so the levers are the ones a reader
+    owns, open line spacing and air between blocks, with the line length
+    capped by the pane itself.
+    """
     return f"""
 body {{ color: {palette.text}; }}
-h1, h2, h3 {{ color: {palette.accent}; }}
+p, li, td, th {{ line-height: {LINE_HEIGHT_PERCENT}%; }}
+p {{ margin-top: {PARAGRAPH_GAP_PX}px; margin-bottom: {PARAGRAPH_GAP_PX}px; }}
+li {{ margin-top: {ITEM_GAP_PX}px; margin-bottom: {ITEM_GAP_PX}px; }}
+h1, h2, h3 {{
+    color: {palette.accent};
+    margin-top: {HEADING_GAP_PX}px;
+    margin-bottom: {ITEM_GAP_PX}px;
+}}
 a {{ color: {palette.ring}; }}
 code, pre {{ background: {palette.code_background}; }}
 th {{ color: {palette.muted}; }}

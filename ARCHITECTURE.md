@@ -135,6 +135,13 @@ Two trays around a split body, exactly as design plan part 2 describes.
   than assumed, so the two chords a reader reaches for first would otherwise do
   nothing. The skill pane and both dialogs sit on it, which is what stops the
   three drifting apart.
+  It also holds the text column to a readable line length, so a wide window
+  buys margins rather than longer lines; text that arrived hard wrapped, a
+  licence being the case, is left exactly as it came. The typography lives in
+  `document_style` beside the colours, because a skill's own paragraphs can be
+  enormous: the longest measured runs past four thousand characters unbroken.
+  Nothing here may rewrite what an author wrote, so the levers are the ones a
+  reader owns, open line spacing, air between blocks and a capped measure.
 - `skill_view`: the skill on that pane. `wear` gives it a palette; the window
   re-renders after, because a rendered document keeps the colours it was
   rendered under. A frontmatter value longer than a few lines is lifted out of
