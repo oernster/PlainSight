@@ -11,8 +11,7 @@ from skillsviewer.infrastructure.platform import (
     settings_path,
 )
 from skillsviewer.infrastructure.resources import (
-    application_icon_path,
-    donate_icon_path,
+    BundledAssets,
     find_asset,
     read_version,
 )
@@ -42,8 +41,33 @@ def test_the_version_comes_from_the_file_that_holds_it() -> None:
 
 
 def test_the_bundled_artwork_is_found() -> None:
-    assert donate_icon_path() is not None
-    assert application_icon_path() is not None
+    """Every picture the user interface asks for is really in the build."""
+    from skillsviewer.ui.about_dialog import APPLICATION_ICON
+    from skillsviewer.ui.bottom_tray import (
+        DONATE_ICON,
+        MODEL_LICENCE_ICON,
+        UI_LICENCE_ICON,
+    )
+    from skillsviewer.ui.top_tray import (
+        CHOOSE_EDITOR_ICON,
+        FOLDER_ICON,
+        HELP_ICON,
+        LAUNCH_EDITOR_ICON,
+    )
+
+    assets = BundledAssets()
+    wanted = (
+        APPLICATION_ICON,
+        DONATE_ICON,
+        UI_LICENCE_ICON,
+        MODEL_LICENCE_ICON,
+        FOLDER_ICON,
+        CHOOSE_EDITOR_ICON,
+        LAUNCH_EDITOR_ICON,
+        HELP_ICON,
+    )
+
+    assert [name for name in wanted if assets.find(name) is None] == []
 
 
 def test_an_asset_that_is_not_bundled_is_reported_as_absent() -> None:

@@ -12,7 +12,7 @@ from .auto_scroller import AutoScroller
 from .theme import Palette, document_style
 from .widgets import FirstStopDialog, close_row
 
-APPLICATION_ICON = "application-icon.png"
+APPLICATION_ICON = "skillsviewer_icon_256.png"
 ICON_PX = 96
 DIALOG_MIN_WIDTH_PX = 560
 BODY_MIN_HEIGHT_PX = 320

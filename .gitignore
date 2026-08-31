@@ -216,3 +216,21 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# Build outputs
+/build/
+/dist/
+/dist-pyinstaller/
+/dist-installer/
+/dist-installer.build/
+/dist-dmg-stage/
+/installer/payload/
+/*.spec
+/*.icns
+/skillsviewer.flatpak
+/uk.codecrafter.SkillsViewer.yml
+/.flatpak-build/
+/.flatpak-repo/
+/.flatpak-builder/
+/.flatpak-wheels/
+/packaging/

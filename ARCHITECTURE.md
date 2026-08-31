@@ -120,6 +120,30 @@ artwork is found through the `AssetLocator` port rather than by importing
 infrastructure, which is how the layer guard caught the first version of the
 trays.
 
+## The setup program
+
+`installer/` is a second application in the same repository, not a part of the
+first: nothing in `skillsviewer/` imports it and nothing in it imports the
+application. It follows the house setup model.
+
+- `route` and `wording` are pure, so every state setup can be in is a test
+  rather than a screenshot. One reading of the machine decides the screen, its
+  heading, the options on it and the buttons under it, which is what stops
+  those four drifting apart.
+- An operation moves to a different SCREEN rather than greying the controls
+  where they are, so there is no row of dead boxes during an install.
+- The footer is rebuilt per screen from a list of actions. The progress screen
+  offers nothing at all.
+- The bar is weighted by measured time rather than by step count, since even
+  weighting sends it to the last notch within a twentieth of a second.
+- The archive is fenced as a whole before any entry is written, so a crafted
+  archive cannot write half its contents before one is caught climbing out.
+- Every path ends in a verdict; a step log is flushed as it goes.
+
+The read-only invariant of design plan 13.1 is about the application, not the
+setup program: an installer writes files by definition. What it never touches
+is a skills root; it writes only under `%LOCALAPPDATA%\Programs` and `HKCU`.
+
 ## Quality enforcement
 
 The coverage floor is 100% over `domain` plus `application`, the layers reachable

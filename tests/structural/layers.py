@@ -20,6 +20,9 @@ PERMITTED_IMPORTS = {
     "ui": frozenset({"domain", "application"}),
 }
 
+# Build and packaging scripts are exempt from the size cap: they are linear
+# recipes read top to bottom, where splitting a sequence of flags and steps
+# across modules costs more than it buys.
 BUILD_SCRIPTS = frozenset(
     {
         "buildexe.py",
@@ -29,8 +32,19 @@ BUILD_SCRIPTS = frozenset(
         "dmg_icon.py",
         "generate_icons.py",
         "stamp_version.py",
+        "build_payload.py",
     }
 )
+
+INSTALLER_ROOT = REPOSITORY_ROOT / "installer"
+# The staged bundle lives under the setup program's directory and is build
+# output, not source; nothing in it is measured or scanned.
+BUILD_OUTPUT_PARTS = frozenset({"payload", "build", "dist", "__pycache__"})
+
+
+def is_build_output(path: Path) -> bool:
+    """Whether a path sits inside a build output directory."""
+    return bool(BUILD_OUTPUT_PARTS.intersection(path.parts))
 
 
 def source_files(layer: str) -> tuple[Path, ...]:

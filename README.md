@@ -42,6 +42,24 @@ python -m pip install -r requirements.txt
 python -m skillsviewer
 ```
 
+## Build
+
+| Platform | Command | Output |
+|---|---|---|
+| Windows, the application | `python buildexe.py` | `installer/payload/Skills Viewer/` |
+| Windows, the setup program | `python buildinstaller.py` | `dist-installer/SkillsViewerSetup.exe` |
+| Linux | `./build_flatpak.sh` | `skillsviewer.flatpak` |
+| macOS | `python builddmg.py` | `dist/skillsviewer-macos-arm64.dmg` |
+
+The icons all derive from one master: `python generate_icons.py` reads
+`skillsviewer.png` at the repository root and writes the whole set into
+`assets/`. `python stamp_version.py` writes the version from `VERSION` into
+every static file that quotes one; both build scripts call it first.
+
+The setup program installs into your own account only. It writes under
+`%LOCALAPPDATA%\Programs` and `HKCU`, so Windows never asks for an
+administrator; it removes cleanly from the Apps list.
+
 ## Test
 
 ```
@@ -58,7 +76,7 @@ entry point and build scripts are under GPL-3.0. See `LICENSE` for the map.
 
 ## Status
 
-Every layer is built and gated, including the user interface. What remains is
-the delivery work: the icon master and its generator, the licence texts, the
-donation address and the build scripts. `DESIGN-PLAN.md` holds the requirements
-and the design; `TECH_DEBT.md` holds what is still open.
+Every layer is built and gated, with all four delivery paths written. The
+Windows pair has been run end to end; the Linux and macOS scripts have not,
+since neither platform is to hand. `DESIGN-PLAN.md` holds the requirements and
+the design; `TECH_DEBT.md` holds what is still open.

@@ -39,3 +39,14 @@ exclude_lines = [
     "^\\s*\\.\\.\\.$",
     "if TYPE_CHECKING:",
 ]
+
+[tool.ruff]
+extend-exclude = [
+    "build",
+    "dist",
+    "dist-pyinstaller",
+    "dist-installer",
+    "dist-installer.build",
+    "installer/payload",
+    "packaging",
+]

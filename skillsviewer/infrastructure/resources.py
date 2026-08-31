@@ -12,8 +12,6 @@ from pathlib import Path
 ASSETS_DIRECTORY = "assets"
 VERSION_FILE_NAME = "VERSION"
 FALLBACK_VERSION = "0.0.0-dev"
-DONATE_ICON = "donate.png"
-APPLICATION_ICON = "application-icon.png"
 
 
 def _candidate_roots() -> tuple[Path, ...]:
@@ -52,13 +50,3 @@ class BundledAssets:
         """The path of the bundled asset of this name; None when absent."""
         found = find_asset(name)
         return None if found is None else str(found)
-
-
-def donate_icon_path() -> Path | None:
-    """The artwork for the button that offers to buy the author a drink."""
-    return find_asset(DONATE_ICON)
-
-
-def application_icon_path() -> Path | None:
-    """The application's own icon."""
-    return find_asset(APPLICATION_ICON)

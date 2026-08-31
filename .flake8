@@ -1,4 +1,4 @@
 [flake8]
 max-line-length = 88
 extend-ignore = E203
-exclude = .git,__pycache__,build,dist,dist-installer,.flatpak-build
+exclude = .git,__pycache__,build,dist,dist-pyinstaller,dist-installer,dist-installer.build,dist-dmg-stage,installer/payload,.flatpak-build,.flatpak-wheels,packaging

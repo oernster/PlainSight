@@ -8,7 +8,13 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from .layers import BUILD_SCRIPTS, PACKAGE_ROOT, REPOSITORY_ROOT
+from .layers import (
+    BUILD_SCRIPTS,
+    INSTALLER_ROOT,
+    PACKAGE_ROOT,
+    REPOSITORY_ROOT,
+    is_build_output,
+)
 
 LINE_CAP = 400
 BAND_FRACTION_PERCENT = 5
@@ -17,10 +23,19 @@ TESTS_ROOT = REPOSITORY_ROOT / "tests"
 
 
 def measured_files() -> tuple[Path, ...]:
-    """Every file the cap applies to: the package and the tests, not the build."""
-    package = [p for p in PACKAGE_ROOT.rglob("*.py")]
-    tests = [p for p in TESTS_ROOT.rglob("*.py")]
-    return tuple(p for p in [*package, *tests] if p.name not in BUILD_SCRIPTS)
+    """Every file the cap applies to.
+
+    The application package, the setup program's own interface and the tests.
+    The build and packaging scripts are exempt; see BUILD_SCRIPTS.
+    """
+    found = [
+        *PACKAGE_ROOT.rglob("*.py"),
+        *INSTALLER_ROOT.rglob("*.py"),
+        *TESTS_ROOT.rglob("*.py"),
+    ]
+    return tuple(
+        p for p in found if p.name not in BUILD_SCRIPTS and not is_build_output(p)
+    )
 
 
 def line_count(path: Path) -> int:
