@@ -11,6 +11,7 @@ from html import escape
 from PySide6.QtWidgets import QWidget
 
 from ..application.ports import MarkdownRenderer
+from ..domain.passage import soften
 from ..domain.skill import Skill
 from .reading_pane import ReadingPane
 from .theme import Palette, document_style
@@ -57,9 +58,15 @@ class SkillView(ReadingPane):
         self._set(_header(skill) + self._body(skill) + _long_fields(skill))
 
     def _body(self, skill: Skill) -> str:
+        """The document, given somewhere for the eye to rest on the way down.
+
+        The softening happens here rather than anywhere nearer the file: it is
+        a decision about presenting the text; the text on disk is never touched
+        by it.
+        """
         if not skill.is_readable:
             return f"<p><b>{escape(skill.failure)}</b></p>"
-        return self._renderer.render(skill.body)
+        return self._renderer.render(soften(skill.body))
 
     def _set(self, html: str) -> None:
         """Show this content and return the reading cycle to its start hold."""

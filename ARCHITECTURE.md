@@ -150,6 +150,18 @@ Two trays around a split body, exactly as design plan part 2 describes.
 - `about_dialog`, `licence_dialog`, `widgets`: the dialogs and the pieces they
   share, all on the `FirstStopDialog` base.
 
+`passage.soften` is the answer to a wall of text that typography alone cannot
+reach. An over-long passage is shown in groups of whole sentences with a gap
+between them; an inventory with no sentence ends in it gets a second pass at
+the divisions its author did write, the end of a bracketed entry and the
+semicolon. Nothing is added, removed or reordered; that is mechanical rather
+than promised: a test takes the breaks back out and requires the
+original text character for character, over every skill on the machine as well
+as over invented ones. Measured over the real library, the longest block a
+reader meets falls from 5604 characters to 1893; blocks past 1500 fall from 26
+to 4. It runs in the pane rather than anywhere nearer the file, because it
+is a decision about presenting text and never about storing it.
+
 `SkillOrigin` in the domain names where a skill was read from and the order the
 groups are shown in; `SkillCatalogue.groups` gathers by it and leaves out an
 origin that contributed nothing, so a machine with no plugins sees one list. The
