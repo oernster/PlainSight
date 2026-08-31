@@ -19,6 +19,8 @@ from PySide6.QtWidgets import (
 from installer import theme
 from installer.wording import PRODUCT, TAGLINE
 
+TITLE_GAP_PX = 2
+
 
 def pane(parent: QWidget | None = None) -> QWidget:
     """A container, said to be no focus stop rather than assumed to be one."""
@@ -58,7 +60,12 @@ def option(parent: QWidget, text: str, checked: bool) -> QCheckBox:
 def header(
     parent: QWidget, mark: pathlib.Path | None, controls: tuple[QPushButton, ...]
 ) -> QWidget:
-    """The mark, the name over its tagline, then the controls at the right.
+    """The mark, then the name over its tagline with the controls at the right.
+
+    The tagline belongs to the header rather than to the title, so it is given
+    the whole width beside the mark rather than the width of the name above it.
+    Confined to the name it broke early and stranded its last word, with the
+    room it needed sitting unused beside the controls.
 
     No version here: it has no baseline to sit on beside a 32px title and reads
     as a fragment come adrift. It belongs in the body, in the sentence naming
@@ -85,14 +92,19 @@ def header(
     names = pane(band)
     column = QVBoxLayout(names)
     column.setContentsMargins(0, 0, 0, 0)
-    column.setSpacing(2)
+    column.setSpacing(TITLE_GAP_PX)
+
     title = label(names, PRODUCT, "Title")
     title.setWordWrap(False)
-    column.addWidget(title)
-    column.addWidget(label(names, TAGLINE, "Tagline"))
-    row.addWidget(names)
-
-    row.addStretch()
+    top = QHBoxLayout()
+    top.setContentsMargins(0, 0, 0, 0)
+    top.setSpacing(theme.HEADER_GAP_PX)
+    top.addWidget(title)
+    top.addStretch()
     for control in controls:
-        row.addWidget(control, 0, Qt.AlignmentFlag.AlignTop)
+        top.addWidget(control, 0, Qt.AlignmentFlag.AlignTop)
+    column.addLayout(top)
+    column.addWidget(label(names, TAGLINE, "Tagline"))
+
+    row.addWidget(names, 1)
     return band

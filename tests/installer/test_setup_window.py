@@ -10,13 +10,25 @@ import pathlib
 from collections.abc import Iterator
 
 import pytest
-from PySide6.QtWidgets import QApplication, QCheckBox, QPushButton
+from PySide6.QtCore import QRect, Qt
+from PySide6.QtWidgets import QApplication, QCheckBox, QLabel, QPushButton
 
 from installer import screens, theme
 from installer.app import SetupWindow
 from installer.existing import Existing
 from installer.footer import DANGER, PRIMARY
 from installer.route import Route
+
+UNBOUNDED_PX = 10000
+WIDENED_PX = 200
+
+
+def one_label(window: SetupWindow, name: str) -> QLabel:
+    """The single label carrying this object name."""
+    found = [c for c in window.findChildren(QLabel) if c.objectName() == name]
+    assert len(found) == 1
+    return found[0]
+
 
 A_VERSION = "1.2.0"
 
@@ -269,3 +281,49 @@ def test_the_footer_is_rebuilt_rather_than_relabelled(window: SetupWindow) -> No
 
     assert [button for button in after if button in before] == []
     assert all(isinstance(button, QPushButton) for button in after)
+
+
+def test_the_tagline_is_given_the_whole_line_beside_the_mark(
+    window: SetupWindow,
+) -> None:
+    """It reads across the header rather than being boxed under the name.
+
+    Confined to the width of the name above it, the tagline broke early and
+    stranded its last word while the room it needed sat unused beside the
+    controls. The width is asserted against the title rather than a pixel
+    figure, since the font differs between this harness and a real desktop.
+    """
+    tagline = one_label(window, "Tagline")
+    title = one_label(window, "Title")
+
+    assert tagline.width() > title.width()
+
+
+def test_the_tagline_reads_on_a_single_line(window: SetupWindow) -> None:
+    """Measured from the laid out text, not from the box the layout gives it."""
+    tagline = one_label(window, "Tagline")
+    metrics = tagline.fontMetrics()
+    wrapped = metrics.boundingRect(
+        QRect(0, 0, tagline.width(), UNBOUNDED_PX),
+        Qt.TextFlag.TextWordWrap,
+        tagline.text(),
+    )
+
+    assert wrapped.height() == metrics.height()
+
+
+def test_the_tagline_sits_under_the_name(window: SetupWindow) -> None:
+    assert one_label(window, "Tagline").y() > one_label(window, "Title").y()
+
+
+def test_a_wider_window_gives_the_tagline_the_extra_room(
+    window: SetupWindow,
+) -> None:
+    """The names column takes the room left over rather than a bare stretch."""
+    tagline = one_label(window, "Tagline")
+    narrow = tagline.width()
+
+    window.resize(window.width() + WIDENED_PX, window.height())
+    QApplication.processEvents()
+
+    assert tagline.width() > narrow

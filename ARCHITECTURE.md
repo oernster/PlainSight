@@ -199,6 +199,11 @@ application. It follows the house setup model.
 - The archive is fenced as a whole before any entry is written, so a crafted
   archive cannot write half its contents before one is caught climbing out.
 - Every path ends in a verdict; a step log is flushed as it goes.
+- The tagline belongs to the header rather than to the name above it, so the
+  controls sit inside the names column and the tagline is given the whole width
+  beside the mark. Boxed under the name it took the name's width, broke a line
+  early and stranded its last word, while the room it needed sat unused beside
+  the controls. The focus order is unchanged by that, measured either side.
 - The licence is a text button and the appearance toggle is artwork, which is
   the deliberate asymmetry of the house header. Both marks are staged beside the
   payload rather than left inside the bundle the setup program has not extracted
