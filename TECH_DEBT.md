@@ -6,18 +6,7 @@ Every item here is a behaviour-preserving internal concern. Nothing in this file
 reverts a feature or changes how the application behaves for its user. Read it
 against `ARCHITECTURE.md` and the structural tests.
 
-## 1. The donation address is not yet known
-
-`skillsviewer/version.py` holds `DONATE_URL` as an empty string. Skills Viewer
-needs its own payment address, generated for this application; borrowing
-another project's would send money against the wrong project.
-
-Blocked on an owner decision. The donate button reports in the status bar that
-no address is set, so the state is honest rather than silent. The structural
-test asserting the address literally cannot be written until there is an
-address to assert.
-
-## 2. The setup program has never been run
+## 1. The setup program has never been run
 
 `buildexe.py` and `buildinstaller.py` both build, the application starts from
 the bundle and the payload archive is well formed. The setup program itself has
@@ -28,7 +17,7 @@ machine.
 Blocked on a build-and-launch pass, which the sandbox must not do: it would
 write to `%LOCALAPPDATA%` and `HKCU` on this machine.
 
-## 3. The shortcut writer has no test
+## 2. The shortcut writer has no test
 
 `installer/registry.py` writes shortcuts through the shell, with a PowerShell
 fallback when the COM bindings are absent from the bundle. Neither path is

@@ -201,8 +201,9 @@ The artwork is derived from a single master by the icon generator.
 
 9.5 The artwork is in place: `assets/donate-master.png` is the master and the
 icon generator derives `assets/donate.png` from it, cropped to its artwork and
-scaled by height. Still open: Skills Viewer needs its own payment address,
-generated for this application and never borrowed from another.
+scaled by height. The address is Skills Viewer's own, generated for this
+application rather than borrowed from another. A structural test asserts it
+literally, asserts its scheme and asserts it appears exactly once.
 
 ## 10. UI licence
 

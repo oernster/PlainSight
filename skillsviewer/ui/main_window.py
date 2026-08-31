@@ -44,7 +44,6 @@ FOLDER_PROMPT = "Choose the folder your skills live in"
 EDITOR_PROMPT = "Choose the editor to open a skill in"
 NO_EDITOR_MESSAGE = "Could not start the editor"
 NO_BROWSER_MESSAGE = "Could not open a browser for the donation page"
-NO_ADDRESS_MESSAGE = "No donation address is set for this build"
 
 
 class MainWindow(QMainWindow):
@@ -222,10 +221,11 @@ class MainWindow(QMainWindow):
             self.statusBar().showMessage(NO_EDITOR_MESSAGE, STATUS_TIMEOUT_MS)
 
     def open_donation(self) -> None:
-        """Hand the donation page to whatever the desktop opens links with."""
-        if not version.DONATE_URL:
-            self.statusBar().showMessage(NO_ADDRESS_MESSAGE, STATUS_TIMEOUT_MS)
-            return
+        """Hand the donation page to whatever the desktop opens links with.
+
+        The application never fetches it: the address goes to the desktop and
+        the browser does the asking, so nothing here opens a connection.
+        """
         if not self._service.open_donation_page(version.DONATE_URL):
             self.statusBar().showMessage(NO_BROWSER_MESSAGE, STATUS_TIMEOUT_MS)
 

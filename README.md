@@ -17,8 +17,8 @@ discipline.
 
 It makes no network request of its own: there is no HTTP client, no socket and
 no telemetry anywhere in it. What it does do is hand an address to your desktop
-for your browser to open, in exactly two places: the donation button, then a
-link you click inside a skill you are reading. Nothing is fetched or sent without
+for your browser to open, in exactly two places: the donate button, then a link
+you click inside a skill you are reading. Nothing is fetched or sent without
 that click.
 
 ## Capabilities
@@ -95,6 +95,15 @@ python -m black --check .
 python -m flake8 .
 python -m ruff check .
 ```
+
+## Supporting the project
+
+Skills Viewer is free and stays free. There is no paid tier, no licence key and
+no feature held back behind a donation.
+
+The donate button sits at the left of the bottom tray. Pressing it hands one
+address to your desktop for your browser to open; the application itself fetches
+nothing, so the button changes none of what is said above about the network.
 
 ## Licence
 

@@ -7,7 +7,6 @@ from pathlib import Path
 from skillsviewer import version
 from skillsviewer.domain.settings import EditorChoice, Settings
 from skillsviewer.ui.main_window import (
-    NO_ADDRESS_MESSAGE,
     NO_BROWSER_MESSAGE,
     NO_EDITOR_MESSAGE,
     MainWindow,
@@ -82,11 +81,13 @@ def test_opening_with_nothing_selected_does_nothing(
     assert launcher.launched == []
 
 
-def test_a_build_with_no_donation_address_says_so(window: MainWindow, opener) -> None:
-    window.open_donation()
+def test_pressing_donate_asks_the_desktop_for_that_one_address(
+    window: MainWindow, opener
+) -> None:
+    """Asserted literally, so a typo fails here rather than misdirecting money."""
+    window.bottom_tray.donate_button.click()
 
-    assert opener.opened == []
-    assert window.statusBar().currentMessage() == NO_ADDRESS_MESSAGE
+    assert opener.opened == ["https://www.paypal.com/ncp/payment/BCZF8TZTUGTEA"]
 
 
 def test_the_donation_address_is_handed_over_untouched(

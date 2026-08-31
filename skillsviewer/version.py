@@ -12,6 +12,6 @@ APP_COPYRIGHT = "© Oliver Ernster"
 # Where the donate button sends a browser. The only address the application
 # knows; it is handed to the desktop rather than fetched, so nothing here ever
 # opens a connection of its own.
-DONATE_URL = ""
+DONATE_URL = "https://www.paypal.com/ncp/payment/BCZF8TZTUGTEA"
 
 __version__ = read_version()
