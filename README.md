@@ -44,6 +44,13 @@ python -m skillsviewer
 
 ## Build
 
+The delivery tools are in `requirements-dev.txt`, not `requirements.txt`: they
+build the product and the product imports neither of them.
+
+```
+python -m pip install -r requirements-dev.txt
+```
+
 | Platform | Command | Output |
 |---|---|---|
 | Windows, the application | `python buildexe.py` | `installer/payload/Skills Viewer/` |

@@ -38,13 +38,30 @@ BUILD_SCRIPTS = frozenset(
 
 INSTALLER_ROOT = REPOSITORY_ROOT / "installer"
 # The staged bundle lives under the setup program's directory and is build
-# output, not source; nothing in it is measured or scanned.
-BUILD_OUTPUT_PARTS = frozenset({"payload", "build", "dist", "__pycache__"})
+# output, not source; nothing in it is measured or scanned. Nor is anything in
+# a virtual environment, a cache or a dist directory, all of which hold other
+# people's code.
+BUILD_OUTPUT_PARTS = frozenset(
+    {
+        "payload",
+        "build",
+        "__pycache__",
+        "node_modules",
+        "site-packages",
+        "venv",
+    }
+)
+BUILD_OUTPUT_PREFIXES = ("dist", ".")
 
 
 def is_build_output(path: Path) -> bool:
-    """Whether a path sits inside a build output directory."""
-    return bool(BUILD_OUTPUT_PARTS.intersection(path.parts))
+    """Whether a path sits inside a build output or environment directory."""
+    for part in path.parts[:-1]:
+        if part in BUILD_OUTPUT_PARTS:
+            return True
+        if part.startswith(BUILD_OUTPUT_PREFIXES):
+            return True
+    return False
 
 
 def source_files(layer: str) -> tuple[Path, ...]:
