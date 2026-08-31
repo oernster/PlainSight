@@ -1,0 +1,86 @@
+"""The application's own questions and commands, above the toolkit.
+
+The service is frozen and holds only its injected dependencies. It answers
+questions rather than holding the answers, so the user interface asks whether a
+control should be enabled instead of working it out for itself.
+"""
+
+from __future__ import annotations
+
+from dataclasses import dataclass
+
+from ..domain.catalogue import SkillCatalogue
+from ..domain.settings import EditorChoice, Settings
+from ..domain.skill import Skill
+from .defaults import effective_skills_root
+from .ports import (
+    EditorLauncher,
+    ExternalOpener,
+    PathProbe,
+    PlatformPaths,
+    SettingsStore,
+    SkillRepository,
+)
+
+
+@dataclass(frozen=True, slots=True)
+class SkillLibraryService:
+    """Reads the library, remembers the choices and hands work outwards."""
+
+    repository: SkillRepository
+    settings_store: SettingsStore
+    launcher: EditorLauncher
+    opener: ExternalOpener
+    probe: PathProbe
+    paths: PlatformPaths
+
+    def current_root(self) -> str:
+        """The root that would be read now."""
+        return effective_skills_root(self.settings_store.load().skills_root, self.paths)
+
+    def load(self) -> SkillCatalogue:
+        """Every skill beneath the current root."""
+        return self.repository.list_skills(self.current_root())
+
+    def choose_root(self, root: str) -> SkillCatalogue:
+        """Remember this root and read it."""
+        settings = self.settings_store.load().with_root(root)
+        self.settings_store.save(settings)
+        return self.repository.list_skills(root)
+
+    def choose_editor(self, editor: EditorChoice) -> None:
+        """Remember the editor to launch skills in."""
+        self.settings_store.save(self.settings_store.load().with_editor(editor))
+
+    def settings(self) -> Settings:
+        """What is remembered right now."""
+        return self.settings_store.load()
+
+    def can_open_in_editor(self, skill: Skill | None) -> bool:
+        """Whether the view in editor control has anything it could do.
+
+        A skill has to be selected, an editor has to have been chosen and that
+        editor has to still be where it was when it was chosen; an editor
+        uninstalled since is no longer a thing this can act on.
+        """
+        if skill is None:
+            return False
+        editor = self.settings_store.load().editor
+        if editor is None:
+            return False
+        return self.probe.exists(editor.path)
+
+    def open_in_editor(self, skill: Skill) -> bool:
+        """Open this skill's document in the chosen editor.
+
+        False when there is no usable editor or the desktop declined to start
+        it, which the caller reports rather than swallowing.
+        """
+        editor = self.settings_store.load().editor
+        if editor is None:
+            return False
+        return self.launcher.launch(editor, skill.document_path)
+
+    def open_donation_page(self, address: str) -> bool:
+        """Hand the donation address to the desktop; False when it declined."""
+        return self.opener.open(address)

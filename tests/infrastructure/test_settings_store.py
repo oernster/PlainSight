@@ -1,0 +1,71 @@
+"""Remembering the root and the editor across runs."""
+
+from __future__ import annotations
+
+import json
+from pathlib import Path
+
+from skillsviewer.domain.settings import EditorChoice, Settings
+from skillsviewer.infrastructure.settings_store import FORMAT_VERSION, JsonSettingsStore
+
+AN_EDITOR = EditorChoice(path="/usr/bin/vi", display_name="vi")
+
+
+def test_nothing_written_yet_loads_the_defaults(tmp_path: Path) -> None:
+    store = JsonSettingsStore(tmp_path / "settings.json")
+
+    assert store.load() == Settings()
+
+
+def test_what_was_saved_comes_back(tmp_path: Path) -> None:
+    store = JsonSettingsStore(tmp_path / "nested" / "settings.json")
+
+    store.save(Settings(skills_root="/skills", editor=AN_EDITOR))
+
+    assert store.load() == Settings(skills_root="/skills", editor=AN_EDITOR)
+
+
+def test_the_record_carries_its_format_version(tmp_path: Path) -> None:
+    path = tmp_path / "settings.json"
+
+    JsonSettingsStore(path).save(Settings(skills_root="/skills"))
+
+    assert json.loads(path.read_text(encoding="utf-8"))["version"] == FORMAT_VERSION
+
+
+def test_settings_with_no_editor_round_trip(tmp_path: Path) -> None:
+    store = JsonSettingsStore(tmp_path / "settings.json")
+
+    store.save(Settings(skills_root="/skills"))
+
+    assert store.load().editor is None
+
+
+def test_a_file_that_is_not_json_loads_the_defaults(tmp_path: Path) -> None:
+    path = tmp_path / "settings.json"
+    path.write_text("not json at all", encoding="utf-8")
+
+    assert JsonSettingsStore(path).load() == Settings()
+
+
+def test_json_that_is_not_a_record_loads_the_defaults(tmp_path: Path) -> None:
+    path = tmp_path / "settings.json"
+    path.write_text("[1, 2, 3]", encoding="utf-8")
+
+    assert JsonSettingsStore(path).load() == Settings()
+
+
+def test_fields_of_the_wrong_shape_are_ignored(tmp_path: Path) -> None:
+    path = tmp_path / "settings.json"
+    path.write_text(
+        json.dumps({"skills_root": 7, "editor": "a string"}), encoding="utf-8"
+    )
+
+    assert JsonSettingsStore(path).load() == Settings()
+
+
+def test_an_editor_record_missing_its_path_is_ignored(tmp_path: Path) -> None:
+    path = tmp_path / "settings.json"
+    path.write_text(json.dumps({"editor": {"display_name": "vi"}}), encoding="utf-8")
+
+    assert JsonSettingsStore(path).load().editor is None

@@ -1,0 +1,41 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "skillsviewer"
+description = "A reader for the skills used by Claude AI"
+requires-python = ">=3.11"
+dynamic = ["version"]
+dependencies = [
+    "PySide6>=6.7",
+    "markdown>=3.5",
+]
+
+[tool.setuptools.dynamic]
+version = { file = "VERSION" }
+
+[tool.setuptools.packages.find]
+include = ["skillsviewer*"]
+
+[tool.black]
+line-length = 88
+target-version = ["py311"]
+
+[tool.pytest.ini_options]
+addopts = [
+    "--cov=skillsviewer.domain",
+    "--cov=skillsviewer.application",
+    "--cov-branch",
+    "--cov-report=term-missing",
+    "--cov-fail-under=100",
+]
+testpaths = ["tests"]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "raise NotImplementedError",
+    "^\\s*\\.\\.\\.$",
+    "if TYPE_CHECKING:",
+]
