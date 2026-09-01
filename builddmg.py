@@ -23,7 +23,7 @@ from buildexe import (
     parallel_jobs,
     shipped_assets,
 )
-from dmg_icon import png_to_icns
+from dmg_icon import png_to_icns, set_file_icon
 
 PROJECT_ROOT = pathlib.Path(__file__).resolve().parent
 
@@ -251,6 +251,10 @@ def main() -> int:
         run(["codesign", "--force", "--sign", DEVELOPER_ID, str(DMG_PATH)])
         notarize()
         run(["codesign", "--verify", str(DMG_PATH)])
+        # Last, because it is the only step that would be undone by another:
+        # the icon rides in the resource fork, which stapling and signing both
+        # rewrite the file around.
+        set_file_icon(DMG_PATH, icns)
         section("Done")
         print(f"  {DMG_PATH.relative_to(PROJECT_ROOT)}")
     finally:
