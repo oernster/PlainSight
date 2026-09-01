@@ -332,11 +332,17 @@ Frozen dataclasses with `slots=True`, `tuple[...]` over `list`.
 
 Ports, all Protocols:
 
-- `SkillRepository`: `list_skills(root) -> SkillCatalogue`
+- `SkillRepository`: `list_skills(root) -> SkillCatalogue`,
+  `list_plugin_skills(root) -> SkillCatalogue`
 - `SettingsStore`: `load() -> Settings`, `save(settings)`
 - `EditorLauncher`: `launch(editor, target) -> bool`
 - `ExternalOpener`: `open(address) -> bool`
+- `PathProbe`: `exists(path) -> bool`
+- `PlatformPaths`: `home_directory() -> str`,
+  `program_directories() -> tuple[str, ...]`, `system_directory() -> str`
+- `AssetLocator`: `find(name) -> str | None`
 - `MarkdownRenderer`: `render(body) -> str`
+- `ReleaseSource`: `latest_release() -> ReleaseInfo | None`
 
 Services:
 
@@ -389,17 +395,24 @@ VERSION
 skillsviewer.png
 generate_icons.py  stamp_version.py
 buildexe.py  buildinstaller.py  build_flatpak.sh  clean_flatpak.sh  builddmg.py
+build_utils.py  dmg_icon.py
 LICENSE  LICENSE-GPL-3.0.txt  LICENSE-LGPL-3.0.txt  INSTALLER_LICENSE
-README.md  ARCHITECTURE.md  TECH_DEBT.md
+README.md  ARCHITECTURE.md  DESIGN-PLAN.md  TECH_DEBT.md
+docs/              the GitHub Pages site
+installer/         the setup program, a second application in the same tree
 skillsviewer/
-  domain/          skill.py  skill_document.py  catalogue.py  editor_choice.py
-  application/     ports.py  services.py  defaults.py
-  infrastructure/  skill_repository.py  settings_store.py  editor_launcher.py
-                   markdown_renderer.py  resources.py
+  __main__.py      the composition root
+  version.py
+  domain/          skill.py  skill_document.py  catalogue.py  settings.py
+                   origin.py  passage.py
+  application/     ports.py  services.py  defaults.py  update.py
+  infrastructure/  skill_repository.py  settings_store.py  desktop.py
+                   markdown_renderer.py  resources.py  platform.py
+                   update_source.py
   ui/              main_window.py  top_tray.py  bottom_tray.py  skill_tree.py
                    skill_view.py  reading_pane.py  auto_scroller.py
-                   keyboard_nav.py  theme.py
-                   about_dialog.py  licence_dialog.py  links.py
+                   keyboard_nav.py  theme.py  widgets.py  update_check.py
+                   about_dialog.py  licence_dialog.py
 tests/             mirrors the source tree, plus tests/structural/
 ```
 

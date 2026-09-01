@@ -46,6 +46,8 @@ Nothing is fetched or sent without that click.
   other folder instead.
 - Lists every skill and renders the selected one, with its declared fields and
   the files that travel with it.
+- Holds the text to a readable column, so a wide window buys margins rather
+  than longer lines; text that arrived hard wrapped is left exactly as it came.
 - Reads itself down the page gently; hands control back the moment you scroll.
 - Light and dark, switched from the tray and remembered between runs.
 - Three text sizes, stepped by one button in the tray and remembered too.
@@ -91,9 +93,11 @@ The icons all derive from one master: `python generate_icons.py` reads
 `assets/`, along with the tray marks and the donate mark.
 
 `python stamp_version.py` writes the version from `VERSION` into the delimited
-tokens of a GitHub Pages site. There is no site yet, so it currently reports
-that nothing needed stamping; all three build scripts call it first regardless,
-so a site can never ship behind the version.
+tokens of the GitHub Pages site under `docs/`, which carries one on each of its
+four pages. It is idempotent, so running it on a current tree changes nothing.
+The three Python delivery scripts call it before they build, so a packaged
+release cannot ship a site that reads behind the version; `build_flatpak.sh`
+does not, so run it by hand when a Linux build is the only one made.
 
 The setup program installs into your own account only. It writes under
 `%LOCALAPPDATA%\Programs` and `HKCU`, so Windows never asks for an

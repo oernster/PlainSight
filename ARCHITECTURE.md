@@ -76,7 +76,7 @@ external opener asks the desktop to open an address and touches no file.
 
 `ports` declares the seams as Protocols: `SkillRepository`, `SettingsStore`,
 `EditorLauncher`, `ExternalOpener`, `PathProbe`, `PlatformPaths`,
-`MarkdownRenderer` and `ReleaseSource`. `ReleaseSource` returns a release type
+`AssetLocator`, `MarkdownRenderer` and `ReleaseSource`. `ReleaseSource` returns a release type
 declared in `update`, which imports `ports` in turn, so the annotation is
 imported under `TYPE_CHECKING` alone; a runtime import there would close a
 circle.
@@ -104,7 +104,11 @@ raise a prompt.
 - `skill_repository`: applies the discovery rules of design plan section 1.
 - `settings_store`: versioned JSON, written atomically through a temporary file
   and a replace, so a process that dies halfway leaves the previous settings
-  intact.
+  intact. Its `FORMAT_VERSION` is the file's own number and has nothing to do
+  with the application's. That separation is what a stable release does and does
+  not promise: the application version is free to move without the settings a
+  user has accumulated needing anything done to them; the format may be revised
+  on its own number when it has to be.
 - `platform`: the home directory and the path probe.
 - `markdown_renderer`: rendering through the `markdown` package.
 - `update_source`: the one place the application opens a connection of its own.
@@ -318,3 +322,15 @@ nothing.
 `black --check`, `flake8`, `ruff check` and the pytest gate are four separate
 commands, each read by exit code. None of them is wired into the suite as an
 assertion.
+
+Both Qt suites tear their widgets down through `tests/qt_teardown.py`, in one
+place rather than one copy each. Closing a window hides it; `deleteLater` only
+posts a DeferredDelete event that `processEvents` does not deliver outside a
+running event loop, so the teardown they each had destroyed nothing at all.
+Every widget either suite built stayed in the application; the run then died
+with an access violation inside `QApplication.setStyleSheet`, which has to walk
+all of them: five times in fifteen. Fixed, the same suite ran twenty five times with
+no crash; reinstating the old teardown in the setup program's fixtures alone
+brought it back at ten in twenty, which is what makes this the cause rather than
+a correlation. It also took the suite from about four minutes to five seconds.
+`tests/ui/test_qt_teardown.py` holds the guard.
