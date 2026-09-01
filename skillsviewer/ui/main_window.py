@@ -108,6 +108,20 @@ class MainWindow(QMainWindow):
         self.apply_appearance()
         self.refresh()
 
+    def present(self) -> None:
+        """Show the window and ask for the foreground, rather than only show.
+
+        `show` puts a window on screen and leaves where it sits to the desktop.
+        Reported after a fresh install: the window opened behind everything
+        else. Windows refuses the foreground to a process that does not already
+        hold it unless the process that does hands the right over, which the
+        setup program now does when it starts this one. Asking is this half;
+        being allowed to is the other. Neither works alone.
+        """
+        self.show()
+        self.raise_()
+        self.activateWindow()
+
     def report_status(self, message: str) -> None:
         """Say something in the status bar for a few seconds."""
         self.statusBar().showMessage(message, STATUS_TIMEOUT_MS)

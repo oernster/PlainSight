@@ -305,6 +305,18 @@ application. It follows the house setup model.
   yet. A test asserts every mark the window reads is one the staging step
   carries.
 
+- Starting the application at the end is two halves and neither works alone.
+  Windows refuses the foreground to a process that does not already hold it,
+  so setup, which does hold it, grants the right to the process it has just
+  started; the application asks for it through `MainWindow.present`, which
+  raises and activates rather than merely showing. Reported after a fresh
+  install with only the second half missing: the window opened behind
+  everything and did no more than flash on the taskbar. Setup still closes
+  only after the start returns, since closing first hands the foreground back
+  to whatever was behind it. Neither half can be checked offscreen, so both
+  are tested at the mechanism: that the grant reaches the process actually
+  started, then that the composition root calls `present` rather than `show`.
+
 The read-only invariant of design plan 13.1 is about the application, not the
 setup program: an installer writes files by definition. What it never touches
 is a skills root; it writes only under `%LOCALAPPDATA%\Programs` and `HKCU`.

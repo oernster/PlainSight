@@ -53,7 +53,7 @@ def main() -> int:
         BundledAssets(),
         build_update_service(),
     )
-    window.show()
+    window.present()
     return application.exec()
 
 

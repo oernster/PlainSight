@@ -169,3 +169,35 @@ def test_the_tree_is_built_from_the_groups_that_were_left_open(
     window: MainWindow,
 ) -> None:
     assert window.skill_tree._opened == set(window._service.opened_groups())
+
+
+def test_present_puts_the_window_up_rather_than_only_showing_it(
+    window: MainWindow,
+) -> None:
+    """Reported after a fresh install: it opened behind everything else.
+
+    Offscreen cannot settle stacking or real foreground activation, so this
+    asserts the mechanism rather than the outcome: the window is up, it is not
+    minimised, then that `present` is what the composition root calls. Whether it
+    actually comes to the front is a question only the real desktop answers.
+    """
+    window.hide()
+
+    window.present()
+
+    assert window.isVisible()
+    assert not window.isMinimized()
+
+
+def test_the_composition_root_presents_rather_than_shows() -> None:
+    """A bare show() is the defect, so it must not creep back in.
+
+    Read from the source rather than by running it: main() enters the Qt event
+    loop and never returns, so it cannot be called from a test.
+    """
+    root = (
+        Path(__file__).resolve().parents[2] / "skillsviewer" / "__main__.py"
+    ).read_text(encoding="utf-8")
+
+    assert "window.present()" in root
+    assert "window.show()" not in root
