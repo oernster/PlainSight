@@ -14,7 +14,9 @@ from skillsviewer.domain.settings import Settings
 from skillsviewer.infrastructure.markdown_renderer import PythonMarkdownRenderer
 from skillsviewer.infrastructure.resources import BundledAssets
 from skillsviewer.infrastructure.skill_repository import FileSystemSkillRepository
+from skillsviewer.ui.auto_scroller import Phase
 from skillsviewer.ui.main_window import MainWindow
+from skillsviewer.ui.skill_view import Place
 from tests.application.fakes import (
     FakeLauncher,
     FakeOpener,
@@ -119,6 +121,24 @@ def glimpse(window: MainWindow) -> str:
     return window.skill_view.toPlainText()[start : start + GLIMPSE]
 
 
+TICKS_TO_START = 2000
+SETTLE_MS = 400
+SETTLE_STEP_MS = 20
+
+
+def settle(window: MainWindow) -> None:
+    """Run the loop until the page has stopped changing shape.
+
+    The exact place is put back when the page returns to the height it had,
+    which is announced a turn or two after the redraw rather than during it.
+    """
+    from PySide6.QtTest import QTest
+
+    for _step in range(SETTLE_MS // SETTLE_STEP_MS):
+        QApplication.processEvents()
+        QTest.qWait(SETTLE_STEP_MS)
+
+
 def scroll_halfway(window: MainWindow) -> None:
     bar = window.skill_view.verticalScrollBar()
     assert bar.maximum() > AT_THE_TOP, "the fixture skill has to actually scroll"
@@ -132,12 +152,25 @@ def test_switching_appearance_leaves_the_reader_exactly_where_they_were(
     """The reported defect: dark mode used to throw the page back to the top."""
     scroll_halfway(reading)
     before = top_character(reading)
+    before_pixel = reading.skill_view.verticalScrollBar().value()
+    before_height = reading.skill_view.verticalScrollBar().maximum()
 
     reading.switch_appearance()
-    QApplication.processEvents()
+    settle(reading)
 
-    assert top_character(reading) == before
-    assert reading.skill_view.verticalScrollBar().value() > AT_THE_TOP
+    # The words, exactly. The pixel is exact too wherever the page comes back
+    # to the height it had, which is what a change of colour normally does.
+    bar = reading.skill_view.verticalScrollBar()
+    if bar.maximum() == before_height:
+        # The page came back to the height it had, so the place taken is valid
+        # again and goes back untouched. This is the ordinary case.
+        assert bar.value() == before_pixel
+        assert top_character(reading) == before
+    else:
+        # It kept a different height, so the words are followed instead and the
+        # line may break a little either side of where it did.
+        assert abs(top_character(reading) - before) <= A_PARAGRAPH, glimpse(reading)
+    assert bar.value() > AT_THE_TOP
 
 
 def test_switching_back_again_holds_the_place_too(reading: MainWindow) -> None:
@@ -278,3 +311,45 @@ def test_the_page_is_laid_out_before_it_is_ever_shown(reading: MainWindow) -> No
     # still where they were reading, not at the top.
     assert abs(top_character(reading) - before) <= A_PARAGRAPH, glimpse(reading)
     assert reading.skill_view.verticalScrollBar().value() > AT_THE_TOP
+
+
+def test_the_reading_cycle_holds_still_for_a_moment_after_a_switch(
+    reading: MainWindow,
+) -> None:
+    """The page has just changed shape; reading on through that gives the
+    reader a moving target while it settles.
+
+    The cycle has to be under way first. Before it has started there is nothing
+    to pause, which is why the hold is asked for rather than forced.
+    """
+    scroll_halfway(reading)
+    scroller = reading.skill_view.scroller
+    for _tick in range(TICKS_TO_START):
+        scroller.tick()
+        if scroller.phase is Phase.DOWN:
+            break
+    assert scroller.phase is Phase.DOWN, "the page never began reading itself"
+
+    reading.switch_appearance()
+    QApplication.processEvents()
+
+    assert scroller.phase is Phase.MANUAL
+
+
+def test_a_redraw_that_keeps_the_height_puts_the_pixel_back_exactly(
+    reading: MainWindow,
+) -> None:
+    """The rule the exactness rests on, stated on its own.
+
+    A change of colour alters no text, so the page returns to the height it
+    had; the position taken then is valid again and is applied unchanged.
+    """
+    scroll_halfway(reading)
+    view = reading.skill_view
+    bar = view.verticalScrollBar()
+    wanted = Place(pixel=bar.value(), height=bar.maximum(), character=0)
+    bar.setValue(AT_THE_TOP)
+
+    view._return_to(wanted)
+
+    assert bar.value() == wanted.pixel

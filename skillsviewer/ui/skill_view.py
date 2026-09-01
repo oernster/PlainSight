@@ -9,7 +9,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from html import escape
 
-from PySide6.QtCore import QPoint
+from PySide6.QtCore import QPoint, QTimer
 from PySide6.QtGui import QTextDocument
 from PySide6.QtWidgets import QWidget
 
@@ -31,6 +31,10 @@ NO_OVERFLOW = 0
 VIEWPORT_LEFT = 0
 VIEWPORT_TOP = 0
 NOT_MEASURED = -1
+# How long to keep watching for the page to come back to the height it had.
+# A change of colour alters no text, so the height returns and the exact place
+# with it; a change of size keeps its new height and the watch simply expires.
+SETTLES_WITHIN_MS = 1500
 
 
 @dataclass(frozen=True, slots=True)
@@ -68,6 +72,12 @@ class SkillView(ReadingPane):
         # widget is collected out from under it.
         self._document: QTextDocument | None = None
         self._measured_at = NOT_MEASURED
+        self._exact: Place | None = None
+        self._watching = False
+        self._give_up = QTimer(self)
+        self._give_up.setSingleShot(True)
+        self._give_up.setInterval(SETTLES_WITHIN_MS)
+        self._give_up.timeout.connect(self._stop_watching)
         self.show_nothing()
 
     def wear(self, palette: Palette) -> None:
@@ -119,6 +129,40 @@ class SkillView(ReadingPane):
         cursor.setPosition(min(place.character, self.document().characterCount() - 1))
         self.setTextCursor(cursor)
         bar.setValue(bar.value() + self.cursorRect(cursor).top())
+        # The words are the best that can be done while the page is a different
+        # height. It rarely stays one: a change of colour alters no text, so the
+        # height settles back to what it was within a moment; the pixel that
+        # was taken then is exact again. Measured going 33783 to 43742 to 36386
+        # and back to 33783, with the reader left ten pixels adrift for want of
+        # waiting. So the height is watched, then the exact place applied the
+        # moment it returns.
+        self._exact = place
+        self._watch_for_the_height_to_return()
+
+    def _watch_for_the_height_to_return(self) -> None:
+        """Listen until the page is the size it was; give up after a while."""
+        if self._watching:
+            return
+        self._watching = True
+        self.verticalScrollBar().rangeChanged.connect(self._height_changed)
+        self._give_up.start()
+
+    def _stop_watching(self) -> None:
+        """Stop listening. A page that kept its new height reflowed for real."""
+        if not self._watching:
+            return
+        self._watching = False
+        self._exact = None
+        self._give_up.stop()
+        self.verticalScrollBar().rangeChanged.disconnect(self._height_changed)
+
+    def _height_changed(self, _lowest: int, highest: int) -> None:
+        """The page has been resized; put the reader back exactly if it fits."""
+        place = self._exact
+        if place is None or highest != place.height:
+            return
+        self.verticalScrollBar().setValue(place.pixel)
+        self._stop_watching()
 
     def show_nothing(self) -> None:
         """The state before a skill has been picked."""
@@ -199,6 +243,11 @@ class SkillView(ReadingPane):
             self.scroller.restart()
         else:
             self._return_to(place)
+            # Hold still for a moment before reading on. The page has just
+            # changed shape under the reader; carrying on scrolling through
+            # that gives them a moving target while it settles; the same pause
+            # a hand on the wheel earns.
+            self.scroller.suspend()
         self.sync_focus_policy()
 
 
