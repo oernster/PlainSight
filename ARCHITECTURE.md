@@ -34,6 +34,11 @@ wish.
 | No text region takes a ring in any state | `tests/ui/test_focus_rings.py::test_no_text_region_takes_a_ring_in_any_state` |
 | No container appears in a focus chain | `tests/ui/test_focus_rings.py::test_no_container_is_in_the_main_window_focus_chain` |
 | Each tray's ring order is its drawn order | `tests/ui/test_keyboard_ring.py::test_each_tray_declares_its_own_order_left_to_right_as_drawn` |
+| The rendered page is drawn at the size the pane was given | `tests/ui/test_font_size.py::test_the_rendered_page_is_drawn_at_the_size_the_pane_was_given` |
+| A torn down widget is destroyed, not merely hidden | `tests/ui/test_qt_teardown.py::test_the_teardown_leaves_nothing_alive` |
+| The process setup starts is granted the foreground | `tests/installer/test_launching.py::test_the_started_process_is_granted_the_foreground` |
+| The composition root presents rather than shows | `tests/ui/test_main_window.py::test_the_composition_root_presents_rather_than_shows` |
+| Every declared dependency is credited in About | `tests/structural/test_credits.py::test_every_declared_dependency_is_credited` |
 
 Every one of these has been proved to bite by planting a violation and reading
 the exit code.
@@ -168,6 +173,11 @@ Two trays around a split body, exactly as design plan part 2 describes.
   because it decides the layout. `tests/ui/test_font_size.py` compares the two
   fonts rather than the stylesheet, since it was the widget and its document
   that disagreed.
+  `wear` gives it a palette and the window re-renders after, because a rendered
+  document keeps the colours it was rendered under. A frontmatter value longer
+  than a few lines is lifted out of the header and given its own section after
+  the body, so a value running to thousands of characters cannot bury the skill
+  the reader opened.
 - `top_tray` and `bottom_tray`: each declares `ring_stops()` left to right as
   drawn, so the ring's order is never inferred from a layout walk. The text
   size control sits right of the editor controls behind a `QFrame` hairline
@@ -195,7 +205,8 @@ Two trays around a split body, exactly as design plan part 2 describes.
   holding it, which this harness cannot verify. Restoring a selection never
   opens a shut heading, because Qt expands ancestors to reach a row and would
   otherwise undo the reader's decision on every re-read.
-- A skill already on screen and unchanged is not drawn again. The library is
+- `skill_tree` and `skill_view` together: a skill already on screen and
+  unchanged is not drawn again. The library is
   re-read on every activation of the window; each re-read used to send the page
   back to the top, so leaving to look something up lost your place and
   scrolling looked as though it had been ignored. A skill compares by value, so
@@ -217,11 +228,6 @@ Two trays around a split body, exactly as design plan part 2 describes.
   It is reachable by a click as well as by Tab while it overflows, since Tab
   alone meant clicking the text you were reading did not focus it and the keys
   that move around a document went somewhere else and looked broken.
-- `skill_view`: the skill on that pane. `wear` gives it a palette; the window
-  re-renders after, because a rendered document keeps the colours it was
-  rendered under. A frontmatter value longer than a few lines is lifted out of
-  the header and given its own section after the body, so a value running to
-  thousands of characters cannot bury the skill the reader opened.
 - `about_dialog`, `licence_dialog`, `widgets`: the dialogs and the pieces they
   share, all on the `FirstStopDialog` base.
 
@@ -304,7 +310,6 @@ application. It follows the house setup model.
   payload rather than left inside the bundle the setup program has not extracted
   yet. A test asserts every mark the window reads is one the staging step
   carries.
-
 - Starting the application at the end is two halves and neither works alone.
   Windows refuses the foreground to a process that does not already hold it,
   so setup, which does hold it, grants the right to the process it has just

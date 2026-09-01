@@ -51,6 +51,8 @@ Nothing is fetched or sent without that click.
 - Reads itself down the page gently; hands control back the moment you scroll.
 - Light and dark, switched from the tray and remembered between runs.
 - Three text sizes, stepped by one button in the tray and remembered too.
+- Keeps your place when either changes: you stay on the words you were reading
+  rather than being thrown back to the top.
 - Full keyboard navigation.
 - Opens the selected skill in your chosen editor.
 - Tells you when a newer release is out, from the Help menu or on its own; skip
@@ -141,9 +143,8 @@ bottom tray. See `LICENSE` for the map.
 
 ## Status
 
-Every layer is built and gated, with all four delivery paths written. The
-delivery scripts have just moved from PyInstaller to Nuitka and none of them has
-been run since, so no bundle, setup program or disk image on this toolchain has
-been built or installed yet. The Linux and macOS scripts have never been run at
-all, since neither platform is to hand. `DESIGN-PLAN.md` holds the requirements
-and the design; `TECH_DEBT.md` holds what is still open.
+Every layer is built and gated, with all four delivery paths written. Nothing
+has been built or installed on the current toolchain; the Linux and macOS
+scripts have never been run at all, since neither platform is to hand.
+`DESIGN-PLAN.md` holds the requirements and the design; `TECH_DEBT.md` holds
+what is still open, including exactly what remains unbuilt.

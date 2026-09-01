@@ -178,13 +178,14 @@ everywhere.
 1. browse folder
 2. choose editor
 3. view in editor (skipped while disabled)
-4. appearance toggle
-5. help and about
-6. the skill list (one stop; Up and Down walk the rows)
-7. the rendered pane, **only while it overflows**
-8. donate
-9. UI licence
-10. model licence
+4. text size
+5. appearance toggle
+6. help and about
+7. the skill list (one stop; Up and Down walk the rows)
+8. the rendered pane, **only while it overflows**
+9. donate
+10. UI licence
+11. model licence
 
 then wrapping back to the browse button.
 
@@ -308,6 +309,23 @@ into the text rather than a scroll position, since at another size the same
 point down the page is different words. It is taken before the stylesheet
 changes, because applying it has already reflowed the page.
 
+## 16. Coming to the front when it starts
+
+16.1 The window opens in front of what is already on screen and takes the
+keyboard, rather than opening behind it. `MainWindow.present` shows, raises and
+activates; the composition root calls that and never a bare `show`.
+
+16.2 Asking is only half of it on Windows, which refuses the foreground to a
+process that does not already hold it. The setup program holds it at the moment
+it starts the application, so it grants the right to the process it has just
+started, then closes only after that returns. Closing first hands the foreground
+back to whatever was behind it.
+
+16.3 Neither half can be settled by an offscreen harness, which sees no stacking
+order and no real activation. Both are tested at the mechanism instead: that the
+grant reaches the process actually started, then that the composition root
+presents rather than shows.
+
 ---
 
 # Part 2: design
@@ -325,8 +343,13 @@ Frozen dataclasses with `slots=True`, `tuple[...]` over `list`.
 - `Skill`: display name, description, directory, document path, companions and
   body. Validates in `__post_init__`.
 - `SkillCatalogue`: an ordered `tuple[Skill, ...]` with `by_name()` and the sort
-  rule.
-- `EditorChoice`: path plus display name, validating that the path is non-empty.
+  rule, plus `groups()` gathering by origin.
+- `SkillOrigin`: where a skill was read from and the order the groups appear in.
+- `Settings`: what is remembered between runs, holding `EditorChoice` (path plus
+  display name, validating that the path is non-empty), `Appearance`, `FontSize`
+  and the skipped update tag.
+- `passage.soften`: breaking a wall of text at divisions its author already
+  wrote. Pure string work, adding and removing nothing.
 
 ## Application (domain plus stdlib only)
 
@@ -359,13 +382,14 @@ Services:
 `JsonSettingsStore` (atomic write by temp file plus `os.replace`, versioned
 `{"version": 1, ...}`), `DesktopEditorLauncher` (`QProcess.startDetached`),
 `QtExternalOpener` (`QDesktopServices.openUrl`), `PythonMarkdownRenderer`, plus
-`resources.py` carrying `data_path_resolver` and `icon_resolver` so assets resolve
-under development, a Nuitka bundle and Flatpak alike.
+`resources.py` carrying `find_asset`, `read_version` and the `BundledAssets`
+adapter, so assets resolve under development, a Nuitka bundle and Flatpak
+alike.
 
 ## UI
 
 ```
-top tray:    [folder] [choose editor] [view in editor] .......... [help/about]
+top tray:    [folder] [choose editor] [view in editor] | [size] .. [light/dark] [help/about]
 body:        skill list (left)            |  rendered skill (right)
 bottom tray: [donate] [UI licence] [model licence] ..............
 ```
@@ -433,8 +457,10 @@ tests/             mirrors the source tree, plus tests/structural/
 ## Versioning and licensing
 
 `VERSION` at the repository root is the single source of truth. The runtime reads
-it; markdown and any site content are stamped from it by `stamp_version.py`, which
-the build scripts call. No version literal lives anywhere else.
+it and the GitHub Pages site is stamped from it by `stamp_version.py`, which the
+three Python delivery scripts call before they build. Its scope is the site and
+nothing else, because no document outside the site carries a version at all. No
+version literal lives anywhere but `VERSION`.
 
 The licence split is three files: `LICENSE` carrying the overview and the
 directory to licence map, `LICENSE-GPL-3.0.txt` and `LICENSE-LGPL-3.0.txt`. The

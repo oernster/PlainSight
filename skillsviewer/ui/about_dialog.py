@@ -17,13 +17,21 @@ ICON_PX = 96
 DIALOG_MIN_WIDTH_PX = 560
 BODY_MIN_HEIGHT_PX = 320
 
+# Every licence here was read from the installed package's own metadata rather
+# than remembered. Two were wrong when they were: Pillow moved from HPND to
+# MIT-CMU; Nuitka is AGPL-3.0 rather than the Apache-2.0 it once was. The
+# runtime exception is named because it is the load-bearing part: it is what
+# permits compiling a program that is not itself AGPL.
 CREDITS = (
     "<li><b>PySide6</b> (Qt for Python) - LGPL-3.0 (the user interface).</li>"
     "<li><b>Python</b> - PSF licence (the language and its standard library).</li>"
-    "<li><b>markdown</b> - BSD (rendering each skill for reading).</li>"
-    "<li><b>Pillow</b> - HPND (deriving the icons at build time).</li>"
-    "<li><b>pytest</b>, <b>black</b>, <b>flake8</b>, <b>ruff</b> - MIT "
-    "(the gates).</li>"
+    "<li><b>markdown</b> - BSD-3-Clause (rendering each skill for reading).</li>"
+    "<li><b>Nuitka</b> - AGPL-3.0 with the Runtime Library Exception "
+    "(compiling the packaged builds).</li>"
+    "<li><b>Pillow</b> - MIT-CMU (deriving every icon from one master at build "
+    "time).</li>"
+    "<li><b>pytest</b>, <b>pytest-cov</b>, <b>pytest-qt</b>, <b>black</b>, "
+    "<b>flake8</b>, <b>ruff</b> - MIT (the gates).</li>"
 )
 
 ANTHROPIC_NOTE = (
