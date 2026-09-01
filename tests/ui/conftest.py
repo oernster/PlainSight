@@ -6,7 +6,7 @@ from collections.abc import Iterator
 from pathlib import Path
 
 import pytest
-from PySide6.QtWidgets import QApplication, QWidget
+from PySide6.QtWidgets import QApplication
 
 from skillsviewer.application.services import SkillLibraryService
 from skillsviewer.domain.settings import Settings
@@ -21,6 +21,7 @@ from tests.application.fakes import (
     FakeProbe,
     FakeSettingsStore,
 )
+from tests.qt_teardown import destroy_all_widgets
 
 A_DOCUMENT = "---\nname: {name}\ndescription: about {name}\n---\n\n# {name}\n\nBody.\n"
 
@@ -34,11 +35,14 @@ def application() -> Iterator[QApplication]:
 
 @pytest.fixture(autouse=True)
 def close_orphans(application: QApplication) -> Iterator[None]:
-    """Nothing left on screen between tests."""
+    """Nothing left ALIVE between tests, not merely nothing on screen.
+
+    See `tests/qt_teardown.py`: the teardown this used to have destroyed
+    nothing, so every window ever built stayed in the application and each new
+    one repainting the application stylesheet had to walk the whole pile.
+    """
     yield
-    for widget in list(application.topLevelWidgets()):
-        if isinstance(widget, QWidget):
-            widget.close()
+    destroy_all_widgets(application)
 
 
 @pytest.fixture
