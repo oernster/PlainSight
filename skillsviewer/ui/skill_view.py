@@ -229,6 +229,14 @@ class SkillView(ReadingPane):
             width = self.viewport().width()
 
         document = QTextDocument(self)
+        # Before the text, because the font decides how the text lays out.
+        # A document built rather than taken from the widget starts on the
+        # APPLICATION default font, not the one the stylesheet just gave this
+        # pane; setDocument does not put that right afterwards. Measured at
+        # 9pt in all three settings while the widget went 14, 17 and 20: the
+        # column re-measured and the page re-centred while the words being read
+        # never changed size at all.
+        document.setDefaultFont(self.font())
         document.setDefaultStyleSheet(document_style(self._palette))
         document.setHtml(html)
         # Laid out at the width the widget itself was using, not at the raw

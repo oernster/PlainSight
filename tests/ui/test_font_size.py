@@ -132,3 +132,29 @@ def test_changing_the_size_leaves_the_appearance_alone(window: MainWindow) -> No
     window.top_tray.font_size_button.click()
 
     assert window._appearance() is before
+
+
+def test_the_rendered_page_is_drawn_at_the_size_the_pane_was_given(
+    window: MainWindow,
+) -> None:
+    """The words have to grow, not just the margins around them.
+
+    The pane builds a fresh QTextDocument rather than filling the one the
+    widget came with. A built document starts on the APPLICATION default font
+    instead of the one the stylesheet just gave the pane. setDocument does
+    not put that right, so the size reached the widget, the readable column
+    re-measured from it and the page re-centred while the words stayed at 9pt
+    through all three settings. This compares the two fonts rather than the
+    stylesheet, since it was the widget and its document disagreeing.
+    """
+    view = window.skill_view
+    seen = []
+    for _ in range(len(FontSize)):
+        view.ensurePolished()
+        seen.append(view.font().pixelSize())
+
+        assert view.document().defaultFont() == view.font()
+
+        window.top_tray.font_size_button.click()
+
+    assert sorted(seen) == sorted(FONT_SIZE_PX.values())

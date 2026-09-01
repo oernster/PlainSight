@@ -129,7 +129,7 @@ Two trays around a split body, exactly as design plan part 2 describes.
 - `theme`: two `Palette` values and the one stylesheet template built from
   either, together with a text size. The three sizes derive from one base and
   one step rather than being written out separately, so they cannot drift
-  apart; the rendered document sets no size of its own, so it inherits this and
+  apart; the rendered document declares no size of its own, so it takes this and
   scales with everything else. The ring model has three states and no more: nothing at rest, green
   while hovered or focused and enabled, permanent red while disabled. The accent
   is never a ring. A ring belongs to a control, so neither the tree nor the
@@ -155,6 +155,15 @@ Two trays around a split body, exactly as design plan part 2 describes.
   `remember_place` BEFORE the stylesheet is applied, because applying it
   reflows the page under the reader; asked afterwards the pane reports where it
   was thrown to, which was measured capturing the wrong paragraph.
+  The document it builds is given the pane's own font before its text, which is
+  the price of building one rather than filling the widget's. A built
+  `QTextDocument` starts on the APPLICATION default font and `setDocument` does
+  not correct it, so the text size reached the widget and the readable column
+  re-measured from it while the words stayed at 9pt through all three settings:
+  the page re-centred rather than growing. The font goes on before the text
+  because it decides the layout. `tests/ui/test_font_size.py` compares the two
+  fonts rather than the stylesheet, since it was the widget and its document
+  that disagreed.
 - `top_tray` and `bottom_tray`: each declares `ring_stops()` left to right as
   drawn, so the ring's order is never inferred from a layout walk. The text
   size control sits right of the editor controls behind a `QFrame` hairline
