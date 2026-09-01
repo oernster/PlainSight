@@ -6,35 +6,7 @@ Every item here is a behaviour-preserving internal concern. Nothing in this file
 reverts a feature or changes how the application behaves for its user. Read it
 against `ARCHITECTURE.md` and the structural tests.
 
-## 1. Nothing has been built on the Nuitka toolchain
-
-The delivery scripts moved from PyInstaller to Nuitka and not one of them has
-been run since. `buildexe.py`, `buildinstaller.py` and `builddmg.py` are all
-written against the house recipe and none of the three has produced an artefact,
-so every claim about them rests on the flag list rather than on a build.
-
-Two things in particular are unproven rather than merely untested. The bundle
-resolves its assets by walking up from `__file__`, which is correct for a Nuitka
-standalone bundle by Nuitka's own documented behaviour and has not been seen to
-work here. The Qt exclusions moved from PyInstaller's `--exclude-module` to
-Nuitka's `--nofollow-import-to`; the resulting bundle size has not been
-measured against the 726MB that made them necessary.
-
-Blocked on a build-and-launch pass, which the sandbox must not do.
-
-## 2. The setup program has never been run
-
-The setup program has only been driven offscreen through its window: its
-screens, its footer and its route are tested; no install, repair or removal has
-been performed on a real machine. An install from the PyInstaller-built setup
-program was performed once, which is how the reading-place fix was confirmed on
-the installed application, so the install path is not wholly unexercised. That
-evidence belongs to the old toolchain and does not carry over; see item 1.
-
-Blocked on a build-and-launch pass, which the sandbox must not do: it would
-write to `%LOCALAPPDATA%` and `HKCU` on this machine.
-
-## 3. The shortcut writer has no test
+## 1. The shortcut writer has no test
 
 `installer/registry.py` writes shortcuts through the shell, with a PowerShell
 fallback when the COM bindings are absent from the bundle. Neither path is
