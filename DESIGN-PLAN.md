@@ -199,7 +199,11 @@ permanent red while disabled. The brand accent is never a ring.
 
 8.6 No container is a stop and no container paints a ring. The skill list is an
 item view, so it rings in **no** state; its current row is the indicator. The
-rendered pane is a scrolling region, so it rings on focus only and never on hover.
+rendered pane rings in **no** state either. It is a region the pointer rests
+inside rather than a control it points at, so a rectangle round the words being
+read marks no target; clicking the text to use the document keys drew it every
+time, which is how it was reported. It remains a stop while it overflows, since
+a long skill has to be readable from the keyboard.
 
 ## 9. Donations (the `donate` skill)
 

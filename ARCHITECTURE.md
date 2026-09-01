@@ -31,6 +31,7 @@ wish.
 | No container class carries a ring rule | `tests/ui/test_focus_rings.py::test_no_container_class_carries_a_ring_rule` |
 | The item view takes no hover ring | `tests/ui/test_focus_rings.py::test_the_item_view_takes_no_hover_ring` |
 | The item view takes no focus ring either | `tests/ui/test_focus_rings.py::test_the_item_view_takes_no_focus_ring_either` |
+| No text region takes a ring in any state | `tests/ui/test_focus_rings.py::test_no_text_region_takes_a_ring_in_any_state` |
 | No container appears in a focus chain | `tests/ui/test_focus_rings.py::test_no_container_is_in_the_main_window_focus_chain` |
 | Each tray's ring order is its drawn order | `tests/ui/test_keyboard_ring.py::test_each_tray_declares_its_own_order_left_to_right_as_drawn` |
 
@@ -128,7 +129,14 @@ Two trays around a split body, exactly as design plan part 2 describes.
   apart; the rendered document sets no size of its own, so it inherits this and
   scales with everything else. The ring model has three states and no more: nothing at rest, green
   while hovered or focused and enabled, permanent red while disabled. The accent
-  is never a ring. `ring` and `danger` are named per palette rather than shared,
+  is never a ring. A ring belongs to a control, so neither the tree nor the
+  reading pane paints one in any state: both are regions the pointer rests
+  inside rather than controls it points at. The pane carried one until a click
+  on the text drew a rectangle round the whole page. It was admitted through an
+  exception list in the guard whose own comment called
+  `QTextBrowser:enabled:focus` an object-name selector that could not reach a
+  subclass; it is a class selector and reached every pane in the application.
+  There is no exception list now. `ring` and `danger` are named per palette rather than shared,
   since a pastel green that reads on near-black is weak on white.
 - `keyboard_nav`: one `KeyboardNavigator` installed as an application event
   filter, driving a ring recomputed live on every move. `NeutralStart` is the

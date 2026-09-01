@@ -3,6 +3,9 @@
 The ring model has exactly three states: nothing at rest, green while a control
 is hovered or focused and enabled, permanent red while it is disabled. The
 accent is never a ring; it carries meaning only.
+
+A ring belongs to a control, never to a region that holds text. Neither the
+skill tree nor the reading pane paints one in any state.
 """
 
 from __future__ import annotations
@@ -97,9 +100,12 @@ def stylesheet(palette: Palette, font_size: FontSize = DEFAULT_FONT_SIZE) -> str
 
     A container class never appears in a ring rule. The skill tree is an item
     view, so it takes no ring in any state: its current row is the indicator.
-    The reading pane is a scrolling region, so it rings on focus only. The
-    group arrows are drawn rather than styled, since Qt renders a stylesheet
-    triangle as nothing at all.
+    The reading pane takes none either. It is a region the pointer rests
+    inside rather than a control it points at, so a rectangle round the words
+    being read reports where the mouse is and marks no target; clicking the
+    text to use the document keys drew it every time. The group arrows are
+    drawn rather than styled, since Qt renders a stylesheet triangle as
+    nothing at all.
     """
     return f"""
 * {{
@@ -184,9 +190,6 @@ QTextBrowser {{
     border: {BORDER_WIDTH_PX}px solid transparent;
     border-radius: {RADIUS_PX}px;
     padding: 10px;
-}}
-QTextBrowser:enabled:focus {{
-    border-color: {palette.ring};
 }}
 QLabel {{
     background: transparent;

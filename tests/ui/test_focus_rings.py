@@ -24,7 +24,7 @@ from skillsviewer.infrastructure.resources import BundledAssets
 from skillsviewer.ui.about_dialog import AboutDialog
 from skillsviewer.ui.licence_dialog import LicenceDialog
 from skillsviewer.ui.main_window import MainWindow
-from skillsviewer.ui.theme import DARK, stylesheet
+from skillsviewer.ui.theme import DARK, LIGHT, stylesheet
 
 CONTAINER_SELECTORS = (
     "*",
@@ -38,13 +38,17 @@ CONTAINER_SELECTORS = (
     "QTabWidget",
 )
 
-# The reading pane is the one sanctioned exception, scoped to an object name so
-# it cannot reach a subclass; focus only rather than hover.
-SANCTIONED = ("QTextBrowser:enabled:focus",)
-
+# Nothing is sanctioned. The reading pane was the one exception here and it was
+# admitted on a false premise: the comment beside it called
+# `QTextBrowser:enabled:focus` an object-name selector that could not reach a
+# subclass. It is a class selector, so it reached every ReadingPane in the
+# application, which is exactly the rectangle that was reported. An exception
+# list is where that mistake could hide, so there is no longer one.
 CONTAINER_TYPES = (QScrollArea, QSplitter, QStackedWidget, QGroupBox)
 RING_PROPERTY = re.compile(r"border(-color)?\s*:")
 ITEM_VIEW_HOVER = re.compile(r"QListWidget[^{,]*:hover")
+# Every region that holds text rather than being a control to point at.
+TEXT_REGIONS = ("QTextBrowser", "QListWidget", "QTreeWidget")
 
 
 def rules(sheet: str) -> list[tuple[str, str]]:
@@ -58,7 +62,7 @@ def rules(sheet: str) -> list[tuple[str, str]]:
 def test_no_container_class_carries_a_ring_rule() -> None:
     offences = []
     for selector, block in rules(stylesheet(DARK)):
-        if selector in SANCTIONED or not RING_PROPERTY.search(block):
+        if not RING_PROPERTY.search(block):
             continue
         if ":hover" not in selector and ":focus" not in selector:
             continue
@@ -80,6 +84,25 @@ def test_the_item_view_takes_no_focus_ring_either() -> None:
         for selector, block in rules(stylesheet(DARK))
         if "QListWidget" in selector
         and ":focus" in selector
+        and RING_PROPERTY.search(block)
+    ]
+
+    assert offences == []
+
+
+def test_no_text_region_takes_a_ring_in_any_state() -> None:
+    """A region is pointed into, so a rectangle round it marks no target.
+
+    Both palettes are read, not just the dark one. A rule can only be written
+    once; reading each of them is what stops this passing on the strength of
+    the theme that happens to be first.
+    """
+    offences = [
+        (selector, palette_name)
+        for palette_name, palette in (("dark", DARK), ("light", LIGHT))
+        for selector, block in rules(stylesheet(palette))
+        if any(region in selector for region in TEXT_REGIONS)
+        and (":focus" in selector or ":hover" in selector)
         and RING_PROPERTY.search(block)
     ]
 
