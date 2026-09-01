@@ -44,6 +44,34 @@ Worth a temporary-directory test that points the shortcut paths somewhere
 harmless, which needs those two functions to take a destination rather than
 reading it themselves.
 
+## 4. The suite crashes intermittently, so a green run proves less than it looks
+
+Under `QT_QPA_PLATFORM=offscreen` the run sometimes dies with a Windows access
+violation partway through `tests/ui/test_reading_place.py`. The stack is the
+same every time: `MainWindow.apply_appearance` at the line that hands the built
+stylesheet to `QApplication.setStyleSheet`, reached from the window's own
+constructor.
+
+What is measured, over five full runs. It crashed twice and passed three times.
+Running `tests/ui/test_reading_place.py` on its own passed three times out of
+three, so it needs the state a full run has accumulated by that point rather
+than anything in the file. It has been seen on PySide6 6.11.0 and on 6.11.2, so
+it is not a version. It crashed before the reading pane's ring rule was removed
+and before the move to Nuitka, so it is older than both.
+
+What is NOT known is the cause. A stylesheet cannot be reparsed into an access
+violation on its own, so the suspicion is a widget destroyed earlier in the run
+and still reachable when the sheet is reapplied, which is the same shape as the
+teardown crash already fixed once by having the reading cycle watch only its own
+surface. That is a hypothesis and nothing here has tested it.
+
+The cost is not the lost run. It is that a green suite is now weak evidence: a
+crash reads as a regression when it is this; a real failure after the crash
+point is never reached at all. The next measurement is to make it reproducible
+rather than to fix it, by running the UI tests with the window count and the
+destroyed-window teardown reported per test, so the run that crashes can be told
+from the ones that do not.
+
 ## Looks like debt, not worth touching
 
 **Paths held as strings in the domain.** It reads as a missed abstraction and is
