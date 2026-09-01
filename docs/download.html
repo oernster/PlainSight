@@ -44,28 +44,53 @@
   </div>
 </nav>
 
-<section class="section">
+<section class="section" id="download">
   <div class="section-label">Download</div>
   <h1 class="section-title">Get Skills Viewer.</h1>
   <p class="section-sub">
-    Free and open source. Installed per user, so no administrator rights are needed on any of the three platforms.
-    Every build is on the releases page.
+    Free and open source, the user interface under LGPL-3.0 and everything beneath it under
+    GPL-3.0. Installed per user on every platform, so no administrator rights are needed. No
+    account, no cloud: the only request it makes of its own accord is asking GitHub whether a
+    newer release exists.
   </p>
-
-  <div class="hero-cta" style="margin-top:2rem;">
-    <a class="btn-primary" href="https://github.com/oernster/SkillsViewer/releases">All releases</a>
-    <a class="btn-secondary" href="https://github.com/oernster/SkillsViewer">Source on GitHub</a>
+  <span class="dl-version" id="dl-version">Latest release</span>
+  <div class="downloads">
+    <div class="dl-card">
+      <div class="ico">&#129695;</div>
+      <h3>Windows</h3>
+      <p class="req">Windows 10 or 11, 64-bit</p>
+      <a class="btn-primary" href="https://github.com/oernster/SkillsViewer/releases/latest/download/SkillsViewerSetup.exe">
+        Download for Windows</a>
+      <p class="meta" data-asset="SkillsViewerSetup.exe">Setup program (.exe)</p>
+      <p class="meta">Windows may show a SmartScreen warning when you run this: <a href="https://ernster.dev/windows-smartscreen.html">here is why</a>.</p>
+      <p class="how">Run the setup program. It installs for the current user under your local application data, offers Desktop and Start Menu shortcuts and registers itself so it uninstalls the ordinary way.</p>
+    </div>
+    <div class="dl-card">
+      <div class="ico">&#128039;</div>
+      <h3>Linux</h3>
+      <p class="req">Any flatpak desktop, 64-bit</p>
+      <a class="btn-primary" href="https://github.com/oernster/SkillsViewer/releases/latest/download/skillsviewer.flatpak">
+        Download for Linux</a>
+      <p class="meta" data-asset="skillsviewer.flatpak">Flatpak bundle (.flatpak)</p>
+      <p class="how">Install with <code>flatpak install --user skillsviewer.flatpak</code>. It runs sandboxed. It is granted your home folder so it can read your skills, plus network access for the update check; nothing else.</p>
+    </div>
+    <div class="dl-card">
+      <div class="ico">&#127822;</div>
+      <h3>macOS</h3>
+      <p class="req">macOS on Apple Silicon</p>
+      <a class="btn-primary" href="https://github.com/oernster/SkillsViewer/releases/latest/download/SkillsViewer.dmg">
+        Download for macOS</a>
+      <p class="meta" data-asset="SkillsViewer.dmg">Disk image (.dmg)</p>
+      <p class="how">Open the disk image and drag Skills Viewer into Applications.</p>
+    </div>
   </div>
-
-  <h2 class="section-title" style="margin-top:2.5rem;">Windows</h2>
-  <p>Run the setup program from the releases page. It installs for the current user under your local application data, offers Desktop and Start Menu shortcuts and registers itself so it uninstalls the ordinary way.</p>
-  <p>Windows may show a SmartScreen warning the first time, because the installer is not code signed. <a href="https://ernster.dev/windows-smartscreen.html">Why that happens, then how to proceed safely.</a></p>
-
-  <h2 class="section-title" style="margin-top:2.5rem;">Linux</h2>
-  <p>A Flatpak bundle is on the releases page. It runs sandboxed, with access to your home folder so it can read your skills, plus network access for the update check and nothing else.</p>
-
-  <h2 class="section-title" style="margin-top:2.5rem;">macOS</h2>
-  <p>A disk image is on the releases page. Drag the application to your Applications folder.</p>
+  <p class="dl-links">
+    <a id="dl-whats-new" href="https://github.com/oernster/SkillsViewer/releases/latest">What is new in this release</a>
+    &nbsp;&middot;&nbsp;
+    <a href="https://github.com/oernster/SkillsViewer/releases">All releases</a>
+    &nbsp;&middot;&nbsp;
+    <a href="https://github.com/oernster/SkillsViewer">Source on GitHub</a>
+  </p>
 
   <h2 class="section-title" style="margin-top:2.5rem;">From source</h2>
   <p>Python 3.11 or newer, then:</p>
@@ -113,5 +138,34 @@ python main.py</code></pre>
   </div>
 </footer>
 
+<script>
+  // The buttons above never go stale: each points at GitHub's
+  // releases/latest/download redirect, which always serves the newest
+  // release's asset. Every asset name is version-free by design. This only
+  // decorates the page with live detail, the version and each file's size. If
+  // the call fails, offline or rate-limited, the static text stands on its own.
+  (function () {
+    var api = 'https://api.github.com/repos/oernster/SkillsViewer/releases/latest';
+    fetch(api).then(function (r) {
+      if (!r.ok) { throw new Error('release lookup failed'); }
+      return r.json();
+    }).then(function (rel) {
+      var version = (rel.tag_name || '').replace(/^v/, '');
+      if (version) {
+        document.getElementById('dl-version').textContent = 'Version ' + version;
+      }
+      if (rel.html_url) {
+        document.getElementById('dl-whats-new').href = rel.html_url;
+      }
+      (rel.assets || []).forEach(function (asset) {
+        var meta = document.querySelector('[data-asset="' + asset.name + '"]');
+        if (meta && asset.size) {
+          var mb = (asset.size / (1024 * 1024)).toFixed(1);
+          meta.textContent = meta.textContent + ' · ' + mb + ' MB';
+        }
+      });
+    }).catch(function () { /* The static page already says everything essential. */ });
+  })();
+</script>
 </body>
 </html>

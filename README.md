@@ -143,8 +143,7 @@ bottom tray. See `LICENSE` for the map.
 
 ## Status
 
-Every layer is built and gated, with all four delivery paths written. Nothing
-has been built or installed on the current toolchain; the Linux and macOS
-scripts have never been run at all, since neither platform is to hand.
-`DESIGN-PLAN.md` holds the requirements and the design; `TECH_DEBT.md` holds
-what is still open, including exactly what remains unbuilt.
+Every layer is built and gated; all four delivery paths have produced an
+artefact: the first release carries the Windows setup program, the flatpak
+bundle and the macOS disk image. `DESIGN-PLAN.md` holds the requirements and
+the design; `TECH_DEBT.md` holds what is still open.
