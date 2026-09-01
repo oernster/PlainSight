@@ -88,7 +88,7 @@ python -m pip install -r requirements-dev.txt
 | Windows, the application | `python buildexe.py` | `installer/payload/Skills Viewer/` |
 | Windows, the setup program | `python buildinstaller.py` | `dist-installer/SkillsViewerSetup.exe` |
 | Linux | `./build_flatpak.sh` | `skillsviewer.flatpak` |
-| macOS | `python builddmg.py` | `dist/skillsviewer-macos-arm64.dmg` |
+| macOS | `python builddmg.py` | `SkillsViewer.dmg` |
 
 The icons all derive from one master: `python generate_icons.py` reads
 `skillsviewer.png` at the repository root and writes the whole set into

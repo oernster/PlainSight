@@ -23,7 +23,7 @@ from buildexe import (
     parallel_jobs,
     shipped_assets,
 )
-from dmg_icon import png_to_icns, set_volume_icon
+from dmg_icon import png_to_icns
 
 PROJECT_ROOT = pathlib.Path(__file__).resolve().parent
 
@@ -37,8 +37,11 @@ DIST_DIR = PROJECT_ROOT / "dist"
 WORK_DIR = PROJECT_ROOT / "build"
 STAGING_DIR = PROJECT_ROOT / "dist-dmg-stage"
 APP_BUNDLE = DIST_DIR / f"{APP_NAME}.app"
-DMG_NAME = "skillsviewer-macos-arm64.dmg"
-DMG_PATH = DIST_DIR / DMG_NAME
+DMG_NAME = f"{APP_NAME}.dmg"
+# The image lands in the repository root, beside the sources, rather than in
+# dist: main() clears dist before every build, so an artefact kept there is
+# gone the moment the next build starts.
+DMG_PATH = PROJECT_ROOT / DMG_NAME
 
 DEVELOPER_ID = os.environ.get(
     "DEVELOPER_ID_APPLICATION",
@@ -164,6 +167,10 @@ def create_dmg(icns: pathlib.Path) -> None:
 
     ditto rather than a Python copy: dereferencing the framework symlinks
     invalidates the signatures embedded beneath them.
+
+    The volume icon is set through create-dmg rather than written afterwards:
+    the finished image is read-only and compressed, so a later write of
+    .VolumeIcon.icns has nowhere to land.
     """
     section("Creating the disk image")
     shutil.rmtree(STAGING_DIR, ignore_errors=True)
@@ -176,6 +183,8 @@ def create_dmg(icns: pathlib.Path) -> None:
             require("create-dmg"),
             "--volname",
             APP_DISPLAY_NAME,
+            "--volicon",
+            str(icns),
             *DMG_WINDOW,
             "--icon",
             APP_BUNDLE.name,
@@ -193,7 +202,6 @@ def create_dmg(icns: pathlib.Path) -> None:
     # which is the normal outcome headless and is not a failure.
     if completed.returncode not in (0, CREATE_DMG_HEADLESS_EXIT):
         raise SystemExit(f"create-dmg failed with exit {completed.returncode}")
-    set_volume_icon(DMG_PATH, icns)
 
 
 def notarize() -> None:

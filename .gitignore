@@ -229,6 +229,7 @@ __marimo__/
 /dist-dmg-stage/
 /installer/payload/
 /*.icns
+/*.dmg
 /skillsviewer.flatpak
 /uk.codecrafter.SkillsViewer.yml
 /.flatpak-build/
