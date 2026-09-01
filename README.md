@@ -138,7 +138,8 @@ bottom tray. See `LICENSE` for the map.
 ## Status
 
 Every layer is built and gated, with all four delivery paths written. The
-Windows pair has been run end to end and the built application starts; the Linux
-and macOS scripts have not been run, since neither platform is to hand; the
-setup program has not been installed from either. `DESIGN-PLAN.md` holds the
-requirements and the design; `TECH_DEBT.md` holds what is still open.
+delivery scripts have just moved from PyInstaller to Nuitka and none of them has
+been run since, so no bundle, setup program or disk image on this toolchain has
+been built or installed yet. The Linux and macOS scripts have never been run at
+all, since neither platform is to hand. `DESIGN-PLAN.md` holds the requirements
+and the design; `TECH_DEBT.md` holds what is still open.

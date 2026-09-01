@@ -1,8 +1,9 @@
 """Every third-party package this repository uses is declared somewhere.
 
-PyInstaller and Pillow were both used by the delivery scripts and named in
-neither requirements file, so a fresh checkout could run the application and the
-suite but not build anything. This test is the reason that cannot happen again.
+Nuitka and Pillow are both used by the delivery scripts. Their predecessor
+PyInstaller was used and named in neither requirements file, so a fresh
+checkout could run the application and the suite but not build anything. This
+test is the reason that cannot happen again.
 """
 
 from __future__ import annotations
@@ -34,7 +35,6 @@ FIRST_PARTY = frozenset(
 # Where an import name and the distribution that provides it differ.
 DISTRIBUTION_OF = {
     "PIL": "pillow",
-    "PyInstaller": "pyinstaller",
     "pytestqt": "pytest-qt",
     "win32com": "pywin32",
     "pythoncom": "pywin32",
@@ -47,11 +47,11 @@ OPTIONAL = frozenset({"win32com", "pythoncom"})
 REQUIREMENT_NAME = re.compile(r"^\s*([A-Za-z0-9._-]+)")
 
 # A tool run as a subprocess is never imported, so the import scan cannot see
-# it: PyInstaller is invoked as `python -m PyInstaller` and was missed until a
-# planted removal proved the guard blind to exactly that. These are matched in
-# the source text instead.
+# it: the compiler is invoked as `python -m nuitka` and its predecessor was
+# missed until a planted removal proved the guard blind to exactly that. These
+# are matched in the source text instead.
 INVOKED_TOOLS = {
-    "PyInstaller": "pyinstaller",
+    "nuitka": "nuitka",
 }
 
 
@@ -116,7 +116,7 @@ def test_every_package_used_is_declared() -> None:
 
 
 def test_every_tool_invoked_as_a_subprocess_is_declared() -> None:
-    """An import scan cannot see `python -m PyInstaller`; this can."""
+    """An import scan cannot see `python -m nuitka`; this can."""
     named = declared()
     undeclared = {
         distribution: sorted(files)
@@ -137,7 +137,7 @@ def test_the_delivery_tools_are_declared_as_development_dependencies() -> None:
     development = _names(DEVELOPMENT_REQUIREMENTS)
     runtime = _names(RUNTIME_REQUIREMENTS)
 
-    for tool in ("pyinstaller", "pillow"):
+    for tool in ("nuitka", "pillow"):
         assert tool in development
         assert tool not in runtime
 

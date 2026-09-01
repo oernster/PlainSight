@@ -35,7 +35,8 @@ def launcher_path() -> pathlib.Path:
 
     Under a Nuitka onefile build sys.executable points at the unpacked
     bootstrap rather than the real launcher, so the environment variable it
-    sets is read first; PyInstaller has no equivalent problem.
+    sets is read first. That is the live path now that the setup program is
+    wrapped with Nuitka rather than merely the defensive one it was.
     """
     named = os.environ.get(NUITKA_LAUNCHER)
     if named:

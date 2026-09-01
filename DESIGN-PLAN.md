@@ -354,7 +354,7 @@ Services:
 `{"version": 1, ...}`), `DesktopEditorLauncher` (`QProcess.startDetached`),
 `QtExternalOpener` (`QDesktopServices.openUrl`), `PythonMarkdownRenderer`, plus
 `resources.py` carrying `data_path_resolver` and `icon_resolver` so assets resolve
-under development, PyInstaller, Nuitka and Flatpak alike.
+under development, a Nuitka bundle and Flatpak alike.
 
 ## UI
 

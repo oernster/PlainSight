@@ -1,7 +1,13 @@
 """Finds the bundled assets, wherever the application was packaged into.
 
-Development, PyInstaller, Nuitka and a flatpak each put the assets somewhere
+Development, a Nuitka bundle and a flatpak each put the assets somewhere
 different, so every consumer asks here rather than building a path of its own.
+
+Nuitka sets `__file__` to the module's place inside the bundle, so walking up
+from this file reaches the bundle root under a compiled build exactly as it
+reaches the repository root in development; that is why one rule serves both.
+The launcher's own directory is tried last, which is what answers the flatpak,
+where the application is run from a path that is not the one it was built at.
 """
 
 from __future__ import annotations
@@ -17,12 +23,7 @@ FALLBACK_VERSION = "0.0.0-dev"
 def _candidate_roots() -> tuple[Path, ...]:
     """Every place the assets could sit, most likely first."""
     here = Path(__file__).resolve().parent.parent.parent
-    roots = [here]
-    bundled = getattr(sys, "_MEIPASS", None)
-    if bundled is not None:
-        roots.insert(0, Path(bundled))
-    roots.append(Path(sys.argv[0]).resolve().parent)
-    return tuple(roots)
+    return (here, Path(sys.argv[0]).resolve().parent)
 
 
 def find_asset(name: str) -> Path | None:

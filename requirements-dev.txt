@@ -6,9 +6,9 @@ black>=24.0
 flake8>=7.0
 ruff>=0.6
 
-# The delivery scripts. PyInstaller bundles the application and wraps the setup
+# The delivery scripts. Nuitka compiles the application and wraps the setup
 # program (buildexe.py, buildinstaller.py, builddmg.py); Pillow derives every
 # icon from the one master (generate_icons.py). Neither is imported by the
 # application itself, so neither belongs in requirements.txt.
-pyinstaller>=6.0
+Nuitka>=2.0
 pillow>=10.0

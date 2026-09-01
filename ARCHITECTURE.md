@@ -115,9 +115,12 @@ raise a prompt.
   after the fact. The opener is injected, so no test leaves the machine; every
   failure answers None and there are no retries.
 - `resources`: finds the bundled assets and the `VERSION` file across
-  development, a PyInstaller bundle (`sys._MEIPASS`) and a flatpak, where the
-  launcher's own path locates them. It carries no Nuitka branch, because
-  nothing here builds with Nuitka.
+  development, a Nuitka bundle and a flatpak. Nuitka sets `__file__` to the
+  module's place inside the bundle, so walking up from it reaches the bundle
+  root under a compiled build exactly as it reaches the repository root in
+  development; one rule serves both. The launcher's own directory is tried
+  last, which is what answers the flatpak. It carries no `sys._MEIPASS`
+  branch, because nothing here builds with PyInstaller.
 
 ### User interface
 

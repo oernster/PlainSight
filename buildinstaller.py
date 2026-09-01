@@ -4,6 +4,12 @@ The bundle goes in as a ZIP rather than as loose files: a onefile build strips
 loose executables and libraries out of a bundled data directory, so a loose
 bundle would not survive the wrap.
 
+The onefile payload is compressed. That is Nuitka's default and the only thing
+this script does about it is never pass --onefile-no-compression; the
+non-commercial build exposes no compression level to choose between. As in
+buildexe.py the compile runs one job per logical core and the result is a
+deployment build.
+
     python buildinstaller.py
 """
 
@@ -16,7 +22,14 @@ import sys
 import time
 
 import stamp_version
-from buildexe import EXCLUDED_MODULES
+from buildexe import (
+    APP_AUTHOR,
+    APP_DESCRIPTION,
+    EXCLUDED_MODULES,
+    ICON_FILE,
+    parallel_jobs,
+    pe_version,
+)
 from installer.build_payload import ARCHIVE_PATH, PAYLOAD_DIR, stage
 
 PROJECT_ROOT = pathlib.Path(__file__).resolve().parent
@@ -24,12 +37,13 @@ PROJECT_ROOT = pathlib.Path(__file__).resolve().parent
 APP_DISPLAY_NAME = "Skills Viewer"
 SETUP_NAME = "SkillsViewerSetup"
 INSTALLER_ENTRY = PROJECT_ROOT / "installer" / "app.py"
-ICON_FILE = PROJECT_ROOT / "assets" / "skillsviewer.ico"
+VERSION_FILE = PROJECT_ROOT / "VERSION"
 
 DIST_DIR = PROJECT_ROOT / "dist-installer"
 TEMP_DIST_DIR = PROJECT_ROOT / "dist-installer.build"
-WORK_DIR = PROJECT_ROOT / "build" / "installer"
-SPEC_FILE = PROJECT_ROOT / f"{SETUP_NAME}.spec"
+
+PAYLOAD_DESTINATION = "payload"
+CONSOLE_MODE = "disable"
 
 # Antivirus and Explorer both hold a new executable open for a moment, so the
 # move into place retries rather than failing the whole build.
@@ -46,34 +60,41 @@ def run(command: list[str]) -> None:
 
 
 def clean() -> None:
-    """Remove the previous wrap; the spec is a regenerated artifact."""
+    """Remove the previous wrap."""
     shutil.rmtree(TEMP_DIST_DIR, ignore_errors=True)
-    shutil.rmtree(WORK_DIR, ignore_errors=True)
-    SPEC_FILE.unlink(missing_ok=True)
 
 
 def build() -> None:
-    """Wrap the staged payload into one executable."""
-    separator = ";" if sys.platform == "win32" else ":"
+    """Wrap the staged payload into one compressed executable."""
+    jobs = parallel_jobs()
+    print(f"  parallel jobs: {jobs}")
     command = [
         sys.executable,
         "-m",
-        "PyInstaller",
-        "--noconfirm",
-        "--clean",
+        "nuitka",
         "--onefile",
-        "--windowed",
-        f"--name={SETUP_NAME}",
-        f"--paths={PROJECT_ROOT}",
-        f"--distpath={TEMP_DIST_DIR}",
-        f"--workpath={WORK_DIR}",
-        f"--add-data={PAYLOAD_DIR}{separator}payload",
+        "--assume-yes-for-downloads",
+        "--enable-plugin=pyside6",
+        "--deployment",
+        "--lto=yes",
+        f"--jobs={jobs}",
+        f"--windows-console-mode={CONSOLE_MODE}",
+        f"--output-dir={TEMP_DIST_DIR}",
+        f"--output-filename={SETUP_NAME}.exe",
+        f"--company-name={APP_AUTHOR}",
+        f"--product-name={APP_DISPLAY_NAME} Setup",
+        f"--file-version={pe_version()}",
+        f"--product-version={pe_version()}",
+        f"--file-description={APP_DESCRIPTION} Installer",
+        f"--copyright=Copyright {APP_AUTHOR}",
+        f"--include-data-dir={PAYLOAD_DIR}={PAYLOAD_DESTINATION}",
+        f"--include-data-file={VERSION_FILE}={VERSION_FILE.name}",
     ]
     if ICON_FILE.is_file():
-        command.append(f"--icon={ICON_FILE}")
+        command.append(f"--windows-icon-from-ico={ICON_FILE}")
     # The same exclusions the application takes; the setup program reaches even
     # less of Qt than it does.
-    command.extend(f"--exclude-module={module}" for module in EXCLUDED_MODULES)
+    command.extend(f"--nofollow-import-to={module}" for module in EXCLUDED_MODULES)
     command.append(str(INSTALLER_ENTRY))
     run(command)
 

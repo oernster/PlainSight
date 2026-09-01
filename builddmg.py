@@ -12,10 +12,17 @@ from __future__ import annotations
 import os
 import pathlib
 import shutil
+import sys
 import tempfile
 
 import stamp_version
 from build_utils import require, require_macos, run, section
+from buildexe import (
+    EXCLUDED_MODULES,
+    INCLUDED_PACKAGES,
+    parallel_jobs,
+    shipped_assets,
+)
 from dmg_icon import png_to_icns, set_volume_icon
 
 PROJECT_ROOT = pathlib.Path(__file__).resolve().parent
@@ -32,8 +39,6 @@ STAGING_DIR = PROJECT_ROOT / "dist-dmg-stage"
 APP_BUNDLE = DIST_DIR / f"{APP_NAME}.app"
 DMG_NAME = "skillsviewer-macos-arm64.dmg"
 DMG_PATH = DIST_DIR / DMG_NAME
-
-COLLECT_ALL = ("PySide6", "shiboken6", "markdown")
 
 DEVELOPER_ID = os.environ.get(
     "DEVELOPER_ID_APPLICATION",
@@ -60,27 +65,59 @@ DMG_WINDOW = ("--window-size", "620", "400")
 CREATE_DMG_HEADLESS_EXIT = 2
 
 
-def build_app(icns: pathlib.Path, entitlements: pathlib.Path) -> None:
-    """Bundle the application, signed as it is built."""
+def build_app(icns: pathlib.Path) -> None:
+    """Compile the application into an app bundle.
+
+    Nuitka does not sign as it builds, which PyInstaller did through
+    --codesign-identity. That is no loss here: the stray object files have to
+    go before the seal is applied anyway, so signing was always going to be its
+    own step afterwards. It is sign_bundle that seals this.
+    """
     section("Building the application bundle")
+    jobs = parallel_jobs()
+    print(f"  parallel jobs: {jobs}")
     command = [
-        require("pyinstaller"),
-        "--noconfirm",
-        "--clean",
-        "--windowed",
-        f"--name={APP_NAME}",
-        f"--icon={icns}",
-        f"--distpath={DIST_DIR}",
-        f"--workpath={WORK_DIR}",
-        f"--osx-bundle-identifier={BUNDLE_ID}",
-        f"--codesign-identity={DEVELOPER_ID}",
-        f"--osx-entitlements-file={entitlements}",
-        f"--add-data={PROJECT_ROOT / 'assets'}:assets",
-        f"--add-data={PROJECT_ROOT / 'VERSION'}:.",
+        sys.executable,
+        "-m",
+        "nuitka",
+        "--standalone",
+        "--macos-create-app-bundle",
+        "--assume-yes-for-downloads",
+        "--enable-plugin=pyside6",
+        "--deployment",
+        "--lto=yes",
+        f"--jobs={jobs}",
+        f"--macos-app-name={APP_DISPLAY_NAME}",
+        f"--macos-app-icon={icns}",
+        f"--macos-app-version={stamp_version.read_version()}",
+        f"--macos-signed-app-name={BUNDLE_ID}",
+        f"--output-dir={DIST_DIR}",
+        f"--include-data-file={PROJECT_ROOT / 'VERSION'}=VERSION",
     ]
-    command.extend(f"--collect-all={package}" for package in COLLECT_ALL)
+    command.extend(
+        f"--include-data-file={asset}=assets/{asset.name}" for asset in shipped_assets()
+    )
+    command.extend(f"--include-package={package}" for package in INCLUDED_PACKAGES)
+    command.extend(f"--nofollow-import-to={module}" for module in EXCLUDED_MODULES)
     command.append(str(ENTRY_SCRIPT))
     run(command)
+    place_bundle()
+
+
+def place_bundle() -> None:
+    """Move whatever Nuitka named the bundle to the name everything expects.
+
+    Nuitka names it after the entry script, so main.py yields main.app. The
+    glob is deliberate rather than a hardcoded main.app: the naming has moved
+    between releases and a wrong guess here fails the signing step with a
+    misleading message about a missing bundle.
+    """
+    if APP_BUNDLE.is_dir():
+        return
+    candidates = [path for path in DIST_DIR.glob("*.app") if path != APP_BUNDLE]
+    if not candidates:
+        raise SystemExit(f"no app bundle under {DIST_DIR}")
+    shutil.move(str(candidates[0]), str(APP_BUNDLE))
 
 
 def strip_object_files() -> int:
@@ -199,7 +236,7 @@ def main() -> int:
         shutil.rmtree(WORK_DIR, ignore_errors=True)
         icns = png_to_icns(ICON_SOURCE, PROJECT_ROOT / f"{APP_NAME}.icns")
 
-        build_app(icns, entitlements)
+        build_app(icns)
         strip_object_files()
         sign_bundle(entitlements)
         create_dmg(icns)
