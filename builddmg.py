@@ -12,6 +12,7 @@ from __future__ import annotations
 import os
 import pathlib
 import shutil
+import subprocess
 import sys
 import tempfile
 
@@ -50,6 +51,12 @@ DEVELOPER_ID = os.environ.get(
 APPLE_ID = os.environ.get("APPLE_ID", "")
 APPLE_APP_PASSWORD = os.environ.get("APPLE_APP_PASSWORD", "")
 APPLE_TEAM_ID = os.environ.get("APPLE_TEAM_ID", "W7K465GKFJ")
+# A notarytool credential profile keeps the app-specific password in the
+# login keychain, so it never reaches the environment or this file. Create
+# it once with:
+#   xcrun notarytool store-credentials "SkillsViewer" \
+#       --apple-id <apple id> --team-id <team id>
+NOTARY_PROFILE = os.environ.get("NOTARY_PROFILE", APP_NAME)
 
 # Skills Viewer loads the Qt frameworks it ships, all signed with this same
 # identity, so library validation is the one entitlement it needs.
@@ -204,27 +211,61 @@ def create_dmg(icns: pathlib.Path) -> None:
         raise SystemExit(f"create-dmg failed with exit {completed.returncode}")
 
 
-def notarize() -> None:
-    """Submit and staple, only when both credentials are present."""
-    if not (APPLE_ID and APPLE_APP_PASSWORD):
-        section("Notarizing skipped: APPLE_ID and APPLE_APP_PASSWORD are not set")
-        return
-    section("Notarizing")
-    run(
-        [
-            "xcrun",
-            "notarytool",
-            "submit",
-            str(DMG_PATH),
+def stored_credentials() -> str:
+    """Empty when notarytool holds a usable profile, the reason when it does not.
+
+    notarytool is asked rather than the keychain searched: it keeps its
+    credentials in the data protection keychain, where security(1) cannot see
+    them, so looking for a generic password finds nothing however good the
+    profile is. One history call proves the profile exists AND authenticates.
+    """
+    asked = subprocess.run(
+        ["xcrun", "notarytool", "history", "--keychain-profile", NOTARY_PROFILE],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    if asked.returncode == 0:
+        return ""
+    return asked.stderr.strip().splitlines()[0] if asked.stderr.strip() else "unusable"
+
+
+def credentials() -> list[str]:
+    """How to authenticate, preferring the keychain over the environment.
+
+    A stored profile is preferred because it keeps the app-specific password
+    out of the environment entirely. The environment pair stays as the fallback
+    for a machine that has no profile, a build server for instance, and the
+    reason the profile was rejected is printed rather than swallowed, so a
+    skipped notarization never looks like a deliberate one.
+    """
+    unusable = stored_credentials()
+    if not unusable:
+        return ["--keychain-profile", NOTARY_PROFILE]
+    print(f"  {NOTARY_PROFILE} profile unusable: {unusable}")
+    if APPLE_ID and APPLE_APP_PASSWORD:
+        return [
             "--apple-id",
             APPLE_ID,
             "--password",
             APPLE_APP_PASSWORD,
             "--team-id",
             APPLE_TEAM_ID,
-            "--wait",
         ]
-    )
+    return []
+
+
+def notarize() -> None:
+    """Submit and staple, only when there is something to authenticate with."""
+    authentication = credentials()
+    if not authentication:
+        section(
+            f"Notarizing skipped: no {NOTARY_PROFILE} credential profile and no "
+            "APPLE_ID with APPLE_APP_PASSWORD"
+        )
+        return
+    section("Notarizing")
+    run(["xcrun", "notarytool", "submit", str(DMG_PATH), *authentication, "--wait"])
     run(["xcrun", "stapler", "staple", str(DMG_PATH)])
 
 
