@@ -38,6 +38,8 @@ wish.
 | A torn down widget is destroyed, not merely hidden | `tests/ui/test_qt_teardown.py::test_the_teardown_leaves_nothing_alive` |
 | The process setup starts is granted the foreground | `tests/installer/test_launching.py::test_the_started_process_is_granted_the_foreground` |
 | The composition root presents rather than shows | `tests/ui/test_main_window.py::test_the_composition_root_presents_rather_than_shows` |
+| No folder chosen means no directory is read | `tests/ui/test_first_run.py::test_no_folder_chosen_means_no_directory_is_read` |
+| An unrelated folder implies no plugins tree | `tests/application/test_defaults.py::test_an_unrelated_folder_implies_no_plugins_tree_at_all` |
 | Every declared dependency is credited in About | `tests/structural/test_credits.py::test_every_declared_dependency_is_credited` |
 
 Every one of these has been proved to bite by planting a violation and reading
@@ -91,11 +93,15 @@ declared in `update`, which imports `ports` in turn, so the annotation is
 imported under `TYPE_CHECKING` alone; a runtime import there would close a
 circle.
 
-`defaults` holds the one rule for which folder is read when the user has not
-said otherwise: the Claude skills folder. That is a default rather than a
-limit; it is also the only place in the package that knows the name of any
-particular tool. The home directory is injected through `PlatformPaths`, which is what
-makes the per-operating-system default testable with no operating system.
+`defaults` holds the rules about which folder is read; there is
+deliberately no rule that picks one. `chosen_root` returns what the user
+chose or nothing at all; `browse_from` names where the chooser opens, which
+is the Claude skills folder before anything has been taken. Those are two
+different questions and separating them is the whole point: a folder offered
+in a dialog the user is standing in front of has not been read, while a
+folder nobody offered is never read at all. It is also the only place in the package that
+knows the name of any particular tool. The home directory is injected through
+`PlatformPaths`, which is what makes it testable with no operating system.
 
 `LibraryService` is frozen and holds only its injected dependencies. It
 answers questions rather than holding answers: `can_open_in_editor` is the enable
@@ -282,14 +288,25 @@ cycle also watches only its own surface now; listening to the application for
 focus reached back to a surface that could already be gone and took the process
 down on teardown.
 
-`LibraryService` reads two trees and combines them into one `Library`: the
-folder the reader chose, then the plugins tree that sits beside it under the
-same `.claude` directory. Both are found from the chosen root rather than
-guessed at separately, so browsing anywhere with no plugins beside it simply
-yields one root. A tree that is not there contributes no root at all rather
-than a heading over nothing; nor does one leading to no document at any depth. Which
-roots exist is therefore a property of the library rather than of the widget
-showing it.
+## Nothing is read that nobody asked for
+
+Reading a person's files is theirs to authorise. Until a folder is chosen,
+`LibraryService.load` returns an empty `Library` and asks the repository for
+nothing at all, so a fresh install walks no home directory. On a machine where
+permissions are explicit, an unasked scan is a rummage through directories
+nobody offered; it is no better on one where they are not.
+
+The same rule governs the second root. `LibraryService` combines the chosen
+folder with the plugins tree beside it only where the chosen folder is
+itself a Claude skills folder, which `plugins_root_for` decides by reading two
+directory names rather than the home directory, so a relocated `.claude` still
+works. Anywhere else it returns nothing and exactly one directory is read: the
+one the user picked. The rule used to be the sibling called `plugins` whatever
+was chosen, which meant picking `C:\Work\Notes` walked `C:\Work\plugins`.
+
+A tree that is not there contributes no root at all rather than a heading over
+nothing; nor does one leading to no document at any depth. Which roots exist is
+therefore a property of the library rather than of the widget showing it.
 
 `MainWindow.apply_appearance` does three things in one call: repaint the
 application stylesheet, re-face the toggle and re-render the open document. Split

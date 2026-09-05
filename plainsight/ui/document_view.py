@@ -24,6 +24,12 @@ EMPTY_MESSAGE = (
     "<p>Nothing beneath this folder is a Markdown or text file. "
     "Use the folder button to browse somewhere else.</p>"
 )
+NO_FOLDER_CHOSEN = (
+    "<h2>Choose a folder</h2>"
+    "<p>PlainSight reads nothing until you point it at a folder. "
+    "Use the folder button in the tray above; it opens on your Claude skills "
+    "one. Any folder of Markdown or text files reads the same way.</p>"
+)
 NOTHING_SELECTED = "<h2>Select a document</h2><p>Pick one from the list to read it.</p>"
 
 AT_THE_TOP = 0
@@ -173,6 +179,16 @@ class DocumentView(ReadingPane):
         """The state when the chosen folder holds no documents."""
         self._showing = None
         self._set(EMPTY_MESSAGE)
+
+    def show_no_folder(self) -> None:
+        """The state before any folder has been chosen, which is how it opens.
+
+        Distinct from an empty folder on purpose: one says the application has
+        looked and found nothing, the other says it has not looked at all;
+        only the second is true of a reader who has just installed it.
+        """
+        self._showing = None
+        self._set(NO_FOLDER_CHOSEN)
 
     def show_document(self, document: Document) -> None:
         """Render one document: header, then body or failure, then any long field.

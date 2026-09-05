@@ -8,10 +8,11 @@ PlainSight makes a folder of documents visible. It walks the folders you point
 it at, shows them as the tree they are on disk and renders the one you pick.
 Nothing is chosen for you: the pane stays empty until you select something.
 
-Out of the box it opens on your Claude skills folder, which is where it began
-and is still what most people point it at, with the plugins tree beside it as
-a second root. That is a default rather than a limit. Point it at your notes,
-your project documentation or anything else and it reads that the same way.
+It reads nothing at all until you choose a folder. The chooser opens on your
+Claude skills folder, which is where this began and is still what most people
+point it at, so the common case is one click; take that and the plugins tree
+beside it comes too, as a second root. Point it at your notes, your project
+documentation or anything else and it reads that the same way.
 
 Nothing is changed by looking. It never writes to a document; editing is handed
 to the editor you choose.
@@ -51,8 +52,10 @@ prompt. Nothing is fetched or sent without that click.
 - Shows the folders as a tree, each one opening and closing on its own arrow,
   with a count of what it holds so a shut branch says whether it is worth
   opening.
-- Opens on the Claude skills folder by default, with the plugins tree beside
-  it; browse to any other folder instead and it becomes the tree you see.
+- Reads nothing until you point it at a folder. The chooser opens on your
+  Claude skills folder; take that one and the plugins tree beside it comes
+  too, as a second root. Any other folder is read on its own, with nothing
+  beside it touched.
 - Renders the document you select, with whatever it declares in its
   frontmatter. Nothing is selected until you select it.
 - Holds the text to a readable column, so a wide window buys margins rather

@@ -35,8 +35,8 @@ CREDITS = (
 )
 
 ANTHROPIC_NOTE = (
-    "<p>PlainSight opens on the Claude skills folder by default and reads any "
-    "other folder of documents just as well. It is not affiliated with "
+    "<p>PlainSight reads nothing until you choose a folder; the chooser "
+    "opens on your Claude skills one. It is not affiliated with "
     "Anthropic and is not endorsed by them; Claude and Anthropic are their "
     "owners' marks.</p>"
 )

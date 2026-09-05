@@ -4,8 +4,9 @@
 
 Reads a folder of Markdown and text files, shows it as the tree it is on disk,
 renders the document you select and hands editing to an editor the user chooses.
-It opens on the Claude skills folder by default, which is a default rather than
-a limit. It is not a text editor and it never writes to a document.
+It reads nothing until the user chooses a folder; the chooser opens on the
+Claude skills folder, which is an offer rather than a scan. It is not a text
+editor and it never writes to a document.
 
 ## Identity
 
@@ -54,31 +55,40 @@ the `SKILL.md` it is. Its `description`, where present, is the row's tooltip.
 
 ## 2. Where documents come from
 
-2.1 The default root per operating system, all resolving to the same place:
+2.1 **Nothing is read until the user chooses a folder.** There is no default
+root and no first-run scan: a fresh install opens on an empty tree and an
+invitation, having looked at nothing on the machine. Reading a person's files
+is theirs to authorise; on a system where permissions are explicit an unasked
+walk of a home directory is a rummage through directories nobody offered.
 
-| OS | Default root |
+2.2 A browse button on the far left of the top tray is how a folder is chosen.
+The chooser **opens** at the place below, all three resolving to the same one:
+
+| OS | Where the chooser opens |
 |---|---|
 | Windows | `%USERPROFILE%\.claude\skills` |
 | macOS | `~/.claude/skills` |
 | Linux | `~/.claude/skills` |
 
-That is a default rather than a limit. It is where this application began and is
-still what most readers point it at; `defaults` is the only module in the
-package that knows the name of any particular tool.
+That is a starting place for a dialog the user is standing in front of, never a
+folder read on its own account. It keeps the common case to one click without
+taking the choice away. It is also where this application began; `defaults` is
+the only module in the package that knows the name of any particular tool. Once
+a folder has been taken the chooser opens there instead. The choice persists
+between runs.
 
-2.2 A browse button on the far left of the top tray lets the user choose a
-different folder, a notes folder or a project's documentation just as readily.
-The chosen root persists between runs.
+2.3 A chosen root that does not exist opens with an empty tree and a message
+inviting the browse button; so does one that holds no document at any depth.
+Neither is an error and neither gets a dialog. Both are said differently from
+the state in 2.1, since a folder that was read and held nothing is not the same
+fact as a machine that has not been read at all.
 
-2.3 A root that does not exist opens with an empty tree and a message inviting
-the browse button; so does a root that holds no document at any depth. Neither
-is an error and neither gets a dialog.
-
-2.4 **The plugins tree is read as well**, from the `plugins` directory that sits
-beside the chosen folder under the same `.claude` directory. The reader takes a
-root and knows nothing about which root it is, so this is composition rather
-than a special case. Browse somewhere with no plugins beside it and there is
-simply nothing there to read.
+2.4 **The plugins tree is read as well, where the chosen folder implies one.**
+A Claude skills folder has a `plugins` directory for a sibling under the same
+`.claude` directory; a reader who points at one plainly means that pair.
+Any other folder implies nothing about its neighbours, so exactly one directory
+is read: the one the user picked. The test is the two directory names rather
+than the home directory, so a relocated `.claude` still works.
 
 2.5 **Each tree is a root of its own** in the left pane, named for its own
 directory. A tree that is not there or that leads to no document contributes
@@ -150,8 +160,8 @@ palette names its own ring and danger tokens rather than sharing one pair.
 the copyright with its symbol, the dual licence line and credit where credit is
 due: every real dependency named with its licence.
 
-5.3 About states plainly that PlainSight opens on the Claude skills folder by
-default and reads any other folder of documents just as well. It states just as
+5.3 About states plainly that PlainSight reads nothing until a folder is
+chosen; it names the Claude skills folder as where the chooser opens. It states just as
 plainly that it is not affiliated with or endorsed by Anthropic.
 
 ## 6. Choosing an editor

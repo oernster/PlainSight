@@ -5,9 +5,10 @@ from __future__ import annotations
 import os
 
 from plainsight.application.defaults import (
+    browse_from,
+    chosen_root,
+    claude_skills_root,
     default_editor,
-    default_root,
-    effective_root,
     plugins_root_for,
 )
 from plainsight.domain.settings import EditorChoice
@@ -15,22 +16,30 @@ from plainsight.domain.settings import EditorChoice
 from .fakes import FakePaths, FakeProbe
 
 
-def test_the_default_root_sits_beneath_the_home_directory() -> None:
-    root = default_root(FakePaths(home=os.path.join("/home", "oliver")))
+def test_the_claude_skills_folder_sits_beneath_the_home_directory() -> None:
+    root = claude_skills_root(FakePaths(home=os.path.join("/home", "oliver")))
 
     assert root == os.path.join("/home", "oliver", ".claude", "skills")
 
 
-def test_a_remembered_root_is_used_in_place_of_the_default() -> None:
-    root = effective_root("/elsewhere/skills", FakePaths())
-
-    assert root == "/elsewhere/skills"
+def test_the_root_to_read_is_whatever_the_user_chose() -> None:
+    assert chosen_root("/elsewhere/skills") == "/elsewhere/skills"
 
 
-def test_a_blank_remembered_root_falls_back_to_the_default() -> None:
-    root = effective_root("   ", FakePaths(home="/home/oliver"))
+def test_nothing_chosen_means_nothing_to_read() -> None:
+    """There is no fallback: an unasked walk of a home directory is a rummage."""
+    assert chosen_root("   ") == ""
 
-    assert root == default_root(FakePaths(home="/home/oliver"))
+
+def test_the_chooser_opens_on_the_last_folder_taken() -> None:
+    assert browse_from("/elsewhere/skills", FakePaths()) == "/elsewhere/skills"
+
+
+def test_with_nothing_taken_the_chooser_opens_on_the_skills_folder() -> None:
+    """A starting place for a dialog, which reads nothing by being offered."""
+    paths = FakePaths(home="/home/oliver")
+
+    assert browse_from("   ", paths) == claude_skills_root(paths)
 
 
 def test_the_plugins_tree_is_found_beside_the_chosen_folder() -> None:
@@ -47,9 +56,30 @@ def test_a_trailing_separator_does_not_move_the_plugins_tree() -> None:
     assert plugins_root_for(plain + os.sep) == plugins_root_for(plain)
 
 
-def test_an_unrelated_folder_points_at_a_plugins_tree_that_is_not_there() -> None:
-    assert plugins_root_for(os.path.join("some", "where")) == os.path.join(
-        "some", "plugins"
+def test_an_unrelated_folder_implies_no_plugins_tree_at_all() -> None:
+    """Choosing a notes folder must not send this reading its neighbour.
+
+    The rule used to be "the sibling called plugins, whatever you chose", so
+    picking `C:\\Work\\Notes` walked `C:\\Work\\plugins`, a directory nobody
+    offered. Only a Claude skills folder implies a pair.
+    """
+    assert plugins_root_for(os.path.join("some", "where")) == ""
+
+
+def test_a_skills_folder_outside_a_claude_directory_implies_nothing() -> None:
+    assert plugins_root_for(os.path.join("some", "where", "skills")) == ""
+
+
+def test_a_claude_directory_holding_something_else_implies_nothing() -> None:
+    assert plugins_root_for(os.path.join("home", ".claude", "notes")) == ""
+
+
+def test_a_relocated_claude_directory_is_still_recognised() -> None:
+    """The rule reads the two directory names, never the home directory."""
+    root = os.path.join("D:", os.sep, "moved", ".claude", "skills")
+
+    assert plugins_root_for(root) == os.path.join(
+        "D:", os.sep, "moved", ".claude", "plugins"
     )
 
 

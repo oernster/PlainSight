@@ -4,13 +4,11 @@ from __future__ import annotations
 
 import os
 
-from plainsight.application.defaults import default_root
+from plainsight.application.defaults import claude_skills_root
 from plainsight.application.services import LibraryService
 from plainsight.domain.library import Folder
 from plainsight.domain.settings import (
-    Appearance,
     EditorChoice,
-    FontSize,
     Settings,
 )
 
@@ -47,12 +45,39 @@ def a_service(
     )
 
 
-def test_the_current_root_is_the_default_when_nothing_was_remembered() -> None:
+def test_nothing_is_read_until_a_folder_is_chosen() -> None:
+    """An unasked walk of somebody's home directory is a rummage, not a feature."""
+    repository = FakeRepository()
+
+    library = a_service(repository=repository).load()
+
+    assert repository.roots_read == []
+    assert library.is_empty
+
+
+def test_with_nothing_chosen_there_is_no_current_root() -> None:
+    assert a_service().current_root() == ""
+    assert not a_service().has_root()
+
+
+def test_a_chosen_folder_is_the_current_root() -> None:
+    store = FakeSettingsStore(Settings(documents_root="/notes"))
+
+    assert a_service(store=store).current_root() == "/notes"
+    assert a_service(store=store).has_root()
+
+
+def test_the_chooser_opens_on_the_skills_folder_before_anything_is_chosen() -> None:
+    """Offered as a starting place, which is not the same as reading it."""
     paths = FakePaths(home="/home/oliver")
 
-    service = a_service(paths=paths)
+    assert a_service(paths=paths).browse_from() == claude_skills_root(paths)
 
-    assert service.current_root() == default_root(paths)
+
+def test_the_chooser_opens_on_the_last_folder_taken() -> None:
+    store = FakeSettingsStore(Settings(documents_root="/notes"))
+
+    assert a_service(store=store).browse_from() == "/notes"
 
 
 def test_loading_reads_the_current_root() -> None:
@@ -81,27 +106,6 @@ def test_choosing_an_editor_remembers_it() -> None:
     a_service(store=store).choose_editor(AN_EDITOR)
 
     assert store.settings.editor == AN_EDITOR
-
-
-def test_the_appearance_starts_dark() -> None:
-    assert a_service().appearance() is Appearance.DARK
-
-
-def test_switching_remembers_the_other_appearance_and_reports_it() -> None:
-    store = FakeSettingsStore()
-    service = a_service(store=store)
-
-    assert service.switch_appearance() is Appearance.LIGHT
-    assert store.settings.appearance is Appearance.LIGHT
-    assert service.appearance() is Appearance.LIGHT
-
-
-def test_switching_twice_returns_to_where_it_started() -> None:
-    service = a_service(store=FakeSettingsStore())
-
-    service.switch_appearance()
-
-    assert service.switch_appearance() is Appearance.DARK
 
 
 def test_the_settings_can_be_read_back() -> None:
@@ -279,44 +283,6 @@ def test_a_document_opens_in_the_default_when_nothing_was_chosen() -> None:
     assert launcher.launched[0][0].path == notepad
 
 
-def test_a_fresh_install_has_every_folder_shut() -> None:
-    assert a_service().opened_folders() == ()
-
-
-def test_the_folders_a_reader_opens_are_remembered() -> None:
-    store = FakeSettingsStore()
-    service = a_service(store=store)
-
-    service.remember_opened_folders(("/skills/prose",))
-
-    assert service.opened_folders() == ("/skills/prose",)
-    assert store.settings.opened_folders == ("/skills/prose",)
-
-
-def test_nothing_is_skipped_until_something_is() -> None:
-    assert a_service().skipped_update_version() == ""
-
-
-def test_a_skipped_release_is_remembered() -> None:
-    store = FakeSettingsStore()
-    service = a_service(store=store)
-
-    service.skip_update_version("0.2.0")
-
-    assert service.skipped_update_version() == "0.2.0"
-    assert store.settings.skipped_update_version == "0.2.0"
-
-
-def test_skipping_a_release_keeps_everything_else_remembered() -> None:
-    store = FakeSettingsStore(Settings(documents_root="/skills", editor=AN_EDITOR))
-    service = a_service(store=store)
-
-    service.skip_update_version("0.2.0")
-
-    assert store.settings.documents_root == "/skills"
-    assert store.settings.editor == AN_EDITOR
-
-
 def test_a_page_goes_to_the_desktop_and_says_whether_it_was_taken() -> None:
     opener = FakeOpener(accepts=True)
     service = a_service(opener=opener)
@@ -329,34 +295,3 @@ def test_a_page_the_desktop_declines_is_reported_as_declined() -> None:
     service = a_service(opener=FakeOpener(accepts=False))
 
     assert service.open_page("https://example.invalid/release") is False
-
-
-def test_text_starts_at_the_middle_size() -> None:
-    assert a_service().font_size() is FontSize.MEDIUM
-
-
-def test_cycling_the_text_size_steps_it_and_remembers_it() -> None:
-    store = FakeSettingsStore()
-    service = a_service(store=store)
-
-    assert service.cycle_font_size() is FontSize.LARGE
-    assert store.settings.font_size is FontSize.LARGE
-    assert service.font_size() is FontSize.LARGE
-
-
-def test_cycling_past_the_largest_returns_to_the_smallest() -> None:
-    service = a_service(
-        store=FakeSettingsStore(Settings(font_size=FontSize.EXTRA_LARGE))
-    )
-
-    assert service.cycle_font_size() is FontSize.MEDIUM
-
-
-def test_cycling_the_text_size_keeps_everything_else_remembered() -> None:
-    store = FakeSettingsStore(Settings(documents_root="/skills", editor=AN_EDITOR))
-    service = a_service(store=store)
-
-    service.cycle_font_size()
-
-    assert store.settings.documents_root == "/skills"
-    assert store.settings.editor == AN_EDITOR

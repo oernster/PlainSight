@@ -92,6 +92,7 @@ class MainWindow(QMainWindow):
 
         self._neutral = NeutralStart(self)
         self._started = False
+        self._library_is_empty = True
         self.setCentralWidget(self._body())
         self.statusBar().setSizeGripEnabled(False)
         self.navigator = KeyboardNavigator(self, self.ring_stops)
@@ -219,20 +220,38 @@ class MainWindow(QMainWindow):
             self.refresh()
 
     def refresh(self) -> None:
-        """Read the current root and show what it holds."""
+        """Read the chosen folder and show what it holds.
+
+        With no folder chosen nothing is read at all and the pane says so,
+        which is a different statement from a folder that holds nothing.
+        """
         library = self._service.load()
+        self._library_is_empty = library.is_empty
         self.library_tree.show_library(library)
-        if library.is_empty:
-            self.document_view.show_empty_root()
-        self.sync_editor_button()
+        self.show_document(self.library_tree.selected_document())
 
     def show_document(self, document: Document | None) -> None:
-        """Render the selected document; say so when none is selected."""
+        """Render the selected document, else whichever message now applies."""
         if document is None:
-            self.document_view.show_nothing()
+            self._show_standing_message()
         else:
             self.document_view.show_document(document)
         self.sync_editor_button()
+
+    def _show_standing_message(self) -> None:
+        """What the pane says while nothing is selected.
+
+        Three states rather than one, because they are three different facts:
+        no folder has been chosen, a chosen folder holds nothing or there is
+        something to read that the reader has not picked yet. Held in one
+        place so a repaint or a re-read cannot leave the wrong one showing.
+        """
+        if not self._service.has_root():
+            self.document_view.show_no_folder()
+        elif self._library_is_empty:
+            self.document_view.show_empty_root()
+        else:
+            self.document_view.show_nothing()
 
     def remember_folders(self, opened: tuple[str, ...]) -> None:
         """Carry the reader's open and shut folders into the next run.
@@ -251,14 +270,22 @@ class MainWindow(QMainWindow):
         )
 
     def choose_folder(self) -> None:
-        """Browse to a different folder of documents and read it."""
+        """Browse to a folder of documents and read it.
+
+        The chooser opens on the last folder taken, else on the Claude skills
+        folder, so the common case is one click. That is a starting place for a
+        dialog the user is standing in front of; nothing is read until they
+        take something.
+        """
         chosen = QFileDialog.getExistingDirectory(
-            self, FOLDER_PROMPT, self._service.current_root()
+            self, FOLDER_PROMPT, self._service.browse_from()
         )
         if not chosen:
             return
-        self.library_tree.show_library(self._service.choose_root(chosen))
-        self.sync_editor_button()
+        library = self._service.choose_root(chosen)
+        self._library_is_empty = library.is_empty
+        self.library_tree.show_library(library)
+        self.show_document(self.library_tree.selected_document())
 
     def choose_editor(self) -> None:
         """Pick the editor a document opens in."""

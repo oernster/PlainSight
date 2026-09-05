@@ -1,8 +1,17 @@
-"""Where the documents live when the user has not said otherwise.
+"""Which folder is read; where the chooser opens when none has been.
 
-The default is the Claude skills folder, which is where this application began
-and is still the folder most of its readers point it at. It is a default and
-nothing more: any folder of Markdown or text files reads the same way.
+**Nothing is read until the user chooses a folder.** A reader who has chosen
+nothing gets an empty tree and an invitation, not a walk of their home
+directory: reading a person's files is theirs to authorise, so on a machine
+where permissions are explicit an unasked scan is a rummage through directories
+nobody offered. The Claude skills folder is where the chooser OPENS, which
+makes the common case one click; it is not read unless the user takes it.
+
+The same rule governs the plugins tree beside a chosen folder. It is read only
+where the chosen folder is itself a Claude skills folder, which is to say a
+``skills`` directory inside a ``.claude`` one. Anywhere else there is no sibling
+the user implied, so none is looked at: choosing a notes folder must not send
+this reading its neighbour.
 
 Every operating system resolves to the same place beneath the home directory,
 so there is one rule rather than three. The home directory itself is injected,
@@ -25,27 +34,49 @@ SKILLS_DIRECTORY = "skills"
 PLUGINS_DIRECTORY = "plugins"
 
 
-def default_root(paths: PlatformPaths) -> str:
-    """The folder read when the user has chosen none: the Claude skills one."""
+def claude_skills_root(paths: PlatformPaths) -> str:
+    """Where a Claude skills folder sits for the user this process runs as.
+
+    Somewhere the chooser opens, never somewhere read on its own account.
+    """
     return os.path.join(paths.home_directory(), CLAUDE_DIRECTORY, SKILLS_DIRECTORY)
 
 
-def effective_root(remembered_root: str, paths: PlatformPaths) -> str:
-    """The root to read: what the user chose, else the default."""
-    chosen = remembered_root.strip()
-    return chosen if chosen else default_root(paths)
+def chosen_root(remembered_root: str) -> str:
+    """The folder to read: what the user chose, else nothing at all.
+
+    There is deliberately no fallback. A blank answer here is what makes the
+    application read nothing until it is pointed somewhere.
+    """
+    return remembered_root.strip()
+
+
+def browse_from(remembered_root: str, paths: PlatformPaths) -> str:
+    """Where the folder chooser opens: the last choice, else the skills folder.
+
+    This is a starting place for a dialog the user is standing in front of, so
+    it reads nothing itself. Offering the Claude skills folder here is what
+    keeps the common case to a single click without taking the choice away.
+    """
+    return chosen_root(remembered_root) or claude_skills_root(paths)
 
 
 def plugins_root_for(root: str) -> str:
-    """The plugins tree that sits beside a chosen folder.
+    """The plugins tree the chosen folder implies; empty when it implies none.
 
-    The Claude skills folder has a plugins tree for a sibling under the same
-    ``.claude`` directory, so it is found from the chosen root rather than
-    guessed at separately. Browse somewhere with no plugins beside it and there
-    is simply nothing there to read, which is what makes an unrelated folder
-    open as the single tree it is.
+    A Claude skills folder has a plugins tree for a sibling under the same
+    ``.claude`` directory; a reader who points at one plainly means that
+    pair. Any other folder implies nothing about its neighbours, so nothing is
+    looked at beside it: pointing this at a notes folder must not send it
+    reading whatever happens to sit next door.
     """
-    return os.path.join(os.path.dirname(os.path.normpath(root)), PLUGINS_DIRECTORY)
+    normalised = os.path.normpath(root)
+    parent = os.path.dirname(normalised)
+    if os.path.basename(normalised) != SKILLS_DIRECTORY:
+        return ""
+    if os.path.basename(parent) != CLAUDE_DIRECTORY:
+        return ""
+    return os.path.join(parent, PLUGINS_DIRECTORY)
 
 
 def default_editor(paths: PlatformPaths, probe: PathProbe) -> EditorChoice | None:

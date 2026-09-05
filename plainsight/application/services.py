@@ -12,7 +12,7 @@ from dataclasses import dataclass
 from ..domain.document import Document
 from ..domain.library import Library
 from ..domain.settings import Appearance, EditorChoice, FontSize, Settings
-from .defaults import default_editor, effective_root, plugins_root_for
+from .defaults import browse_from, chosen_root, default_editor, plugins_root_for
 from .ports import (
     DocumentRepository,
     EditorLauncher,
@@ -35,12 +35,26 @@ class LibraryService:
     paths: PlatformPaths
 
     def current_root(self) -> str:
-        """The root that would be read now."""
-        return effective_root(self.settings_store.load().documents_root, self.paths)
+        """The folder the user chose; empty when they have chosen none."""
+        return chosen_root(self.settings_store.load().documents_root)
+
+    def has_root(self) -> bool:
+        """Whether a folder has been chosen at all."""
+        return bool(self.current_root())
+
+    def browse_from(self) -> str:
+        """Where the folder chooser opens; it reads nothing on its own."""
+        return browse_from(self.settings_store.load().documents_root, self.paths)
 
     def load(self) -> Library:
-        """Every document the current root and the plugins beside it hold."""
-        return self._read(self.current_root())
+        """Every document the chosen folder holds; nothing until one is chosen.
+
+        A reader who has chosen no folder gets an empty library rather than a
+        walk of their home directory. Reading somebody's files is theirs to
+        authorise, so the application asks before it looks.
+        """
+        root = self.current_root()
+        return self._read(root) if root else Library()
 
     def choose_root(self, root: str) -> Library:
         """Remember this root and read it."""
@@ -49,17 +63,19 @@ class LibraryService:
         return self._read(root)
 
     def _read(self, root: str) -> Library:
-        """One library from both trees a document can be read out of.
+        """The chosen folder, plus the plugins tree it implies where it does.
 
-        They are combined here rather than in the user interface, so what the
-        library holds stays a property of the library rather than of the widget
-        showing it. A tree that is not there contributes no root rather than
-        an empty one; nor does one leading to no document at any depth.
+        The two are combined here rather than in the user interface, so what
+        the library holds stays a property of the library rather than of the
+        widget showing it. A tree that is not there contributes no root rather
+        than an empty one; nor does one leading to no document at any depth.
+
+        Only a Claude skills folder implies a sibling, so anywhere else exactly
+        one directory is read: the one the user picked and no other.
         """
-        found = (
-            self.repository.read_folder(root),
-            self.repository.read_folder(plugins_root_for(root)),
-        )
+        plugins = plugins_root_for(root)
+        wanted = (root, plugins) if plugins else (root,)
+        found = tuple(self.repository.read_folder(one) for one in wanted)
         return Library(
             tuple(one for one in found if one is not None and not one.is_empty)
         )
