@@ -6,6 +6,7 @@ nowhere, so focusing it would let the user do nothing.
 
 from __future__ import annotations
 
+from collections.abc import Callable
 from dataclasses import dataclass
 from html import escape
 
@@ -31,6 +32,13 @@ NO_FOLDER_CHOSEN = (
     "one. Any folder of Markdown, text or HTML files reads the same way.</p>"
 )
 NOTHING_SELECTED = "<h2>Select a document</h2><p>Pick one from the list to read it.</p>"
+GONE_SINCE_LISTED = (
+    "This document could not be read. It may have been moved or deleted since "
+    "the folder was listed."
+)
+
+BodySource = Callable[[], str]
+"""Somewhere to get a body from, called only when a redraw needs one."""
 
 AT_THE_TOP = 0
 NO_OVERFLOW = 0
@@ -190,7 +198,7 @@ class DocumentView(ReadingPane):
         self._showing = None
         self._set(NO_FOLDER_CHOSEN)
 
-    def show_document(self, document: Document) -> None:
+    def show_document(self, document: Document, read_body: BodySource) -> None:
         """Render one document: header, then body or failure, then any long field.
 
         A document already on screen and unchanged is left exactly as it is, half
@@ -198,25 +206,40 @@ class DocumentView(ReadingPane):
         every time the window is activated; each re-read used to redraw and send
         the page back to the top, so leaving to look something up and
         coming back lost your place; scrolling looked as though it had simply
-        been ignored. A document compares by value, so a document edited on disk
-        is a different document and is drawn again as it should be.
+        been ignored. A document compares by value and carries a fingerprint of
+        the file it came from, so a document edited on disk is a different
+        document and is drawn again as it should be.
+
+        The body arrives as something to call rather than as text; it is
+        called only where a redraw is actually happening. A document left alone
+        is a document never read off disk, which is the whole point of fetching
+        a body when it is opened.
         """
         if document == self._showing:
             return
         self._showing = document
-        self._set(_header(document) + self._body(document) + _long_fields(document))
+        self._set(
+            _header(document) + self._body(document, read_body) + _long_fields(document)
+        )
 
-    def _body(self, document: Document) -> str:
+    def _body(self, document: Document, read_body: BodySource) -> str:
         """The document, given somewhere for the eye to rest on the way down.
 
         The softening happens here rather than anywhere nearer the file: it is
         a decision about presenting the text; the text on disk is never touched
         by it. A kind that does not reflow is not softened at all, since its
         line breaks are the author's own layout rather than the renderer's.
+
+        A document that listed as readable and has nothing to give now is a
+        file that went away between being listed and being opened, so it is
+        reported rather than shown as an empty page.
         """
         if not document.is_readable:
             return f"<p><b>{escape(document.failure)}</b></p>"
-        body = soften(document.body) if document.kind.reflows else document.body
+        text = read_body()
+        if not text.strip():
+            return f"<p><b>{escape(GONE_SINCE_LISTED)}</b></p>"
+        body = soften(text) if document.kind.reflows else text
         return self._renderer.render(body, document.kind)
 
     def _set(self, html: str) -> None:

@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from functools import partial
 from pathlib import Path
 
 from PySide6.QtCore import QEvent, Qt
@@ -223,11 +224,18 @@ class MainWindow(QMainWindow):
         self.show_document(self.library_tree.selected_document())
 
     def show_document(self, document: Document | None) -> None:
-        """Render the selected document, else whichever message now applies."""
+        """Render the selected document, else whichever message now applies.
+
+        The body is offered as something the pane can call rather than read
+        here, so a re-read that changes nothing costs no read of the file. The
+        pane knows whether it is about to redraw; this does not.
+        """
         if document is None:
             self._show_standing_message()
         else:
-            self.document_view.show_document(document)
+            self.document_view.show_document(
+                document, partial(self._service.body_of, document)
+            )
         self.sync_editor_button()
 
     def _show_standing_message(self) -> None:

@@ -132,6 +132,15 @@ raise a prompt.
   over. A branch leading to no document is not reported at all, so every branch
   the reader can open leads somewhere. A directory that cannot be listed costs
   only itself rather than the whole tree.
+
+  A listing does not keep the bodies it read. What it keeps is what a document
+  says about itself, whether it can be read at all and a fingerprint of the
+  file; `read_body` fetches the text when a document is actually opened.
+  Measured over the skills tree, a library of 59 documents held 42.2KB rather
+  than the 859.6KB those files hold on disk; one document opened in 0.2ms.
+  This matters more the further it goes: a Markdown body costs a decode, while
+  a kind that has to be extracted rather than decoded would have cost that
+  extraction for every document in the tree in order to show one of them.
 - `settings_store`: versioned JSON, written atomically through a temporary file
   and a replace, so a process that dies halfway leaves the previous settings
   intact. Its `FORMAT_VERSION` is the file's own number and has nothing to do
@@ -305,6 +314,17 @@ Reading a person's files is theirs to authorise. Until a folder is chosen,
 nothing at all, so a fresh install walks no home directory. On a machine where
 permissions are explicit, an unasked scan is a rummage through directories
 nobody offered; it is no better on one where they are not.
+
+Fetching a body when a document is opened put a question where the body used
+to answer it. The reading pane leaves a document that has not changed exactly
+as it is, half read and at the place the reader had reached; it decides that
+by value: the library is re-read on every activation, so the document it
+is handed has to compare equal to the one on screen. The body carried that
+weight by being part of the value. A `fingerprint`, the file's size and
+modification time, carries it now at the cost of one look at the directory
+entry rather than a read of every file. The pane is handed something to call
+rather than text; it calls that only where it is going to redraw, so a document
+left alone is never read off disk again.
 
 Opening a single document obeys the same rule from the other end.
 `DocumentRepository.read_document` calls no directory listing at all: the

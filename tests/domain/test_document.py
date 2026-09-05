@@ -21,7 +21,7 @@ def a_document(**changed: object) -> Document:
         "name": "SKILL.md",
         "path": "/skills/prose/SKILL.md",
         "kind": DocumentKind.MARKDOWN,
-        "body": "The body.",
+        "fingerprint": "10:1",
     }
     fields.update(changed)
     return Document(**fields)  # type: ignore[arg-type]
@@ -109,17 +109,26 @@ def test_a_document_needs_a_path() -> None:
         a_document(path="")
 
 
-def test_a_document_needs_a_body_or_a_failure() -> None:
-    with pytest.raises(InvalidDocument):
-        a_document(body="  ")
-
-
 def test_a_failure_stands_in_for_a_body() -> None:
     """An unreadable file is still listed, so it is still a document."""
-    document = a_document(body="", failure="Could not be read.")
+    document = a_document(failure="Could not be read.")
 
     assert not document.is_readable
     assert document.failure == "Could not be read."
+
+
+def test_the_same_file_unchanged_is_the_same_document() -> None:
+    """What the reading pane leans on to leave a reader where they were."""
+    assert a_document(fingerprint="120:900") == a_document(fingerprint="120:900")
+
+
+def test_the_same_file_edited_since_is_a_different_document() -> None:
+    """The body carried this before it stopped being held on the document.
+
+    Without it a file edited on disk would compare equal to its older self and
+    the pane would leave the stale rendering exactly where it was.
+    """
+    assert a_document(fingerprint="120:900") != a_document(fingerprint="140:901")
 
 
 def test_a_document_that_read_cleanly_is_readable() -> None:

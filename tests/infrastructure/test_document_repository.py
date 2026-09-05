@@ -21,6 +21,11 @@ def read(root: Path) -> Folder | None:
     return FileSystemDocumentRepository().read_folder(str(root))
 
 
+def body(path: Path) -> str:
+    """The text of one document, fetched the way opening it fetches it."""
+    return FileSystemDocumentRepository().read_body(str(path))
+
+
 def names(folder: Folder) -> list[str]:
     """Every document beneath a folder, in the order they are drawn."""
     return [document.name for document in folder]
@@ -77,7 +82,7 @@ def test_an_html_file_keeps_its_markup_rather_than_declaring_fields(
     document = read(tmp_path).documents[0]
 
     assert document.declared_fields == ()
-    assert document.body == "---\n<p>Body.</p>\n"
+    assert body(tmp_path / "page.html") == "---\n<p>Body.</p>\n"
 
 
 def test_anything_else_is_not_a_document(tmp_path: Path) -> None:
@@ -163,7 +168,7 @@ def test_a_markdown_document_gives_up_what_it_declares(tmp_path: Path) -> None:
     assert document.declared_name == "prose"
     assert document.title == "prose"
     assert document.description == "writing"
-    assert document.body.startswith("# Prose")
+    assert body(tmp_path / "SKILL.md").startswith("# Prose")
 
 
 def test_a_text_document_declares_nothing_whatever_it_opens_with(
@@ -177,7 +182,63 @@ def test_a_text_document_declares_nothing_whatever_it_opens_with(
     assert document.declared_fields == ()
     assert document.declared_name == ""
     assert document.title == "notes.txt"
-    assert document.body.startswith("---")
+    assert body(tmp_path / "notes.txt").startswith("---")
+
+
+def test_a_listed_document_carries_a_fingerprint_of_the_file(tmp_path: Path) -> None:
+    """It stands in for the body in deciding whether a document has changed."""
+    (tmp_path / "notes.md").write_text("Body.", encoding="utf-8")
+
+    assert read(tmp_path).documents[0].fingerprint
+
+
+def test_the_same_file_edited_fingerprints_differently(tmp_path: Path) -> None:
+    """Without this the pane would leave a stale rendering exactly where it was."""
+    written = tmp_path / "notes.md"
+    written.write_text("Body.", encoding="utf-8")
+    before = read(tmp_path).documents[0]
+
+    written.write_text("A longer body than before.", encoding="utf-8")
+    after = read(tmp_path).documents[0]
+
+    assert before.fingerprint != after.fingerprint
+    assert before != after
+
+
+def test_reading_the_same_unchanged_file_twice_gives_the_same_document(
+    tmp_path: Path,
+) -> None:
+    """The other half: an unchanged file must compare equal to itself."""
+    (tmp_path / "notes.md").write_text("Body.", encoding="utf-8")
+
+    assert read(tmp_path).documents[0] == read(tmp_path).documents[0]
+
+
+def test_the_body_of_a_file_that_is_not_a_document_is_empty(tmp_path: Path) -> None:
+    (tmp_path / "photo.png").write_bytes(b"\x89PNG")
+
+    assert body(tmp_path / "photo.png") == ""
+
+
+def test_the_body_of_a_file_that_is_not_there_is_empty(tmp_path: Path) -> None:
+    """Between being listed and being opened, a file can go away."""
+    assert body(tmp_path / "absent.md") == ""
+
+
+def test_the_body_of_a_file_that_is_not_text_is_empty(tmp_path: Path) -> None:
+    (tmp_path / "broken.md").write_bytes(b"\xff\xfe\x00binary")
+
+    assert body(tmp_path / "broken.md") == ""
+
+
+def test_a_body_arrives_without_the_fields_it_declared(tmp_path: Path) -> None:
+    """The header shows those; repeating them in the body would show them twice."""
+    (tmp_path / "SKILL.md").write_text(A_SKILL, encoding="utf-8")
+
+    text = body(tmp_path / "SKILL.md")
+
+    assert text.startswith("# Prose")
+    assert "description: writing" not in text
 
 
 def test_a_file_that_is_not_text_is_still_listed(tmp_path: Path) -> None:

@@ -133,12 +133,24 @@ class Document:
     document with a failure is still a document and is still listed, because
     the reader neither caused it nor can fix it from here; the reason is what
     gets shown in place of the body.
+
+    ``fingerprint`` says what the file was when it was listed, so that a
+    document compares equal to itself and unequal to the same file edited
+    since. The reading pane leans on exactly that: it leaves a document that
+    has not changed alone, half read and at the place the reader had reached;
+    it draws one that has changed again. The body used to carry that weight
+    by being part of the value; it is fetched when a document is opened now,
+    so something else has to; a fingerprint costs one look at the file
+    rather than all of it.
+
+    What goes in it is infrastructure's business. The domain reads nothing
+    from disk, so it holds the answer without knowing how it was arrived at.
     """
 
     name: str
     path: str
     kind: DocumentKind
-    body: str
+    fingerprint: str = ""
     declared_name: str = ""
     description: str = ""
     failure: str = ""
@@ -149,10 +161,6 @@ class Document:
             raise InvalidDocument("a document needs a name")
         if not self.path.strip():
             raise InvalidDocument("a document needs a path")
-        if not self.body.strip() and not self.failure.strip():
-            raise InvalidDocument(
-                "a document needs either a body or a failure to report"
-            )
 
     @property
     def title(self) -> str:

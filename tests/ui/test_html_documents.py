@@ -37,8 +37,9 @@ def an_html_view(body: str) -> DocumentView:
             name="page.html",
             path="/documents/page.html",
             kind=DocumentKind.HTML,
-            body=body,
-        )
+            fingerprint=f"{len(body)}:1",
+        ),
+        lambda: body,
     )
     view.resize(VIEW_WIDTH_PX, VIEW_HEIGHT_PX)
     view.document().adjustSize()

@@ -25,7 +25,6 @@ def a_document(name: str, folder: str) -> Document:
         name=name,
         path=f"{folder}/{name}",
         kind=DocumentKind.MARKDOWN,
-        body="Body.",
     )
 
 

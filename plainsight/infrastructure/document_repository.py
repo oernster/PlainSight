@@ -51,6 +51,21 @@ class FileSystemDocumentRepository:
             return None
         return _document(wanted, kind)
 
+    def read_body(self, path: str) -> str:
+        """The text of this file, read now; empty when it cannot be read.
+
+        The body of a document is fetched when it is opened rather than kept
+        from when it was listed. A library of two hundred documents held two
+        hundred bodies to show one of them, which was free for Markdown and
+        will not be for a kind that has to be extracted rather than decoded.
+        """
+        wanted = Path(path)
+        kind = kind_of(wanted.name)
+        if kind is None:
+            return ""
+        text, failure = _read_text(wanted)
+        return "" if failure else _parse(text, kind).body
+
     def _folder(self, directory: Path, name: str) -> Folder | None:
         """This directory as a folder; None when nothing beneath it is read."""
         folders: list[Folder] = []
@@ -72,7 +87,12 @@ class FileSystemDocumentRepository:
 
 
 def _document(path: Path, kind: DocumentKind) -> Document:
-    """One document read from this file, reporting a read that failed."""
+    """One document read from this file, reporting a read that failed.
+
+    The body is read here and deliberately not kept. What a listing needs is
+    what a document says about itself, plus whether it can be read at all;
+    the text itself is fetched again when the reader opens it.
+    """
     text, failure = _read_text(path)
     parsed = _parse(text, kind)
     if not failure and not parsed.body.strip():
@@ -81,12 +101,32 @@ def _document(path: Path, kind: DocumentKind) -> Document:
         name=path.name,
         path=str(path),
         kind=kind,
-        body=parsed.body,
+        fingerprint=_fingerprint(path),
         declared_name=parsed.name,
         description=parsed.description,
         failure=failure,
         declared_fields=tuple(parsed.frontmatter.items()),
     )
+
+
+def _fingerprint(path: Path) -> str:
+    """What this file is right now, said briefly enough to compare.
+
+    Size and modification time together, which is one look at the directory
+    entry rather than a read of the file. A document carries it so that the
+    same file edited since compares as the different document it is, which is
+    how the reading pane knows to draw it again rather than leave the reader
+    where they were.
+
+    A file that cannot be looked at fingerprints as nothing. That makes it
+    compare equal to another unreadable one, which costs a redraw that shows
+    the same failure message either way.
+    """
+    try:
+        status = path.stat()
+    except OSError:
+        return ""
+    return f"{status.st_size}:{status.st_mtime_ns}"
 
 
 def _parse(text: str, kind: DocumentKind) -> ParsedDocument:

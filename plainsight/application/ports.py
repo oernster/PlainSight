@@ -26,6 +26,15 @@ class DocumentRepository(Protocol):
         """One file, listing no directory; None when it is not one we read."""
         ...
 
+    def read_body(self, path: str) -> str:
+        """The text of this file, read now; empty when it cannot be read.
+
+        Asked when a document is opened rather than when it is listed. A
+        library holds every document it found, so holding every body would
+        mean reading every file to show one of them.
+        """
+        ...
+
 
 class SettingsStore(Protocol):
     """Remembers the root and the editor between runs."""

@@ -12,7 +12,6 @@ def a_document(name: str, path: str = "") -> Document:
         name=name,
         path=path or f"/root/{name}",
         kind=DocumentKind.MARKDOWN,
-        body="The body.",
     )
 
 

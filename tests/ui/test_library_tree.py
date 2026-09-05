@@ -21,7 +21,6 @@ def a_document(name: str, folder: str) -> Document:
         path=f"{folder}/{name}",
         kind=DocumentKind.MARKDOWN,
         description=f"about {name}",
-        body="Body.",
     )
 
 
@@ -98,7 +97,6 @@ def test_an_unreadable_document_says_so_on_its_row(application) -> None:
         name="broken.md",
         path="/skills/broken.md",
         kind=DocumentKind.MARKDOWN,
-        body="",
         failure="Could not be read.",
     )
     tree = a_tree(Library((Folder.of("skills", "/skills", documents=[broken]),)))

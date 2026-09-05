@@ -17,7 +17,7 @@ def a_document(name: str = "SKILL.md", folder: str = "/skills/prose") -> Documen
         name=name,
         path=f"{folder}/{name}",
         kind=DocumentKind.MARKDOWN,
-        body="body",
+        fingerprint="4:1",
     )
 
 
@@ -32,18 +32,23 @@ class FakeRepository:
 
     ``roots_read`` and ``files_read`` are kept apart because the difference
     matters: reading one file must list no directory, which can only be said
-    by watching the two calls separately.
+    by watching the two calls separately. ``bodies_read`` is a third for the
+    same reason: a body is fetched when a document is opened, so a listing
+    that read one would be doing the work this seam exists to avoid.
     """
 
     def __init__(
         self,
         folders: dict[str, Folder | None] | None = None,
         documents: dict[str, Document | None] | None = None,
+        bodies: dict[str, str] | None = None,
     ) -> None:
         self.folders: dict[str, Folder | None] = dict(folders or {})
         self.documents: dict[str, Document | None] = dict(documents or {})
+        self.bodies: dict[str, str] = dict(bodies or {})
         self.roots_read: list[str] = []
         self.files_read: list[str] = []
+        self.bodies_read: list[str] = []
 
     def read_folder(self, root: str) -> Folder | None:
         self.roots_read.append(root)
@@ -52,6 +57,10 @@ class FakeRepository:
     def read_document(self, path: str) -> Document | None:
         self.files_read.append(path)
         return self.documents.get(path)
+
+    def read_body(self, path: str) -> str:
+        self.bodies_read.append(path)
+        return self.bodies.get(path, "")
 
 
 class FakeSettingsStore:

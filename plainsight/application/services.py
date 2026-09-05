@@ -99,6 +99,15 @@ class LibraryService:
             tuple(one for one in found if one is not None and not one.is_empty)
         )
 
+    def body_of(self, document: Document) -> str:
+        """The text of this document, read now; empty when it cannot be read.
+
+        Asked when a document is opened rather than when the library is read,
+        so a folder of documents costs one body at a time rather than all of
+        them at once.
+        """
+        return self.repository.read_body(document.path)
+
     def choose_editor(self, editor: EditorChoice) -> None:
         """Remember the editor to launch documents in."""
         self.settings_store.save(self.settings_store.load().with_editor(editor))
