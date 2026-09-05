@@ -119,9 +119,18 @@ def _blocks(document: WordDocument) -> list[str]:
 
 
 def _paragraph(paragraph: Paragraph) -> str:
-    """One paragraph as Markdown; empty where it holds nothing to show."""
-    text = _runs(paragraph)
-    if not text.strip():
+    """One paragraph as Markdown; empty where it holds nothing to show.
+
+    A paragraph gives up its text with nothing left on either end of it. An
+    indent typed as spaces is presentation in Word, where it moves the first
+    line in a little; the same spaces are syntax in Markdown, where four of
+    them make a block of code. Measured on a real CV: three paragraphs of the
+    profile were typed with a four space indent and arrived as a wall of
+    monospace, clipped at the right edge with a scrollbar under it, while
+    every paragraph around them read normally.
+    """
+    text = _runs(paragraph).strip()
+    if not text:
         return ""
     style = (paragraph.style.name or "").casefold()
     if HEADING_STYLE_MARKER in style:

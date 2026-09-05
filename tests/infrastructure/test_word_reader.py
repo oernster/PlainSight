@@ -12,6 +12,7 @@ from pathlib import Path
 import docx
 
 from plainsight.domain.document import DocumentKind, Presentation
+from plainsight.infrastructure.renderer import DocumentHtmlRenderer
 from plainsight.infrastructure.word_reader import (
     EMPTY_WORD_FILE,
     NOT_A_WORD_FILE,
@@ -250,6 +251,35 @@ def test_a_summarised_word_document_declares_nothing(tmp_path: Path) -> None:
     assert summary.declared_fields == ()
     assert summary.declared_name == ""
     assert not summary.failure
+
+
+def test_an_indent_typed_as_spaces_is_not_carried_over(tmp_path: Path) -> None:
+    """An indent is presentation in Word; four spaces are syntax in Markdown.
+
+    Measured on a real CV: three paragraphs of the profile were typed with a
+    four space indent and arrived as a block of code, shown as a wall of
+    monospace clipped at the right edge with a scrollbar under it, while every
+    paragraph around them read normally.
+    """
+
+    def build(document) -> None:
+        document.add_paragraph("    An ordinary paragraph the author indented.")
+
+    path = a_word_file(tmp_path, build)
+
+    text = WordDocumentReader().read_body(path).text
+    html = DocumentHtmlRenderer().render(text, DocumentKind.WORD)
+
+    assert text == "An ordinary paragraph the author indented."
+    assert "<pre" not in html
+    assert "<code" not in html
+
+
+def test_a_trailing_space_is_not_carried_over_either(tmp_path: Path) -> None:
+    """Two of them at the end of a line are a hard break in Markdown."""
+    path = a_word_file(tmp_path, lambda d: d.add_paragraph("A paragraph.  "))
+
+    assert WordDocumentReader().read_body(path).text == "A paragraph."
 
 
 def test_a_word_document_is_laid_out_because_its_reader_made_it_markdown() -> None:
