@@ -53,19 +53,21 @@ prompt. Nothing is fetched or sent without that click.
   was typed, so its own line breaks survive; HTML is shown as the page it
   already is; a Word document is turned into Markdown as it is read, so it
   reads like the rest.
-- Shows a PDF as the text that can be taken out of it, keeping where on the
-  page the words sat, with its pages marked. A form, a payslip or an invoice
-  says much of what it says by where it puts things, so a column beside another
-  column stays beside it rather than arriving underneath. A page wider than the
-  window scrolls sideways rather than being folded, since folding it is what
-  would lose the arrangement.
-- Is still plain about what a PDF is. It describes a page rather than a
-  document, so what comes back is the text and its positions: no fonts, no
-  rules, no pictures, with a layout close to the original rather than the
-  original itself. Where a PDF is a scan, which is a picture of a page rather
-  than the words on it, no text can be taken at all and it says so rather than showing
-  you nothing. A PDF that is password protected says that instead, on its row
-  in the tree before you open it.
+- Reads a PDF back into the document its page was laid out to be, with its
+  pages marked. A PDF holds no headings, no paragraphs and no lists; it holds
+  glyphs, each with a place, a size and a face. Ask it for the words alone and a
+  CV arrives as a wall of monospace with every heading, every bold phrase and
+  every bullet gone. So the sizes and the faces are read the way your eye reads
+  them: a line set larger than the body is a heading, a line in bold is
+  emphasised, a line opening with a bullet is an item; lines of body text
+  running on are one paragraph.
+- Is still plain about what that is. It is a reading of the page rather than
+  anything the file says, because the file does not say: no fonts, no rules and
+  no pictures come across, while a form's grid becomes reading order, since a
+  document read back as prose is prose. Where a PDF is a scan, which is a
+  picture of a page rather than the words on it, no text can be taken at all
+  and it says so rather than showing you nothing. A PDF that is password
+  protected says that instead, on its row in the tree before you open it.
 - Opens a folder of them without reading them. What a listing costs is opening
   each file, never extracting it: measured over forty PDFs of twelve pages,
   listing took 7ms where extracting them all would have taken 515ms. The text
@@ -91,8 +93,8 @@ prompt. Nothing is fetched or sent without that click.
 - Renders the document you select, with whatever it declares in its
   frontmatter. Nothing is selected until you select it.
 - Holds reflowed text to a readable column, so a wide window buys margins
-  rather than longer lines; text that arrived with its own layout, a licence or
-  a page out of a PDF, is left exactly as it came.
+  rather than longer lines; text that arrived with its own layout, a licence
+  for instance, is left exactly as it came.
 - Reads itself down the page gently; hands control back the moment you scroll.
 - Light and dark, switched from the tray and remembered between runs.
 - Three text sizes, stepped by one button in the tray and remembered too.

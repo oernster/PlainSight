@@ -16,6 +16,7 @@ from plainsight.infrastructure.pdf_reader import (
     NOT_A_PDF,
     PdfDocumentReader,
 )
+from plainsight.infrastructure.renderer import DocumentHtmlRenderer
 
 from .pdf_fixtures import (
     a_locked_pdf,
@@ -49,6 +50,27 @@ def test_every_page_is_marked_off_from_the_one_before(tmp_path: Path) -> None:
     assert "Second page." in body.text
     assert "Page 2" in body.text
     assert body.text.index("First page.") < body.text.index("Second page.")
+
+
+def test_the_page_mark_does_not_turn_the_line_above_it_into_a_heading(
+    tmp_path: Path,
+) -> None:
+    """The mark is Markdown, because Markdown is what this reader hands over.
+
+    A rule set directly against the line above it is the Markdown for a
+    heading rather than for a rule. Measured on a real two page CV: the last
+    line of page one and the words "Page 2" both came back as headings.
+    """
+    path = written(
+        tmp_path, "two.pdf", a_pdf([["The last line of the first page."], ["Second."]])
+    )
+
+    text = PdfDocumentReader().read_body(path).text
+    html = DocumentHtmlRenderer().render(text, DocumentKind.PDF)
+
+    assert "<h1" not in html
+    assert "<h2" not in html
+    assert "<hr" in html
 
 
 def test_a_single_page_is_not_given_a_page_marker(tmp_path: Path) -> None:
@@ -112,8 +134,9 @@ def test_words_side_by_side_on_the_page_stay_side_by_side(tmp_path: Path) -> Non
 
     Read plainly, two things drawn beside each other come back one after the
     other, so an address meant for the left of a payslip and a reference meant
-    for the right arrive as two unrelated lines. Reading the layout keeps them
-    on the line they were on.
+    for the right arrive as two unrelated lines. Rebuilding the page keeps them
+    on the line they were on, with the gutter between them put back as a space:
+    joined literally they read as one run-together word.
     """
     path = written(
         tmp_path, "form.pdf", a_pdf_with_two_columns("Employee name", "Reference")
@@ -128,14 +151,16 @@ def test_words_side_by_side_on_the_page_stay_side_by_side(tmp_path: Path) -> Non
     ]
     assert together, text
     assert together[0].index("Employee name") < together[0].index("Reference")
+    assert "nameReference" not in together[0]
 
 
-def test_a_pdf_is_shown_as_typed_rather_than_laid_out() -> None:
-    """Text out of a PDF carries the page's line breaks, not the author's.
+def test_a_pdf_is_laid_out_because_its_reader_hands_over_markdown() -> None:
+    """The line breaks a PDF gives up are the page's, so they are not kept.
 
-    Softening it would run the columns of a two column page together, which is
-    why this kind is presented verbatim rather than reflowed.
+    Its reader rebuilds the page as a document before the domain ever sees it,
+    so what arrives is Markdown exactly as a Word document's does, rather than
+    the words in the order the page happened to draw them.
     """
-    assert DocumentKind.PDF.presentation is Presentation.AS_TYPED
-    assert not DocumentKind.PDF.reflows
+    assert DocumentKind.PDF.presentation is Presentation.LAID_OUT
+    assert DocumentKind.PDF.reflows
     assert not DocumentKind.PDF.declares_fields

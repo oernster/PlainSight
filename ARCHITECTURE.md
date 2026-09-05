@@ -181,20 +181,51 @@ raise a prompt.
   cells as the blocks of text they are, keeping their own line breaks. Measured
   on a real CV before that: one single-row layout table became a Markdown row
   2550 characters long with a whole section run together on one line.
-- `pdf_reader`: a PDF, read as the text that can be got out of it and presented
-  verbatim. A PDF describes a page rather than a document, so what comes back is
-  the text and where it sat. The layout is asked for rather than the words
-  alone: measured on a real payslip, the plain reading returned an address
-  block meant for the left of the page and a reference meant for the right one
-  after the other, each indented by whatever preceded it, while the layout
-  reading put them beside each other where the reader had. Softening it or
-  folding it would undo that, which is why this kind is shown as typed and left
-  as wide as it is. Reading the layout is the better answer rather than the
-  only one, so any failure of it falls back to the plain reading: a page with
-  no content stream, which is what a blank page in a scan is, raises a
-  `KeyError` there while the plain reading answers with the empty string. Three failures are told
-  apart because they want different words: a locked file, a file that is not a
-  PDF and a file holding no text a machine can reach, which is what a scan is.
+- `pdf_reader`: a PDF, read back into the document its page was laid out to be.
+  A PDF describes a page rather than a document: there is no heading in the
+  file, no paragraph and no list, only glyphs each with a place, a size and a
+  face. Asked for its words alone, a real CV came back as a wall of monospace
+  with every heading, every bold phrase and every bullet gone; that is what
+  this reader exists to answer. Every run of text is taken with where it sat
+  and how it looked, then `pdf_structure` reads those back into Markdown, so a
+  PDF reaches the domain laid out exactly as a Word document does. A page that
+  cannot be read that way still gives up whatever words it has, so a failure of
+  the rebuilding costs the layout rather than the page. That last resort asks
+  for the layout first: measured on a real payslip, the plain reading returned
+  an address block meant for the left of the page and a reference meant for the
+  right one after the other, each indented by whatever preceded it, while the
+  layout reading put them beside each other where the reader had. The layout
+  reading is the better answer rather than the only one, so any failure of it
+  falls back to the plain reading: a page with no content stream, which is what
+  a blank page in a scan is, raises a `KeyError` there while the plain reading
+  answers with the empty string. Three failures are told apart because they
+  want different words: a locked file, a file that is not a PDF and a file
+  holding no text a machine can reach, which is what a scan is.
+- `pdf_structure`: the rebuilding itself; nothing else decides any of it. A
+  line larger than the body is a heading and how much larger settles
+  its depth; a line in the bold face is emphasised; a line opening with a
+  bullet is an item; consecutive lines of body text are one paragraph, since a
+  line break inside a PDF paragraph is a fact about the page width rather than
+  about the writing. Every threshold in it was measured on real files rather
+  than chosen; each carries what it was measured against. Four of those
+  measurements are the module: a line's size is the size MOST of its text is
+  set in, because a stray run at the previous line's size promoted body text to
+  a heading; a page where more than a third of the lines would be headings has
+  none, because a form has no dominant body size and a real payslip came back
+  as a stack of headings with every line shouting; a wrapped item's second line
+  continues the open item, because it carries no bullet of its own and every
+  wrapped item on the page broke in two without it; and two runs on one line
+  are pushed apart only when the second starts more than an em per character
+  along, because a payslip's two columns read as `Employee nameReference`
+  joined literally while the runs of a single word must not be separated. Over
+  a real CV's 169 joins carrying no space of their own, every continuing run
+  sat between 0.29 and 0.58 ems per character and every jump across the page at
+  2.0 or beyond, with nothing in between.
+- Rebuilding a PDF as a document is a trade, stated here rather than hidden. A
+  form, a payslip or an invoice says much of what it says by where it puts
+  things, so reading it back as prose turns its grid into reading order. That
+  is the right way round for the documents people actually read; anyone wanting
+  the grid wants a PDF viewer, not a reader.
 - Both of those readers catch every exception when opening a file, which is
   deliberate and marked with a stated reason rather than a bare suppression.
   They parse a file somebody else chose, several layers down in a library with

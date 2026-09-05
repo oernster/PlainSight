@@ -62,14 +62,13 @@ class DocumentKind(Enum):
         HTML is already what the surface renders, so it is handed over as it
         stands rather than being rewritten into itself.
 
-        A Word document is laid out for the page and its reader turns it into
-        Markdown at the boundary, so it arrives here as something already laid
-        out. A PDF arrives as the plain text that could be got out of it, which
-        is nobody's layout and must not be treated as though it were: text
-        pulled from a PDF carries the line breaks the page had, so softening it
-        would run the columns together.
+        A Word document and a PDF are both laid out for the page; both readers
+        turn what they find into Markdown at the boundary, so both arrive here
+        as something already laid out. A PDF has no headings or
+        paragraphs in it to find, only glyphs with sizes and places; its reader
+        reads those back into the document a person would have seen.
         """
-        if self is DocumentKind.MARKDOWN or self is DocumentKind.WORD:
+        if self in LAID_OUT_KINDS:
             return Presentation.LAID_OUT
         if self is DocumentKind.HTML:
             return Presentation.ALREADY_HTML
@@ -95,6 +94,10 @@ class DocumentKind(Enum):
         its own layout too, in its markup rather than in its line breaks.
         """
         return self.presentation is Presentation.LAID_OUT
+
+
+# The kinds whose readers hand over Markdown, whatever the file itself was.
+LAID_OUT_KINDS = frozenset({DocumentKind.MARKDOWN, DocumentKind.WORD, DocumentKind.PDF})
 
 
 def readable_suffixes() -> tuple[str, ...]:
