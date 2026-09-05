@@ -61,6 +61,9 @@ class LibraryTree(QTreeWidget):
         self.setHeaderHidden(True)
         self.setColumnCount(1)
         # The arrow is the folder's own icon, so the branch column stays bare.
+        # This call clears it on TOP LEVEL rows alone, which is why the theme
+        # also carries a `QTreeWidget::branch` rule: without it every folder
+        # below a root drew the toolkit's own small arrow beside the drawn one.
         self.setRootIsDecorated(False)
         self.setIconSize(QSize(ARROW_PX, ARROW_PX))
         self._palette = palette

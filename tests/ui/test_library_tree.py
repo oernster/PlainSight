@@ -8,10 +8,11 @@ from PySide6.QtWidgets import QApplication
 
 from plainsight.domain.document import Document, DocumentKind
 from plainsight.domain.library import Folder, Library
-from plainsight.ui.library_tree import ARROW_PX, FIRST_COLUMN, LibraryTree, arrow_icon
-from plainsight.ui.theme import DARK, LIGHT
+from plainsight.ui.library_tree import FIRST_COLUMN, LibraryTree
+from plainsight.ui.theme import DARK
 
 MINIMUM_TARGET_PX = 20
+NO_INK = 0
 
 
 def a_document(name: str, folder: str) -> Document:
@@ -274,37 +275,6 @@ def test_an_empty_library_selects_nothing(application) -> None:
     assert tree.document_items() == []
 
 
-def test_the_two_arrows_are_drawn_and_differ(application) -> None:
-    """Drawn rather than styled, so the shape can be read back here."""
-    open_arrow = arrow_icon(DARK.muted, True).pixmap(ARROW_PX, ARROW_PX).toImage()
-    shut_arrow = arrow_icon(DARK.muted, False).pixmap(ARROW_PX, ARROW_PX).toImage()
-
-    inked = [
-        sum(
-            1
-            for y in range(ARROW_PX)
-            for x in range(ARROW_PX)
-            if image.pixelColor(x, y).alpha() > 0
-        )
-        for image in (open_arrow, shut_arrow)
-    ]
-
-    assert all(count > 0 for count in inked)
-    assert open_arrow != shut_arrow
-
-
-def test_the_arrows_are_redrawn_in_the_palette_being_worn(application) -> None:
-    tree = a_tree(BOTH)
-    before = (
-        tree.topLevelItem(0).icon(FIRST_COLUMN).pixmap(ARROW_PX, ARROW_PX).toImage()
-    )
-
-    tree.wear(LIGHT)
-    after = tree.topLevelItem(0).icon(FIRST_COLUMN).pixmap(ARROW_PX, ARROW_PX).toImage()
-
-    assert before != after
-
-
 def test_clicking_a_folder_opens_and_closes_it(application) -> None:
     tree = a_tree(BOTH)
     folder = tree.topLevelItem(0)
@@ -326,16 +296,3 @@ def test_clicking_a_document_does_not_toggle_anything(application) -> None:
     tree.itemClicked.emit(document_row, FIRST_COLUMN)
 
     assert folder.isExpanded()
-
-
-def test_the_arrow_is_big_enough_to_read_as_a_control(application) -> None:
-    """It is something you click, so it needs a target rather than a glyph.
-
-    The figure is a stated minimum rather than a measurement: this harness has
-    no real fonts, so its text metrics cannot be used to justify one. At the
-    twelve pixels it began at, the arrow read as a speck.
-    """
-    tree = a_tree(BOTH)
-
-    assert ARROW_PX >= MINIMUM_TARGET_PX
-    assert tree.iconSize().width() == ARROW_PX

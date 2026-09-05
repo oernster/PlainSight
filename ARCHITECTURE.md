@@ -219,7 +219,10 @@ Two trays around a split body, exactly as design plan part 2 describes.
   label, because two folders can share a name. The arrow is drawn at runtime in
   the palette's colour rather than styled: Qt renders a stylesheet triangle as
   nothing at all and draws a branch arrow only from an image file, while a text
-  glyph would rest on a font holding it, which this harness cannot verify.
+  glyph would rest on a font holding it, which this harness cannot verify. The
+  toolkit's own indicator is suppressed by a `QTreeWidget::branch` rule in the
+  theme, since `setRootIsDecorated(False)` clears it on top level rows alone;
+  every folder below a root otherwise drew a second, smaller arrow beside ours.
   Restoring a selection never opens a shut folder, because Qt expands ancestors
   to reach a row and would otherwise undo the reader's decision on every
   re-read.

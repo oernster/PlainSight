@@ -184,6 +184,11 @@ QTreeWidget::item:selected {{
     background: {palette.selection};
     color: {palette.selection_text};
 }}
+QTreeWidget::branch {{
+    image: none;
+    border-image: none;
+    background: transparent;
+}}
 QTextBrowser {{
     background: {palette.panel};
     color: {palette.text};
