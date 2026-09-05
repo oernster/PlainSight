@@ -20,10 +20,11 @@ to the editor you choose.
 ## Who it is for
 
 Anyone with a folder of documents they would rather read than grep: Markdown,
-text, HTML, Word or PDF. If you keep Claude skills, it answers the three questions those raise:
-which are actually on this machine, what one you wrote three months ago still
-says, what arrived with a plugin you installed once. If you keep notes or
-documentation instead, it reads those with no configuration at all.
+text, HTML, Word or PDF. If you keep Claude skills, it answers the three
+questions those raise: which are actually on this machine, what one you wrote
+three months ago still says, what arrived with a plugin you installed once. If
+you keep notes or documentation instead, it reads those with no configuration
+at all.
 
 ## What it is not
 
@@ -103,6 +104,8 @@ prompt. Nothing is fetched or sent without that click.
 | Language | Python 3.11 or newer |
 | User interface | PySide6 |
 | Rendering | markdown |
+| Word documents | python-docx |
+| PDFs | pypdf |
 | Settings | versioned JSON, written atomically |
 
 ## Install and run
@@ -149,8 +152,10 @@ administrator; it removes cleanly from the Apps list.
 python -m pytest
 ```
 
-The gate is 100% coverage over the domain and application layers, read by exit
-code rather than by the last line of output.
+The gate is 100% branch coverage over the domain and application layers, read by
+exit code rather than by the last line of output. Those are the layers a machine
+can exercise with no filesystem and no toolkit, so anything short of complete
+there is a gap nobody chose.
 
 The formatters and linters are separate commands, not assertions inside the
 suite. Run all four:

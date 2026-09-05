@@ -149,8 +149,9 @@ raise a prompt.
   paid on every activation rather than once.
 - `document_reader`: one reader per kind, told which kind it serves rather than
   asked to recognise what it was given. `TextDocumentReader` covers the three
-  text kinds, which differ only in whether a leading fence is a block of fields. Its two halves are apart because they cost
-  differently: `summarise` runs for every document beneath a chosen folder and
+  text kinds, which differ only in whether a leading fence is a block of fields.
+  Its two halves are apart because they cost differently: `summarise` runs for
+  every document beneath a chosen folder and
   must stay cheap, while `read_body` runs for the one document that was opened
   and may be as dear as its kind demands. A kind that must be extracted rather
   than decoded brings its own reader and this one never learns of it.
@@ -301,8 +302,9 @@ Two trays around a split body, exactly as design plan part 2 describes.
 - `library_tree` and `document_view` together: a document already on screen and
   unchanged is not drawn again. Each re-read used to send the page
   back to the top, so leaving to look something up lost your place and
-  scrolling looked as though it had been ignored. A document compares by value,
-  so one edited on disk is a different document and is redrawn as it should be.
+  scrolling looked as though it had been ignored. A document compares by value
+  and carries a fingerprint of the file it came from, so one edited on disk is a
+  different document and is redrawn as it should be.
 - `reading_pane`: one home for how a scrolling text region behaves. It attaches
   the reading cycle, gates its own focus on overflow (a page that fits scrolls
   nowhere, so it is no stop at all) and answers Home, End, Ctrl+Home and
@@ -450,8 +452,8 @@ is a folder of documents; it writes only under `%LOCALAPPDATA%\Programs` and `HK
 
 ## Quality enforcement
 
-The coverage floor is 100% over `domain` plus `application`, the layers reachable
-with no filesystem, no Qt and no editor.
+The coverage floor is 100% branch coverage over `domain` plus `application`, the
+layers reachable with no filesystem, no Qt and no editor.
 
 Infrastructure, the user interface and the setup program all carry real tests,
 against a temporary directory and against a real offscreen `QApplication`. All

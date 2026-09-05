@@ -19,8 +19,8 @@ editor and it never writes to a document.
 
 ## Scope, stated once
 
-Any folder of Markdown, plain text, HTML, Word or PDF files. The Claude skills folder is the
-default and the origin of the application, not a limit on it. Not affiliated
+Any folder of Markdown, plain text, HTML, Word or PDF files. The Claude skills
+folder is the default and the origin of the application, not a limit on it. Not affiliated
 with Anthropic and not endorsed by them; the About dialog says so.
 
 ---
@@ -37,8 +37,8 @@ enumeration, so adding a kind is adding a member and a reader for it.
 1.2 Only Markdown carries a frontmatter block. How a kind reaches the reading
 surface is one of three answers rather than a flag: laid out for the page
 (Markdown, plus Word once its reader has made it Markdown), kept as typed
-(plain text, plus PDF, whose text carries the page's own line breaks) or already the
-HTML the surface renders. Text kept as typed is shown exactly as it was: three
+(plain text, plus PDF, whose text carries the page's own line breaks) or already
+the HTML the surface renders. Text kept as typed is shown exactly as it was: three
 hyphens in a text file are three hyphens.
 
 1.3 A directory holding a document at any depth is a **folder** and is listed as
@@ -131,10 +131,11 @@ reads itself down the page, so the application would be scrolling through a
 document nobody opened. The opening state is an empty pane saying so.
 
 3.4 Markdown is **rendered**, not shown as source, in a readable proportional
-font with monospace for fenced code. Rendering brings one runtime dependency
-(`markdown`, BSD), credited in About. Plain text goes into a preformatted block
-with its own characters escaped, since passing it through a Markdown renderer
-would silently rewrite it.
+font with monospace for fenced code. Three runtime dependencies serve the kinds
+it reads, each credited in About: `markdown` (BSD-3-Clause) for rendering,
+`python-docx` (MIT) for Word and `pypdf` (BSD-3-Clause) for PDF. Plain text goes
+into a preformatted block with its own characters escaped, since passing it
+through a Markdown renderer would silently rewrite it.
 
 3.5 The frontmatter block is stripped before rendering and surfaced as a compact
 header above the body: name, description, then any other fields the document
@@ -374,10 +375,21 @@ Frozen dataclasses with `slots=True`, `tuple[...]` over `list`.
 - `ParsedDocument`: the parse result of a document's text, holding `frontmatter`
   and `body`. Splitting the two is pure string work, so it lives here.
 - `DocumentKind`: which file suffixes are read at all, whether a kind declares
-  frontmatter and whether its text reflows. One home for all three.
-- `Document`: file name, path, kind, declared name, description, body and the
-  failure it carries when the file could not be read. Validates in
-  `__post_init__`.
+  frontmatter and how its text reaches the reading surface. One home for all
+  three. A kind may answer to more than one suffix, since `.htm` and `.html`
+  name the same thing.
+- `Presentation`: the three ways a body becomes what the surface shows: laid out
+  for the page, kept as typed or already the HTML the surface renders.
+- `Document`: file name, path, kind, declared name, description, the failure it
+  carries when the file could not be read and a `fingerprint` of the file.
+  Validates in `__post_init__`. It holds no body: the text is fetched when a
+  document is opened; the fingerprint is what makes a document still compare
+  unequal to the same file edited since.
+- `DocumentSummary`: what a listing knows about a document without reading all
+  of it. Deliberately carries no text.
+- `DocumentBody`: a document's text, else the reason there is none. The reason
+  travels with the absence rather than being worked out from it, since a locked
+  file and a missing one want different words in front of a reader.
 - `Folder`: a directory's subfolders and documents, each ordered case
   insensitively with folders first, plus the recursive `document_count`.
 - `Library`: the roots being read, with `by_path()` and the walk in drawn order.
@@ -391,7 +403,13 @@ Frozen dataclasses with `slots=True`, `tuple[...]` over `list`.
 
 Ports, all Protocols:
 
-- `DocumentRepository`: `read_folder(root) -> Folder | None`
+- `DocumentRepository`: `read_folder(root) -> Folder | None`,
+  `read_document(path) -> Document | None`, `read_body(path) -> DocumentBody`
+- `DocumentReader`: `summarise(path) -> DocumentSummary`,
+  `read_body(path) -> DocumentBody`. One per kind, chosen by kind rather than
+  asked to recognise anything. The two halves are apart because they cost
+  differently: summarising runs for every document beneath a chosen folder,
+  while reading a body runs for the one document that was opened.
 - `SettingsStore`: `load() -> Settings`, `save(settings)`
 - `EditorLauncher`: `launch(editor, target) -> bool`
 - `ExternalOpener`: `open(address) -> bool`
@@ -409,12 +427,21 @@ Services:
   launched.
   The enable predicate of 7.3 lives here, so the UI asks a question rather than
   computing one.
-- `default_root(paths)`, a pure function over an injected paths provider,
-  so the per-OS defaults are unit-testable with no operating system involved.
+- `defaults`, pure functions over an injected paths provider, so the per-OS
+  behaviour is unit-testable with no operating system involved. There is
+  deliberately no function that picks a root: `chosen_root` returns what the
+  user chose or nothing at all, while `browse_from` names where the chooser
+  opens. Separating those two is the whole point of 2.1. Beside them,
+  `plugins_root_for` decides whether a chosen folder implies the sibling tree
+  of 2.4, while `default_editor` finds the machine's own editor.
 
 ## Infrastructure
 
-`FileSystemDocumentRepository` (the walk and the ignore rules of section 1),
+`FileSystemDocumentRepository` (the walk and the ignore rules of section 1,
+holding a reader per kind and knowing how to read none of them itself),
+`TextDocumentReader` for the three text kinds, `WordDocumentReader` turning a
+Word document into Markdown at the boundary, `PdfDocumentReader` taking the
+text out of a PDF and telling its three failures apart,
 `JsonSettingsStore` (atomic write by temp file plus `os.replace`, versioned
 `{"version": 1, ...}`), `DesktopEditorLauncher` (`QProcess.startDetached`),
 `QtExternalOpener` (`QDesktopServices.openUrl`), `DocumentHtmlRenderer`, plus
@@ -466,13 +493,14 @@ plainsight/
   domain/          document.py  library.py  parsing.py  settings.py
                    passage.py
   application/     ports.py  services.py  defaults.py  update.py
-  infrastructure/  document_repository.py  settings_store.py  desktop.py
+  infrastructure/  document_repository.py  document_reader.py  word_reader.py
+                   pdf_reader.py  settings_store.py  desktop.py
                    renderer.py  resources.py  platform.py
                    update_source.py
   ui/              main_window.py  top_tray.py  bottom_tray.py  library_tree.py
                    document_view.py  reading_pane.py  auto_scroller.py
                    keyboard_nav.py  theme.py  widgets.py  update_check.py
-                   about_dialog.py  licence_dialog.py
+                   about_dialog.py  licence_dialog.py  dialogs.py
 tests/             mirrors the source tree, plus tests/structural/
 ```
 
@@ -487,7 +515,8 @@ tests/             mirrors the source tree, plus tests/structural/
   to 399 danger band, the composition-root whitelist, no module-level singletons,
   the no-write invariant of 13.1, the focus chain walk and QSS scan from
   `noborderfocus`, ring order against drawn order, the donate address asserted
-  literally.
+  literally, plus the rule that every kind the application reads has a reader
+  able to read it.
 - Every guard proved to bite by planting a violation and reading the exit code.
 
 ## Versioning and licensing
