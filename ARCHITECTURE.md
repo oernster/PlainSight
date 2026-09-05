@@ -322,6 +322,17 @@ Two trays around a split body, exactly as design plan part 2 describes.
   It is reachable by a click as well as by Tab while it overflows, since Tab
   alone meant clicking the text you were reading did not focus it and the keys
   that move around a document went somewhere else and looked broken.
+- `reading_choice`: what is being read, a folder the reader chose or one file
+  they opened, together with how it is read again. The two are one concern
+  rather than two, because a re-read has to know which of them it is looking
+  at. Reported as the Open file button not working: the file did open, then the
+  activation re-read replaced it with the chosen folder before the reader saw
+  it, since closing a chooser is exactly what activates the window. A single
+  opened file is now re-read as itself, so both answers keep the same promise
+  that what is on screen is what is on disk now. A file that has gone since it
+  was opened falls back to the folder rather than leaving a tree describing
+  nothing; choosing a folder afterwards drops the file, because that is the
+  reader saying they want the folder.
 - `about_dialog`, `licence_dialog`, `widgets`: the dialogs and the pieces they
   share, all on the `FirstStopDialog` base.
 

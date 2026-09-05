@@ -26,6 +26,7 @@ from .bottom_tray import BottomTray
 from .document_view import DocumentView
 from .keyboard_nav import KeyboardNavigator, NeutralStart
 from .library_tree import LibraryTree
+from .reading_choice import ReadingChoice
 from .theme import Palette, palette_for, stylesheet
 from .top_tray import TopTray
 from .update_check import install_update_check
@@ -85,7 +86,7 @@ class MainWindow(QMainWindow):
 
         self._neutral = NeutralStart(self)
         self._started = False
-        self._library_is_empty = True
+        self._reading = ReadingChoice(self)
         self.setCentralWidget(self._body())
         self.statusBar().setSizeGripEnabled(False)
         self.navigator = KeyboardNavigator(self, self.ring_stops)
@@ -115,6 +116,16 @@ class MainWindow(QMainWindow):
         self.show()
         self.raise_()
         self.activateWindow()
+
+    @property
+    def service(self) -> LibraryService:
+        """The application layer, for the collaborators the window builds."""
+        return self._service
+
+    @property
+    def unreadable_file_message(self) -> str:
+        """What the status bar says of a file this application does not read."""
+        return UNREADABLE_FILE_MESSAGE
 
     def report_status(self, message: str) -> None:
         """Say something in the status bar for a few seconds."""
@@ -213,15 +224,12 @@ class MainWindow(QMainWindow):
             self.refresh()
 
     def refresh(self) -> None:
-        """Read the chosen folder and show what it holds.
+        """Read what is being shown again and show what it holds now.
 
         With no folder chosen nothing is read at all and the pane says so,
         which is a different statement from a folder that holds nothing.
         """
-        library = self._service.load()
-        self._library_is_empty = library.is_empty
-        self.library_tree.show_library(library)
-        self.show_document(self.library_tree.selected_document())
+        self._reading.refresh()
 
     def show_document(self, document: Document | None) -> None:
         """Render the selected document, else whichever message now applies.
@@ -248,7 +256,7 @@ class MainWindow(QMainWindow):
         """
         if not self._service.has_root():
             self.document_view.show_no_folder()
-        elif self._library_is_empty:
+        elif self._reading.is_empty:
             self.document_view.show_empty_root()
         else:
             self.document_view.show_nothing()
@@ -270,46 +278,12 @@ class MainWindow(QMainWindow):
         )
 
     def choose_folder(self) -> None:
-        """Browse to a folder of documents and read it.
-
-        The chooser opens on the last folder taken, else on the Claude skills
-        folder, so the common case is one click. That is a starting place for a
-        dialog the user is standing in front of; nothing is read until they
-        take something.
-        """
-        chosen = dialogs.ask_for_folder(self, self._service.browse_from())
-        if not chosen:
-            return
-        library = self._service.choose_root(chosen)
-        self._library_is_empty = library.is_empty
-        self.library_tree.show_library(library)
-        self.show_document(self.library_tree.selected_document())
+        """Browse to a folder of documents and read it."""
+        self._reading.choose_folder()
 
     def open_file(self) -> None:
-        """Open one document, listing no directory around it.
-
-        Selected as soon as it is read, which is not the auto-selection the
-        tree refuses: a reader who names one file has already chosen it, where
-        a reader who names a folder has not chosen anything inside it.
-        """
-        chosen = dialogs.ask_for_document(self, self._service.browse_from())
-        if not chosen:
-            return
-        library = self._service.open_file(chosen)
-        if library.is_empty:
-            self.report_status(UNREADABLE_FILE_MESSAGE)
-            return
-        self._library_is_empty = False
-        self.library_tree.show_library(library)
-        self._select_the_only_document()
-
-    def _select_the_only_document(self) -> None:
-        """Open the one folder there is and land on the document inside it."""
-        for item in self.library_tree.folder_items():
-            item.setExpanded(True)
-        rows = self.library_tree.document_items()
-        if rows:
-            self.library_tree.setCurrentItem(rows[0])
+        """Open one document, listing no directory around it."""
+        self._reading.open_file()
 
     def choose_editor(self) -> None:
         """Pick the editor a document opens in."""

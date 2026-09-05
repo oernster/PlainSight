@@ -501,6 +501,7 @@ plainsight/
                    document_view.py  reading_pane.py  auto_scroller.py
                    keyboard_nav.py  theme.py  widgets.py  update_check.py
                    about_dialog.py  licence_dialog.py  dialogs.py
+                   reading_choice.py
 tests/             mirrors the source tree, plus tests/structural/
 ```
 
