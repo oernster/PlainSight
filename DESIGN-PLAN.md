@@ -36,9 +36,10 @@ enumeration, so adding a kind is adding a member and a reader for it.
 
 1.2 Only Markdown carries a frontmatter block. How a kind reaches the reading
 surface is one of three answers rather than a flag: laid out for the page
-(Markdown, plus Word and PDF once their readers have made them Markdown), kept
-as typed (plain text, whose line breaks are the author's own) or already the
-HTML the surface renders. Text kept as typed is shown exactly as it was: three
+(Markdown, plus PDF once its reader has made it Markdown), kept as typed
+(plain text, whose line breaks are the author's own) or already the HTML the
+surface renders (a page that was HTML on disk, plus Word, whose reader turns
+it into HTML rather than into anything narrower). Text kept as typed is shown exactly as it was: three
 hyphens in a text file are three hyphens.
 
 1.3 A directory holding a document at any depth is a **folder** and is listed as
@@ -440,7 +441,7 @@ Services:
 `FileSystemDocumentRepository` (the walk and the ignore rules of section 1,
 holding a reader per kind and knowing how to read none of them itself),
 `TextDocumentReader` for the three text kinds, `WordDocumentReader` turning a
-Word document into Markdown at the boundary, `PdfDocumentReader` taking the
+Word document into HTML at the boundary, `PdfDocumentReader` taking the
 text out of a PDF and telling its three failures apart,
 `JsonSettingsStore` (atomic write by temp file plus `os.replace`, versioned
 `{"version": 1, ...}`), `DesktopEditorLauncher` (`QProcess.startDetached`),
@@ -494,8 +495,8 @@ plainsight/
                    passage.py
   application/     ports.py  services.py  defaults.py  update.py
   infrastructure/  document_repository.py  document_reader.py  word_reader.py
-                   pdf_reader.py  pdf_structure.py  settings_store.py
-                   desktop.py
+                   pdf_reader.py  pdf_structure.py  word_html.py
+                   settings_store.py  desktop.py
                    renderer.py  resources.py  platform.py
                    update_source.py
   ui/              main_window.py  top_tray.py  bottom_tray.py  library_tree.py

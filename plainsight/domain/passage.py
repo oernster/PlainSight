@@ -112,17 +112,33 @@ def _starts_an_item(stripped: str) -> bool:
     return head.endswith(".") and head[:-1].isdigit()
 
 
-def _soften_passage(text: str) -> str:
-    """Group whole sentences, then take a second look at anything still a slab."""
+def passages(text: str) -> tuple[str, ...]:
+    """One passage cut into the passages a reader can rest between.
+
+    A single passage where it is already short enough to read. Nothing is
+    added, removed or reordered, so joining the passages back together returns
+    the text character for character; that is what makes this safe to do to
+    somebody else's writing.
+
+    Given out as the passages themselves rather than as one string with breaks
+    in it, because what a caller does with them differs. The reading surface
+    wants them run together with a gap between; a reader building HTML wants
+    each one as a paragraph of its own.
+    """
     if len(text) <= WALL_CHARACTERS:
-        return text
+        return (text,)
     groups: list[str] = []
     for group in _grouped(text, _sentence_ends):
         if len(group) > WALL_CHARACTERS:
             groups.extend(_grouped(group, _written_breaks))
         else:
             groups.append(group)
-    return SOFT_BREAK.join(groups)
+    return tuple(groups)
+
+
+def _soften_passage(text: str) -> str:
+    """Group whole sentences, then take a second look at anything still a slab."""
+    return SOFT_BREAK.join(passages(text))
 
 
 def _grouped(text: str, boundaries: Finder) -> list[str]:

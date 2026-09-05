@@ -26,7 +26,7 @@ from plainsight.infrastructure.document_repository import FileSystemDocumentRepo
 from plainsight.infrastructure.renderer import DocumentHtmlRenderer
 from plainsight.infrastructure.resources import BundledAssets
 from plainsight.ui.main_window import MainWindow
-from plainsight.ui.top_tray import ABOUT_ITEM, CHECK_UPDATES_ITEM, TopTray
+from plainsight.ui.top_tray import ABOUT_ITEM, CHECK_UPDATES_ITEM, GUIDE_ITEM, TopTray
 from plainsight.ui.update_check import UpdateCheckController, update_message
 from tests.application.fakes import (
     FakeLauncher,
@@ -161,12 +161,13 @@ def a_controller(
     )
 
 
-def test_the_help_button_offers_about_and_a_check_and_nothing_else(
+def test_the_help_button_offers_the_guide_about_and_a_check_in_that_order(
     window: MainWindow,
 ) -> None:
+    """The guide leads it: opening this menu is usually asking how it works."""
     labels = [action.text() for action in window.top_tray.help_menu.actions()]
 
-    assert labels == [ABOUT_ITEM, CHECK_UPDATES_ITEM]
+    assert labels == [GUIDE_ITEM, ABOUT_ITEM, CHECK_UPDATES_ITEM]
 
 
 def test_pressing_help_drops_the_menu_rather_than_opening_a_dialog(
@@ -211,14 +212,16 @@ def test_each_menu_item_calls_its_own_handler(application: QApplication) -> None
         on_open_in_editor=lambda: pressed.append("open"),
         on_cycle_font_size=lambda: pressed.append("font"),
         on_switch_appearance=lambda: pressed.append("appearance"),
+        on_guide=lambda: pressed.append("guide"),
         on_about=lambda: pressed.append("about"),
         on_check_updates=lambda: pressed.append("updates"),
     )
 
+    tray.guide_action.trigger()
     tray.about_action.trigger()
     tray.check_updates_action.trigger()
 
-    assert pressed == ["about", "updates"]
+    assert pressed == ["guide", "about", "updates"]
     tray.deleteLater()
 
 

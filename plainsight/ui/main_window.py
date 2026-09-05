@@ -69,6 +69,7 @@ class MainWindow(QMainWindow):
             on_open_in_editor=self.open_in_editor,
             on_cycle_font_size=self.cycle_font_size,
             on_switch_appearance=self.switch_appearance,
+            on_guide=self.show_guide,
             on_about=self.show_about,
             on_check_updates=self.check_for_updates,
         )
@@ -316,6 +317,10 @@ class MainWindow(QMainWindow):
         """The Help menu's own check: it reports whatever it finds."""
         if self.update_check is not None:
             self.update_check.check_manually()
+
+    def show_guide(self) -> None:
+        """Open the guide."""
+        dialogs.show_guide(self, self._palette, self._assets)
 
     def show_about(self) -> None:
         """Open the About dialog."""

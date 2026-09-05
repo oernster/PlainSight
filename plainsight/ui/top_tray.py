@@ -30,7 +30,7 @@ FOLDER_TOOLTIP = "Choose the folder your documents live in"
 OPEN_FILE_TOOLTIP = "Open a single document"
 CHOOSE_EDITOR_TOOLTIP = "Choose the editor to open a document in"
 LAUNCH_EDITOR_TOOLTIP = "Open the selected document in your editor"
-HELP_TOOLTIP = "About PlainSight; check for updates"
+HELP_TOOLTIP = "The guide, About PlainSight and the update check"
 FONT_SIZE_TOOLTIPS = {
     FontSize.MEDIUM: "Switch to medium text",
     FontSize.LARGE: "Switch to large text",
@@ -42,6 +42,7 @@ SEPARATOR_MARGIN_PX = 4
 TO_LIGHT_TOOLTIP = "Switch to the light appearance"
 TO_DARK_TOOLTIP = "Switch to the dark appearance"
 
+GUIDE_ITEM = "Guide"
 ABOUT_ITEM = f"About {version.APP_NAME}"
 CHECK_UPDATES_ITEM = "Check for Updates"
 
@@ -63,6 +64,7 @@ class TopTray(QWidget):
         on_open_in_editor: Callable[[], None],
         on_cycle_font_size: Callable[[], None],
         on_switch_appearance: Callable[[], None],
+        on_guide: Callable[[], None],
         on_about: Callable[[], None],
         on_check_updates: Callable[[], None],
     ) -> None:
@@ -125,6 +127,10 @@ class TopTray(QWidget):
         # Built here rather than on each press, so the same menu is shown every
         # time and the button owns it for as long as the button lives.
         self.help_menu = QMenu(self.help_button)
+        # First, ahead of About. Somebody opening this menu at all is usually
+        # asking how the application works rather than who wrote it.
+        self.guide_action = self.help_menu.addAction(GUIDE_ITEM)
+        self.guide_action.triggered.connect(on_guide)
         self.about_action = self.help_menu.addAction(ABOUT_ITEM)
         self.about_action.triggered.connect(on_about)
         self.check_updates_action = self.help_menu.addAction(CHECK_UPDATES_ITEM)

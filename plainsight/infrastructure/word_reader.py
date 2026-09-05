@@ -1,9 +1,16 @@
-"""Reads a Word document by turning it into Markdown at the boundary.
+"""Reads a Word document by turning it into HTML at the boundary.
 
-Markdown rather than HTML, converted here rather than anywhere further in,
-so that everything downstream stays exactly as it was: the softening, the
-readable column and the renderer already handle a laid out document and have no
-business knowing that this one arrived as a zip full of XML.
+HTML rather than Markdown, converted here rather than anywhere further in, so
+that everything downstream stays as it was: the reading pane already shows a
+document that arrived as HTML and has no business knowing that this one
+started as a zip full of XML.
+
+Markdown was the first answer and was the wrong one. It is a narrower language
+than a Word document and an ambiguous one, so text that means nothing in Word
+turns into syntax on the way through: a paragraph the author indented with
+four spaces came back as a block of code, shown as a wall of monospace clipped
+at the right edge. That is one instance of a class with no end to it, whereas
+escaping into HTML is total; `word_html` holds the reasoning in full.
 
 What is carried over is what a reader reads: headings, paragraphs, lists,
 tables and the emphasis inside them. What is dropped is everything that is
@@ -26,27 +33,32 @@ from docx.text.paragraph import Paragraph
 from docx.text.run import Run
 
 from ..domain.document import DocumentBody, DocumentSummary
+from .word_html import (
+    BULLETED,
+    NO_HEADING,
+    NUMBERED,
+    Block,
+    Piece,
+    assembled,
+    paragraph,
+    plain,
+    table,
+)
 
 NOT_A_WORD_FILE = "This file could not be read as a Word document."
 MISSING_WORD_FILE = "This file could not be opened."
 EMPTY_WORD_FILE = "This Word document holds no text."
 
-HEADING_PREFIX = "#"
-BOLD = "**"
-ITALIC = "*"
-# A table earns Markdown by having something to tabulate: rows AND columns.
+# A table earns a table by having something to tabulate: rows AND columns.
 LEAST_TABULAR = 2
-MAX_HEADING_LEVEL = 6
-BULLET = "-"
-NUMBERED = "1."
-TABLE_EDGE = "|"
+SHALLOWEST_HEADING = 1
 LIST_STYLE_MARKER = "list"
 NUMBER_STYLE_MARKER = "number"
 HEADING_STYLE_MARKER = "heading"
 
 
 class WordDocumentReader:
-    """A Word document, read as the Markdown it is closest to."""
+    """A Word document, read as the HTML a reading surface can show."""
 
     def summarise(self, path: str) -> DocumentSummary:
         """Whether it opens at all. A Word document declares no frontmatter.
@@ -59,12 +71,12 @@ class WordDocumentReader:
         return DocumentSummary(failure=failure)
 
     def read_body(self, path: str) -> DocumentBody:
-        """The document as Markdown, else why there is none."""
+        """The document as HTML, else why there is none."""
         document, failure = _opened(path)
         if document is None:
             return DocumentBody(failure=failure)
         try:
-            text = "\n\n".join(_blocks(document))
+            text = assembled(_blocks(document))
         except Exception:  # noqa: BLE001
             return DocumentBody(failure=NOT_A_WORD_FILE)
         if not text.strip():
@@ -96,7 +108,7 @@ def _opened(path: str) -> tuple[WordDocument | None, str]:
         return None, NOT_A_WORD_FILE if Path(path).is_file() else MISSING_WORD_FILE
 
 
-def _blocks(document: WordDocument) -> list[str]:
+def _blocks(document: WordDocument) -> list[Block]:
     """Every paragraph and table, in the order they appear in the document.
 
     Walked over the body's own XML rather than over ``paragraphs`` and
@@ -104,73 +116,75 @@ def _blocks(document: WordDocument) -> list[str]:
     within themselves: read that way a table lands after every paragraph in the
     file rather than between the two it sits between.
     """
-    blocks: list[str] = []
+    blocks: list[Block] = []
     body = document.element.body
     for child in body.iterchildren():
         if child.tag == qn("w:p"):
-            rendered = _paragraph(Paragraph(child, document))
-            if rendered:
-                blocks.append(rendered)
+            blocks.extend(_paragraph(Paragraph(child, document)))
         elif child.tag == qn("w:tbl"):
-            rendered = _table(Table(child, document))
-            if rendered:
-                blocks.append(rendered)
+            blocks.extend(_table(Table(child, document)))
     return blocks
 
 
-def _paragraph(paragraph: Paragraph) -> str:
-    """One paragraph as Markdown; empty where it holds nothing to show.
+def _paragraph(node: Paragraph) -> list[Block]:
+    """One paragraph, read for what Word's style says the author meant."""
+    style = (node.style.name or "").casefold()
+    return paragraph(_pieces(node), _heading_level(style), _item_kind(style))
 
-    A paragraph gives up its text with nothing left on either end of it. An
-    indent typed as spaces is presentation in Word, where it moves the first
-    line in a little; the same spaces are syntax in Markdown, where four of
-    them make a block of code. Measured on a real CV: three paragraphs of the
-    profile were typed with a four space indent and arrived as a wall of
-    monospace, clipped at the right edge with a scrollbar under it, while
-    every paragraph around them read normally.
-    """
-    text = _runs(paragraph).strip()
-    if not text:
-        return ""
-    style = (paragraph.style.name or "").casefold()
-    if HEADING_STYLE_MARKER in style:
-        return f"{HEADING_PREFIX * _heading_level(style)} {text}"
+
+def _item_kind(style: str) -> str:
+    """Whether this paragraph is an item of a list and of which sort."""
     if NUMBER_STYLE_MARKER in style:
-        return f"{NUMBERED} {text}"
-    if LIST_STYLE_MARKER in style:
-        return f"{BULLET} {text}"
-    return text
+        return NUMBERED
+    return BULLETED if LIST_STYLE_MARKER in style else ""
 
 
 def _heading_level(style: str) -> int:
-    """The depth a heading style names; the shallowest when it names none.
+    """The depth a heading style names; nothing where it is not a heading.
 
     A style is called ``Heading 2`` in English and something else elsewhere,
     so the digit is taken where there is one rather than the name being
     matched. ``Title`` carries no digit and is the top of the document.
     """
+    if HEADING_STYLE_MARKER not in style:
+        return NO_HEADING
     digits = "".join(character for character in style if character.isdigit())
-    if not digits:
-        return 1
-    return min(int(digits), MAX_HEADING_LEVEL)
+    return int(digits) if digits else SHALLOWEST_HEADING
 
 
-def _runs(paragraph: Paragraph) -> str:
-    """The paragraph's text, keeping the emphasis Markdown can say.
+def _pieces(node: Paragraph) -> tuple[Piece, ...]:
+    """The paragraph's text, in stretches that share a face.
 
-    Runs that share their emphasis are joined before the marks go on. Word
-    splits a run wherever it likes, on a spell check, a language tag or an
-    edit somebody made years ago, so one bold phrase commonly arrives as
-    several bold runs. Marking each of them separately produced ``**imp****
-    ortant**``, which is not emphasis at all: it renders as the asterisks
-    themselves. Measured on a real document, three such pairs in six pages.
+    Runs that share their emphasis are joined before anything is done to them.
+    Word splits a run wherever it likes, on a spell check, a language tag or
+    an edit somebody made years ago, so one bold phrase commonly arrives as
+    several bold runs; marked separately they became ``<strong>imp</strong>``
+    followed by ``<strong>ortant</strong>``, which is three elements where the
+    author wrote one word. Measured on a real document, three such pairs in
+    six pages.
+
+    Nothing is left on either end of the paragraph. An indent typed as spaces
+    is presentation in Word, where it moves the first line in a little; there
+    is no reason to carry it into a surface that lays the text out itself.
     """
-    pieces: list[str] = []
-    for emphasis, runs in groupby(paragraph.runs, key=_emphasis_of):
-        text = "".join(run.text for run in runs)
-        if text:
-            pieces.append(_emphasised(text, emphasis))
-    return "".join(pieces)
+    pieces = [
+        Piece("".join(run.text for run in runs), bold, italic)
+        for (bold, italic), runs in groupby(node.runs, key=_emphasis_of)
+    ]
+    kept = [piece for piece in pieces if piece.text]
+    return _trimmed(tuple(kept))
+
+
+def _trimmed(pieces: tuple[Piece, ...]) -> tuple[Piece, ...]:
+    """The pieces with the whitespace taken off either end of the paragraph."""
+    if not pieces:
+        return pieces
+    first, last = pieces[0], pieces[-1]
+    out = list(pieces)
+    out[0] = Piece(first.text.lstrip(), first.bold, first.italic)
+    last = out[-1]
+    out[-1] = Piece(last.text.rstrip(), last.bold, last.italic)
+    return tuple(piece for piece in out if piece.text)
 
 
 def _emphasis_of(run: Run) -> tuple[bool, bool]:
@@ -178,49 +192,30 @@ def _emphasis_of(run: Run) -> tuple[bool, bool]:
     return bool(run.bold), bool(run.italic)
 
 
-def _emphasised(text: str, emphasis: tuple[bool, bool]) -> str:
-    """The text with its marks on, the spaces around it left outside them.
-
-    Markdown will not open emphasis on a space, so a run beginning or ending
-    with one has to keep it outside the marks; inside, the marks show as
-    themselves and the emphasis is lost with them.
-    """
-    bold, italic = emphasis
-    if not (bold or italic) or not text.strip():
-        return text
-    lead = text[: len(text) - len(text.lstrip())]
-    trail = text[len(text.rstrip()) :]
-    marks = f"{BOLD if bold else ''}{ITALIC if italic else ''}"
-    return f"{lead}{marks}{text.strip()}{marks}{trail}"
-
-
-def _table(table: Table) -> str:
-    """A table of data as a Markdown table; a table of layout as its contents.
+def _table(node: Table) -> list[Block]:
+    """A table of data as a table; a table of layout as its contents.
 
     Word is used to arrange a page as often as to tabulate anything, so a
     heading beside a photograph and a two column CV are both tables in the
     file. Rendering those as tables is what made a document unreadable:
-    measured on a real CV, one layout table of a single row became a Markdown
-    row 2550 characters long, every paragraph of a whole section run together
-    on one line, because a cell's own line breaks were collapsed to fit it.
+    measured on a real CV, one layout table of a single row became a row 2550
+    characters long, every paragraph of a whole section run together on one
+    line, because a cell's own line breaks were collapsed to fit it.
 
-    So a table earns Markdown by having something to tabulate: more than one
+    So a table earns a table by having something to tabulate: more than one
     row and more than one column. Anything else gives up its cells as the
     blocks of text they are, which is what the author put in them.
     """
-    rows = list(table.rows)
+    rows = list(node.rows)
     if not rows:
-        return ""
+        return []
     width = max(len(row.cells) for row in rows)
     if len(rows) < LEAST_TABULAR or width < LEAST_TABULAR:
         return _laid_out(rows)
-    cells = [[_flat(cell.text) for cell in row.cells] for row in rows]
-    lines = [_row(cells[0], width), _row([_RULE] * width, width)]
-    lines.extend(_row(row, width) for row in cells[1:])
-    return "\n".join(lines)
+    return [table([[cell.text for cell in row.cells] for row in rows])]
 
 
-def _laid_out(rows: list) -> str:
+def _laid_out(rows: list) -> list[Block]:
     """The cells of a layout table, as the blocks of text they hold.
 
     A cell keeps its own line breaks here rather than being flattened, since
@@ -228,25 +223,13 @@ def _laid_out(rows: list) -> str:
     are reported once per column they span, so a repeat of what was just said
     is dropped rather than shown twice.
     """
-    blocks: list[str] = []
+    blocks: list[Block] = []
+    said_before = ""
     for row in rows:
         for cell in row.cells:
             for line in cell.text.splitlines():
                 said = line.strip()
-                if said and (not blocks or blocks[-1] != said):
-                    blocks.append(said)
-    return "\n\n".join(blocks)
-
-
-def _flat(text: str) -> str:
-    """A cell's text on one line, which is all a Markdown table row allows."""
-    return " ".join(text.split())
-
-
-_RULE = "---"
-
-
-def _row(cells: list[str], width: int) -> str:
-    """One table row, padded to the width of the widest row in the table."""
-    padded = list(cells) + [""] * (width - len(cells))
-    return f"{TABLE_EDGE} " + f" {TABLE_EDGE} ".join(padded) + f" {TABLE_EDGE}"
+                if said and said != said_before:
+                    blocks.extend(plain(said))
+                    said_before = said
+    return blocks

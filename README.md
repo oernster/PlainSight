@@ -51,8 +51,8 @@ prompt. Nothing is fetched or sent without that click.
 - Reads Markdown (`.md`), plain text (`.txt`), HTML (`.html`, `.htm`), Word
   (`.docx`) and PDF (`.pdf`). Markdown is rendered; text is shown exactly as it
   was typed, so its own line breaks survive; HTML is shown as the page it
-  already is; a Word document is turned into Markdown as it is read, so it
-  reads like the rest.
+  already is; a Word document is turned into HTML as it is read, so it reads
+  like the rest.
 - Reads a PDF back into the document its page was laid out to be, with its
   pages marked. A PDF holds no headings, no paragraphs and no lists; it holds
   glyphs, each with a place, a size and a face. Ask it for the words alone and a
@@ -105,6 +105,9 @@ prompt. Nothing is fetched or sent without that click.
 - Opens the selected document in your chosen editor.
 - Tells you when a newer release is out, from the Help menu or on its own; skip
   a release and it is never mentioned again.
+- Carries a guide, first on that same Help menu. It names every picture in the
+  two trays with the icon itself rather than a description of it, then says
+  what each kind of document becomes on the way to the pane.
 
 ## Stack
 

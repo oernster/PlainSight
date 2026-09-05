@@ -57,7 +57,7 @@
     <li>Browse to any other folder instead, a notes folder or a project's documentation; the choice is remembered for next time.</li>
     <li>Hidden and cache directories are passed over; so is a branch that leads to no document at all, so every branch you can open leads somewhere.</li>
     <li>A folder it cannot open costs only itself rather than the whole tree.</li>
-    <li>A Word document is turned into Markdown as it is read, so it reads like everything else here. Word arranges pages with tables as often as it tabulates anything, so a table that is really layout gives up its contents as the paragraphs they are rather than being drawn as a table.</li>
+    <li>A Word document is turned into HTML as it is read, so it reads like everything else here. HTML rather than Markdown because escaping into it is total: whatever the author typed stays text, where Markdown would read an indent as a block of code and a leading hyphen as a list. Word arranges pages with tables as often as it tabulates anything, so a table that is really layout gives up its contents as the paragraphs they are rather than being drawn as a table.</li>
     <li>A PDF is read back into the document its page was laid out to be, with its pages marked. A PDF holds no headings, no paragraphs and no lists; it holds glyphs, each with a place, a size and a face. Ask it for the words alone and a CV arrives as a wall of monospace with every heading, every bold phrase and every bullet gone, so the sizes and the faces are read the way your eye reads them: larger than the body is a heading, bold is emphasis, a bullet opens an item, lines running on are one paragraph. That is a reading of the page rather than anything the file says, because the file does not say: no fonts, no rules and no pictures come across, while a form's grid becomes reading order, since a document read back as prose is prose. Where a PDF is a scan, a picture of a page rather than the words on it, no text can be taken and it says so instead of showing you nothing; a PDF that is password protected says that.</li>
     <li>Opening a folder of them does not read them. Listing forty PDFs of twelve pages was measured at 7ms where extracting them all took 515ms; the text is fetched for the one document you pick.</li>
     <li>Runs nothing a document carries. A page's scripts are dropped rather than executed, so a document somebody sent you cannot act on your machine; anything needing a script runtime is inert and shows as the plain text around it.</li>
@@ -97,6 +97,13 @@
     <li>The control stays disabled until there is genuinely something to do: a document selected, an editor chosen and that editor still where you left it.</li>
     <li>Come back to the window and the library is re-read, so an edit made outside shows up without a refresh button.</li>
     <li>It never writes to a document itself, which a structural test enforces rather than leaving to discipline.</li>
+  </ul>
+
+  <h2 class="section-title" style="margin-top:2.5rem;">Finding out how it works</h2>
+  <ul>
+    <li>A guide sits first on the Help menu. It names every picture in the two trays with the icon itself rather than with a description of it, so a control you have just met can be identified rather than guessed at.</li>
+    <li>Then it says the one thing no screen can state while it is happening: what each of the five kinds of document becomes on the way to the pane.</li>
+    <li>Everything a control can say for itself is left to the control, so every button carries its own tooltip and the guide stays short enough to finish.</li>
   </ul>
 
   <h2 class="section-title" style="margin-top:2.5rem;">Staying current</h2>

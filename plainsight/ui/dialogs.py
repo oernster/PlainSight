@@ -14,6 +14,7 @@ from PySide6.QtWidgets import QFileDialog, QWidget
 from ..application.ports import AssetLocator
 from ..domain.document import readable_suffixes
 from .about_dialog import AboutDialog
+from .guide_dialog import GuideDialog
 from .licence_dialog import LicenceDialog
 from .theme import Palette
 
@@ -91,3 +92,8 @@ def show_model_licence(parent: QWidget) -> None:
 def show_about(parent: QWidget, palette: Palette, assets: AssetLocator) -> None:
     """Open the About dialog."""
     AboutDialog(palette, assets, parent).exec()
+
+
+def show_guide(parent: QWidget, palette: Palette, assets: AssetLocator) -> None:
+    """Open the guide."""
+    GuideDialog(palette, assets, parent).exec()

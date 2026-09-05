@@ -60,17 +60,20 @@ class DocumentKind(Enum):
         """How this kind's text reaches the reading surface.
 
         HTML is already what the surface renders, so it is handed over as it
-        stands rather than being rewritten into itself.
+        stands rather than being rewritten into itself. A Word document
+        arrives the same way: its reader turns it into HTML at the boundary,
+        because escaping text into HTML is total while writing it as Markdown
+        is not; an indent the author typed came back as a block of code.
 
-        A Word document and a PDF are both laid out for the page; both readers
-        turn what they find into Markdown at the boundary, so both arrive here
-        as something already laid out. A PDF has no headings or
-        paragraphs in it to find, only glyphs with sizes and places; its reader
-        reads those back into the document a person would have seen.
+        A PDF is laid out for the page too; its reader hands over Markdown
+        rather than HTML. A PDF has no headings or paragraphs in it to find,
+        only glyphs with sizes and places; what its reader recovers is which
+        lines were headings and which were items, which is exactly what
+        Markdown is for and no more than it can carry.
         """
-        if self in LAID_OUT_KINDS:
+        if self is DocumentKind.MARKDOWN or self is DocumentKind.PDF:
             return Presentation.LAID_OUT
-        if self is DocumentKind.HTML:
+        if self in ALREADY_HTML_KINDS:
             return Presentation.ALREADY_HTML
         return Presentation.AS_TYPED
 
@@ -89,15 +92,19 @@ class DocumentKind(Enum):
         """Whether the text is laid out for the page rather than kept as typed.
 
         Markdown is laid out, so an over-long passage in it may be given
-        somewhere to breathe. Plain text carries its own line breaks and is the
-        author's own layout, so it is shown exactly as it came; HTML carries
-        its own layout too, in its markup rather than in its line breaks.
+        somewhere to breathe; so is a PDF once its reader has rebuilt it.
+        Plain text carries its own line breaks and is the author's own layout,
+        so it is shown exactly as it came; HTML carries its own layout too, in
+        its markup rather than in its line breaks. A Word document is HTML by
+        the time it arrives, its walls already broken into paragraphs of their
+        own by the reader that built it.
         """
         return self.presentation is Presentation.LAID_OUT
 
 
-# The kinds whose readers hand over Markdown, whatever the file itself was.
-LAID_OUT_KINDS = frozenset({DocumentKind.MARKDOWN, DocumentKind.WORD, DocumentKind.PDF})
+# The kinds that reach the surface as HTML: one that was HTML on disk and one
+# whose reader turns it into HTML rather than into anything narrower.
+ALREADY_HTML_KINDS = frozenset({DocumentKind.HTML, DocumentKind.WORD})
 
 
 def readable_suffixes() -> tuple[str, ...]:

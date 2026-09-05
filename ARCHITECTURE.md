@@ -161,26 +161,51 @@ raise a prompt.
   somebody fills on purpose instead of one filled silently with the wrong
   reader. `tests/structural/test_readers.py` holds that map to covering every
   kind there is.
-- `word_reader`: a Word document, converted to Markdown at the boundary rather
-  than anywhere further in, so the softening, the readable column and the
-  renderer stay exactly as they were and none of them learns that this document
-  arrived as a zip full of XML. Headings, paragraphs, lists, tables and the
-  emphasis inside them cross; presentation does not, since none of it survives
-  the reading pane anyway. The body is walked over its own XML rather than over
-  `paragraphs` and `tables`, which are two collections each in document order
-  only within itself: read that way a table lands after every paragraph in the
-  file rather than between the two it sits between.
+- `word_reader`: a Word document, converted to HTML at the boundary rather than
+  anywhere further in, so the reading pane stays exactly as it was and never
+  learns that this document arrived as a zip full of XML. Headings,
+  paragraphs, lists, tables and the emphasis inside them cross; presentation
+  does not, since none of it survives the reading pane anyway. The body is
+  walked over its own XML rather than over `paragraphs` and `tables`, which
+  are two collections each in document order only within itself: read that way
+  a table lands after every paragraph in the file rather than between the two
+  it sits between.
+
+  **HTML rather than Markdown; the reason is not taste.** Markdown was the
+  first answer and was the wrong one: it is a narrower language than the
+  document being carried into it and an ambiguous one, so text that means
+  nothing in Word becomes syntax on the way through. Measured on a real CV:
+  three paragraphs the author had indented with four spaces arrived as blocks
+  of code, shown as a wall of monospace clipped at the right edge with a
+  scrollbar under it. Stripping the indent fixes that one paragraph and
+  nothing else, because a paragraph opening with a hyphen, a hash or a digit
+  and a stop, one carrying a stray asterisk or underscore, is the same defect
+  wearing different clothes; the list has no end. Escaping into HTML has
+  an end: five characters mean something and each has a named escape, so text
+  that has been escaped cannot be read as markup whatever the author typed.
+  The change is not that HTML is richer; it is that the conversion is total.
 
   Two things a real document does had to be answered for. Word splits a run
   wherever it likes, on a spell check or an edit made years ago, so one bold
-  phrase commonly arrives as several bold runs; marking each of them gave
-  `**imp****ortant**`, which renders as the asterisks themselves. Runs sharing
-  their emphasis are joined before the marks go on. And Word arranges pages
-  with tables as often as it tabulates anything, so a table earns Markdown by
-  having more than one row and more than one column; anything else gives up its
-  cells as the blocks of text they are, keeping their own line breaks. Measured
-  on a real CV before that: one single-row layout table became a Markdown row
-  2550 characters long with a whole section run together on one line.
+  phrase commonly arrives as several bold runs; marked one by one they became
+  three elements where the author wrote one word. Runs sharing their emphasis
+  are joined before anything is done to them. And Word arranges pages with
+  tables as often as it tabulates anything, so a table earns a table by having
+  more than one row and more than one column; anything else gives up its cells
+  as the blocks of text they are. Measured on a real CV before that: one
+  single-row layout table became a row 2550 characters long with a whole
+  section run together on one line.
+- `word_html`: the HTML itself; the only place escaping, emphasis, list
+  grouping or table shape is decided. It knows nothing about Word: it is given
+  pieces of text with their faces and returns HTML, which is what makes it
+  testable with no file. Two things it owns are worth naming. A run of list
+  items gets ONE list element around it, which is a fact about an item's
+  neighbours rather than about the item, so the wrappers go on at assembly.
+  And a wall of a paragraph becomes several paragraphs, cut by the domain's
+  own rule in `passage.passages`: the cuts are found in the text the author
+  wrote, before a character is escaped or a tag put near it, since a break
+  placed in finished HTML could land inside a tag or halfway through an escape
+  and turn `&amp;` into rubbish.
 - `pdf_reader`: a PDF, read back into the document its page was laid out to be.
   A PDF describes a page rather than a document: there is no heading in the
   file, no paragraph and no list, only glyphs each with a place, a size and a
@@ -382,8 +407,20 @@ Two trays around a split body, exactly as design plan part 2 describes.
   was opened falls back to the folder rather than leaving a tree describing
   nothing; choosing a folder afterwards drops the file, because that is the
   reader saying they want the folder.
-- `about_dialog`, `licence_dialog`, `widgets`: the dialogs and the pieces they
-  share, all on the `FirstStopDialog` base.
+- `about_dialog`, `guide_dialog`, `licence_dialog`, `widgets`: the dialogs and
+  the pieces they share, all on the `FirstStopDialog` base.
+- `guide_dialog` is the help button's first item and answers what no screen can
+  say for itself. It NAMES the furniture, each entry carrying the real icon the
+  tray draws, resolved through the same asset lookup the tray uses and against
+  the same file-name constants, so the two cannot drift; a guide showing
+  something other than the icon is worse than no guide. Then it says what each
+  kind of document BECOMES on the way to the pane, which is the whole of what
+  this application does and is invisible while it is working. A missing asset
+  costs its picture and never the guide, so a build that bundled nothing still
+  opens it. Every icon is addressed with `Path.as_uri()` rather than by
+  assembling a `file://` string, which percent-encodes a path holding a space
+  and keeps the read-only guard from reading a string `replace` as a filesystem
+  one.
 
 `passage.soften` is the answer to a wall of text that typography alone cannot
 reach. An over-long passage is shown in groups of whole sentences with a gap
