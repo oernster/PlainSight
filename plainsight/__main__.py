@@ -14,6 +14,7 @@ from .domain.document import DocumentKind
 from .infrastructure.desktop import DesktopEditorLauncher, QtExternalOpener
 from .infrastructure.document_reader import TextDocumentReader
 from .infrastructure.document_repository import FileSystemDocumentRepository
+from .infrastructure.pdf_reader import PdfDocumentReader
 from .infrastructure.platform import (
     FileSystemPathProbe,
     HomePlatformPaths,
@@ -23,6 +24,7 @@ from .infrastructure.renderer import DocumentHtmlRenderer
 from .infrastructure.resources import BundledAssets
 from .infrastructure.settings_store import JsonSettingsStore
 from .infrastructure.update_source import GitHubReleaseSource
+from .infrastructure.word_reader import WordDocumentReader
 from .ui.main_window import MainWindow
 
 
@@ -38,6 +40,8 @@ def build_readers() -> dict[DocumentKind, DocumentReader]:
         DocumentKind.MARKDOWN: TextDocumentReader(DocumentKind.MARKDOWN),
         DocumentKind.PLAIN_TEXT: TextDocumentReader(DocumentKind.PLAIN_TEXT),
         DocumentKind.HTML: TextDocumentReader(DocumentKind.HTML),
+        DocumentKind.WORD: WordDocumentReader(),
+        DocumentKind.PDF: PdfDocumentReader(),
     }
 
 

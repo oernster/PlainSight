@@ -22,14 +22,14 @@ from .theme import Palette, document_style
 
 EMPTY_MESSAGE = (
     "<h2>No documents here</h2>"
-    "<p>Nothing beneath this folder is a Markdown, text or HTML file. "
+    "<p>Nothing beneath this folder is a document it can read. "
     "Use the folder button to browse somewhere else.</p>"
 )
 NO_FOLDER_CHOSEN = (
     "<h2>Choose a folder</h2>"
     "<p>PlainSight reads nothing until you point it at a folder. "
     "Use the folder button in the tray above; it opens on your Claude skills "
-    "one. Any folder of Markdown, text or HTML files reads the same way.</p>"
+    "one. Any folder of documents reads the same way.</p>"
 )
 NOTHING_SELECTED = "<h2>Select a document</h2><p>Pick one from the list to read it.</p>"
 GONE_SINCE_LISTED = (

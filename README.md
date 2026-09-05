@@ -19,8 +19,8 @@ to the editor you choose.
 
 ## Who it is for
 
-Anyone with a folder of Markdown, text or HTML files they would rather read
-than grep. If you keep Claude skills, it answers the three questions those raise:
+Anyone with a folder of documents they would rather read than grep: Markdown,
+text, HTML, Word or PDF. If you keep Claude skills, it answers the three questions those raise:
 which are actually on this machine, what one you wrote three months ago still
 says, what arrived with a plugin you installed once. If you keep notes or
 documentation instead, it reads those with no configuration at all.
@@ -47,9 +47,22 @@ prompt. Nothing is fetched or sent without that click.
 
 ## Capabilities
 
-- Reads Markdown (`.md`), plain text (`.txt`) and HTML (`.html`, `.htm`).
-  Markdown is rendered; text is shown exactly as it was typed, so its own line
-  breaks survive; HTML is shown as the page it already is.
+- Reads Markdown (`.md`), plain text (`.txt`), HTML (`.html`, `.htm`), Word
+  (`.docx`) and PDF (`.pdf`). Markdown is rendered; text is shown exactly as it
+  was typed, so its own line breaks survive; HTML is shown as the page it
+  already is; a Word document is turned into Markdown as it is read, so it
+  reads like the rest.
+- Shows a PDF as the plain text that can be taken out of it, with its pages
+  marked. This is worth being plain about: a PDF describes a page rather than a
+  document, so text pulled back out of one is a reconstruction. Two columns come
+  back interleaved and a table comes back as its cells in the order they were
+  drawn. Where a PDF is a scan, which is a picture of a page rather than the
+  words on it, no text can be taken at all and it says so rather than showing
+  you nothing. A PDF that is password protected says that instead.
+- Opens a folder of them without reading them. What a listing costs is opening
+  each file, never extracting it: measured over forty PDFs of twelve pages,
+  listing took 7ms where extracting them all would have taken 515ms. The text
+  is fetched for the one document you pick.
 - Runs nothing a document carries. A page's scripts are dropped rather than
   executed, so a document you were sent cannot act on your machine. Anything
   needing a script runtime, htmx among it, is inert here and shows as the

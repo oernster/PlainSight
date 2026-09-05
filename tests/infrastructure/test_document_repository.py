@@ -4,6 +4,8 @@ from __future__ import annotations
 
 from pathlib import Path
 
+import docx
+
 from plainsight.__main__ import build_readers
 from plainsight.domain.document import DocumentKind
 from plainsight.domain.library import Folder
@@ -16,6 +18,8 @@ from plainsight.infrastructure.document_repository import (
     UNKNOWN_KIND,
     FileSystemDocumentRepository,
 )
+
+from .pdf_fixtures import a_pdf
 
 A_SKILL = "---\nname: prose\ndescription: writing\n---\n\n# Prose\n\nBody.\n"
 
@@ -92,6 +96,36 @@ def test_an_html_file_keeps_its_markup_rather_than_declaring_fields(
 
     assert document.declared_fields == ()
     assert body(tmp_path / "page.html") == "---\n<p>Body.</p>\n"
+
+
+def test_a_word_document_and_a_pdf_are_documents_too(tmp_path: Path) -> None:
+    """Listed from the suffix like any other kind; their readers do the rest."""
+    docx.Document().save(str(tmp_path / "report.docx"))
+    (tmp_path / "manual.pdf").write_bytes(a_pdf([["Text on a page."]]))
+
+    folder = read(tmp_path)
+
+    assert names(folder) == ["manual.pdf", "report.docx"]
+    assert [one.kind for one in folder] == [DocumentKind.PDF, DocumentKind.WORD]
+
+
+def test_listing_a_pdf_does_not_extract_it(tmp_path: Path) -> None:
+    """The claim the whole body-when-opened seam was built for.
+
+    Measured over forty PDFs of twelve pages: listing them took 7ms while
+    extracting them all took 515ms. The library is re-read on every activation
+    of the window, so that difference is paid every time it comes forward.
+
+    Asserted here as a property rather than a duration, since a timing on a
+    busy machine is a flaky test: a listing reports no text anywhere, so a
+    listing that had extracted anything would have had somewhere to put it.
+    """
+    (tmp_path / "manual.pdf").write_bytes(a_pdf([["A distinctive sentence."]]))
+
+    document = read(tmp_path).documents[0]
+
+    assert not document.failure
+    assert "A distinctive sentence." not in str(document)
 
 
 def test_anything_else_is_not_a_document(tmp_path: Path) -> None:

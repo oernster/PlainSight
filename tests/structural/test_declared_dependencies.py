@@ -35,6 +35,7 @@ FIRST_PARTY = frozenset(
 # Where an import name and the distribution that provides it differ.
 DISTRIBUTION_OF = {
     "PIL": "pillow",
+    "docx": "python-docx",
     "pytestqt": "pytest-qt",
     "win32com": "pywin32",
     "pythoncom": "pywin32",

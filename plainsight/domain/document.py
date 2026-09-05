@@ -47,6 +47,8 @@ class DocumentKind(Enum):
     MARKDOWN = (".md",)
     PLAIN_TEXT = (".txt",)
     HTML = (".html", ".htm")
+    WORD = (".docx",)
+    PDF = (".pdf",)
 
     @property
     def suffixes(self) -> tuple[str, ...]:
@@ -59,8 +61,15 @@ class DocumentKind(Enum):
 
         HTML is already what the surface renders, so it is handed over as it
         stands rather than being rewritten into itself.
+
+        A Word document is laid out for the page and its reader turns it into
+        Markdown at the boundary, so it arrives here as something already laid
+        out. A PDF arrives as the plain text that could be got out of it, which
+        is nobody's layout and must not be treated as though it were: text
+        pulled from a PDF carries the line breaks the page had, so softening it
+        would run the columns together.
         """
-        if self is DocumentKind.MARKDOWN:
+        if self is DocumentKind.MARKDOWN or self is DocumentKind.WORD:
             return Presentation.LAID_OUT
         if self is DocumentKind.HTML:
             return Presentation.ALREADY_HTML

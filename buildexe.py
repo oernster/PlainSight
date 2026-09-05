@@ -62,7 +62,14 @@ DEBUG_ENVIRONMENT_FLAG = "PLAINSIGHT_BUILD_DEBUG"
 
 # markdown loads its extensions by name at runtime, so following the imports it
 # is written with does not reach them; the package goes in whole.
-INCLUDED_PACKAGES = ("markdown",)
+#
+# docx and pypdf go in whole for the same reason: both reach parts of
+# themselves by name rather than by import, docx through its content type map
+# and pypdf through the filters a given file asks for. Read in the installed
+# source rather than assumed: docx.api.Document loads the bundled default
+# template only when it is called with no path; this application always
+# calls it with one, so no package data has to travel with it.
+INCLUDED_PACKAGES = ("markdown", "docx", "pypdf")
 
 # Measured under PyInstaller and carried over deliberately: collecting Qt whole
 # produced a 726MB bundle by taking WebEngine, 3D and Quick with it. Nuitka

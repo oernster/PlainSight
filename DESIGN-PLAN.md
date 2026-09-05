@@ -2,7 +2,7 @@
 
 ## What it does
 
-Reads a folder of Markdown, text and HTML files, shows it as the tree it is on disk,
+Reads a folder of documents, shows it as the tree it is on disk,
 renders the document you select and hands editing to an editor the user chooses.
 It reads nothing until the user chooses a folder; the chooser opens on the
 Claude skills folder, which is an offer rather than a scan. It is not a text
@@ -19,7 +19,7 @@ editor and it never writes to a document.
 
 ## Scope, stated once
 
-Any folder of Markdown, plain text or HTML files. The Claude skills folder is the
+Any folder of Markdown, plain text, HTML, Word or PDF files. The Claude skills folder is the
 default and the origin of the application, not a limit on it. Not affiliated
 with Anthropic and not endorsed by them; the About dialog says so.
 
@@ -30,13 +30,16 @@ with Anthropic and not endorsed by them; the About dialog says so.
 ## 1. What a document is
 
 1.1 A document is a **file whose suffix names a kind the application reads**.
-Two kinds ship: Markdown (`.md`) and plain text (`.txt`). The set lives in one
-place, the `DocumentKind` enumeration, so adding a kind is adding a member and
-nothing else.
+Five kinds ship: Markdown (`.md`), plain text (`.txt`), HTML (`.html`, `.htm`),
+Word (`.docx`) and PDF (`.pdf`). The set lives in one place, the `DocumentKind`
+enumeration, so adding a kind is adding a member and a reader for it.
 
-1.2 Only Markdown carries a frontmatter block; only Markdown is laid out for
-the page. Plain text is shown exactly as it was typed: three hyphens in a text
-file are three hyphens; its line breaks are the author's own layout.
+1.2 Only Markdown carries a frontmatter block. How a kind reaches the reading
+surface is one of three answers rather than a flag: laid out for the page
+(Markdown, plus Word once its reader has made it Markdown), kept as typed
+(plain text, plus PDF, whose text carries the page's own line breaks) or already the
+HTML the surface renders. Text kept as typed is shown exactly as it was: three
+hyphens in a text file are three hyphens.
 
 1.3 A directory holding a document at any depth is a **folder** and is listed as
 one. A branch leading to no document at all is not listed, so every branch the

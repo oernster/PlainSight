@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>PlainSight: read the documents you never open</title>
-  <meta name="description" content="A local-first reader for folders of Markdown, text and HTML files. PlainSight shows a folder as the tree it is on disk and renders the document you pick. It reads nothing until you choose a folder; the chooser opens on your Claude skills one. Read only, no account, no cloud.">
+  <meta name="description" content="A local-first reader for folders of Markdown, text, HTML, Word and PDF files. PlainSight shows a folder as the tree it is on disk and renders the document you pick. It reads nothing until you choose a folder; the chooser opens on your Claude skills one. Read only, no account, no cloud.">
   <link rel="canonical" href="https://ernster.dev/PlainSight/">
   <meta name="theme-color" content="#1e1e2e">
   <!-- Social link previews. og:image must be an absolute URL and a raster
@@ -13,7 +13,7 @@
   <meta property="og:site_name" content="PlainSight">
   <meta property="og:url" content="https://ernster.dev/PlainSight/">
   <meta property="og:title" content="PlainSight: read the documents you never open">
-  <meta property="og:description" content="A local-first reader for folders of Markdown, text and HTML files. It reads nothing until you choose a folder, then shows the tree and renders what you pick, without changing a thing.">
+  <meta property="og:description" content="A local-first reader for folders of Markdown, text, HTML, Word and PDF files. It reads nothing until you choose a folder, then shows the tree and renders what you pick, without changing a thing.">
   <meta property="og:image" content="https://ernster.dev/PlainSight/plainsight-512.png">
   <meta property="og:image:width" content="512">
   <meta property="og:image:height" content="512">
@@ -21,7 +21,7 @@
   <meta property="og:locale" content="en_GB">
   <meta name="twitter:card" content="summary">
   <meta name="twitter:title" content="PlainSight: read the documents you never open">
-  <meta name="twitter:description" content="A local-first reader for your Markdown, text and HTML files. It reads nothing until you choose a folder, then changes nothing it shows you.">
+  <meta name="twitter:description" content="A local-first reader for your Markdown, text, HTML, Word and PDF files. It reads nothing until you choose a folder, then changes nothing it shows you.">
   <meta name="twitter:image" content="https://ernster.dev/PlainSight/plainsight-512.png">
   <script type="application/ld+json">
   {
@@ -32,7 +32,7 @@
     "operatingSystem": "Windows, Linux, macOS",
     "applicationCategory": "DeveloperApplication",
     "applicationSubCategory": "Document reader",
-    "description": "A local-first reader for folders of Markdown, text and HTML files. It reads nothing until you choose a folder, then shows it as the tree it is on disk and renders the document you pick. Read only: it never writes to a document.",
+    "description": "A local-first reader for folders of Markdown, text, HTML, Word and PDF files. It reads nothing until you choose a folder, then shows it as the tree it is on disk and renders the document you pick. Read only: it never writes to a document.",
     "url": "https://ernster.dev/PlainSight/",
     "downloadUrl": "https://github.com/oernster/PlainSight/releases",
     "softwareHelp": "https://github.com/oernster/PlainSight",
@@ -83,7 +83,7 @@
   <p class="hero-desc fade d2">
     They sit in folders you rarely open. They accumulate quietly: some written months ago, most long out of mind.
     <strong>You cannot review what you cannot see.</strong>
-    PlainSight walks a folder of Markdown, text and HTML files, shows it as the tree it is on disk and renders the one you
+    PlainSight walks a folder of Markdown, text, HTML, Word and PDF files, shows it as the tree it is on disk and renders the one you
     pick. It reads nothing until you choose a folder; the chooser opens on your Claude skills one, so the common case is one click.
   </p>
 
@@ -109,7 +109,7 @@
 <!-- Stats bar -->
 <div class="stats-bar">
   <div class="stats-inner">
-    <div class="stat"><div class="stat-value">.md .txt .html</div><div class="stat-label">Any folder you point it at</div></div>
+    <div class="stat"><div class="stat-value">.md .txt .html .docx .pdf</div><div class="stat-label">Any folder you point it at</div></div>
     <div class="stat"><div class="stat-value">Read only</div><div class="stat-label">Enforced by a test</div></div>
     <div class="stat"><div class="stat-value">Local</div><div class="stat-label">Nothing leaves the machine</div></div>
     <div class="stat"><div class="stat-value">0</div><div class="stat-label">Accounts or cloud</div></div>
@@ -193,7 +193,7 @@
       </nav>
     </div>
     <div class="footer-bottom">
-      <p>A local-first reader for folders of Markdown, text and HTML files. It reads nothing until you choose a folder; the chooser opens on your Claude skills one. Read only, open source, no cloud. Not affiliated with Anthropic and not endorsed by them.</p>
+      <p>A local-first reader for folders of Markdown, text, HTML, Word and PDF files. It reads nothing until you choose a folder; the chooser opens on your Claude skills one. Read only, open source, no cloud. Not affiliated with Anthropic and not endorsed by them.</p>
       <div class="chips">
         <span class="chip">Version <!--VERSION-->1.0.0<!--/VERSION--></span>
         <span class="chip">Python</span>

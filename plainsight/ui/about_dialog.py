@@ -26,6 +26,8 @@ CREDITS = (
     "<li><b>PySide6</b> (Qt for Python) - LGPL-3.0 (the user interface).</li>"
     "<li><b>Python</b> - PSF licence (the language and its standard library).</li>"
     "<li><b>markdown</b> - BSD-3-Clause (rendering each document for reading).</li>"
+    "<li><b>python-docx</b> - MIT (reading Word documents).</li>"
+    "<li><b>pypdf</b> - BSD-3-Clause (taking the text out of a PDF).</li>"
     "<li><b>Nuitka</b> - AGPL-3.0 with the Runtime Library Exception "
     "(compiling the packaged builds).</li>"
     "<li><b>Pillow</b> - MIT-CMU (deriving every icon from one master at build "

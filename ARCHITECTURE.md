@@ -143,13 +143,13 @@ raise a prompt.
   file; `read_body` fetches the text when a document is actually opened.
   Measured over the skills tree, a library of 59 documents held 42.2KB rather
   than the 859.6KB those files hold on disk; one document opened in 0.2ms.
-  This matters more the further it goes: a Markdown body costs a decode, while
-  a kind that has to be extracted rather than decoded would have cost that
-  extraction for every document in the tree in order to show one of them.
+  What that bought arrived with PDF. Measured over forty PDFs of twelve pages
+  each: listing them takes 7ms where extracting them all takes 515ms. The
+  library is re-read every time the window comes forward, so that difference is
+  paid on every activation rather than once.
 - `document_reader`: one reader per kind, told which kind it serves rather than
-  asked to recognise what it was given. `TextDocumentReader` covers every kind
-  read today, since all three are text and differ only in whether a leading
-  fence is a block of fields. Its two halves are apart because they cost
+  asked to recognise what it was given. `TextDocumentReader` covers the three
+  text kinds, which differ only in whether a leading fence is a block of fields. Its two halves are apart because they cost
   differently: `summarise` runs for every document beneath a chosen folder and
   must stay cheap, while `read_body` runs for the one document that was opened
   and may be as dear as its kind demands. A kind that must be extracted rather
@@ -160,6 +160,29 @@ raise a prompt.
   somebody fills on purpose instead of one filled silently with the wrong
   reader. `tests/structural/test_readers.py` holds that map to covering every
   kind there is.
+- `word_reader`: a Word document, converted to Markdown at the boundary rather
+  than anywhere further in, so the softening, the readable column and the
+  renderer stay exactly as they were and none of them learns that this document
+  arrived as a zip full of XML. Headings, paragraphs, lists, tables and the
+  emphasis inside them cross; presentation does not, since none of it survives
+  the reading pane anyway. The body is walked over its own XML rather than over
+  `paragraphs` and `tables`, which are two collections each in document order
+  only within itself: read that way a table lands after every paragraph in the
+  file rather than between the two it sits between.
+- `pdf_reader`: a PDF, read as the text that can be got out of it and presented
+  verbatim. A PDF describes a page rather than a document, so what comes back is
+  a reconstruction: two columns interleave and a table arrives as its cells in
+  drawing order. Softening it would make that worse by running the columns
+  together, which is why this kind is shown as typed. Three failures are told
+  apart because they want different words: a locked file, a file that is not a
+  PDF and a file holding no text a machine can reach, which is what a scan is.
+- Both of those readers catch every exception when opening a file, which is
+  deliberate and marked with a stated reason rather than a bare suppression.
+  They parse a file somebody else chose, several layers down in a library with
+  no contract about what it raises: a zip whose content type map is merely the
+  wrong shape was measured arriving as an `AttributeError` from lxml. A list of
+  the types seen so far is a list the next broken file gets to extend; a
+  reader must not take the application down over a file that was clicked.
 - `settings_store`: versioned JSON, written atomically through a temporary file
   and a replace, so a process that dies halfway leaves the previous settings
   intact. Its `FORMAT_VERSION` is the file's own number and has nothing to do
