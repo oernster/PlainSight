@@ -17,7 +17,7 @@ from __future__ import annotations
 
 import re
 
-from skillsviewer.ui.about_dialog import CREDITS
+from plainsight.ui.about_dialog import CREDITS
 
 from .layers import REPOSITORY_ROOT
 

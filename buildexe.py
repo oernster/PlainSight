@@ -26,12 +26,12 @@ import stamp_version
 
 PROJECT_ROOT = pathlib.Path(__file__).resolve().parent
 
-APP_DISPLAY_NAME = "Skills Viewer"
+APP_DISPLAY_NAME = "PlainSight"
 APP_DESCRIPTION = "A reader for the skills used by Claude AI"
 APP_AUTHOR = "Oliver Ernster"
-EXE_NAME = "SkillsViewer"
+EXE_NAME = "PlainSight"
 ENTRY_SCRIPT = PROJECT_ROOT / "main.py"
-ICON_FILE = PROJECT_ROOT / "assets" / "skillsviewer.ico"
+ICON_FILE = PROJECT_ROOT / "assets" / "plainsight.ico"
 VERSION_FILE = PROJECT_ROOT / "VERSION"
 
 ASSETS_DIR = PROJECT_ROOT / "assets"
@@ -58,7 +58,7 @@ PE_VERSION_PAD = "0"
 
 CONSOLE_MODE_RELEASE = "disable"
 CONSOLE_MODE_DEBUG = "attach"
-DEBUG_ENVIRONMENT_FLAG = "SKILLSVIEWER_BUILD_DEBUG"
+DEBUG_ENVIRONMENT_FLAG = "PLAINSIGHT_BUILD_DEBUG"
 
 # markdown loads its extensions by name at runtime, so following the imports it
 # is written with does not reach them; the package goes in whole.

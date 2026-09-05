@@ -45,7 +45,7 @@ the exit code.
 
 ## Paths are strings in the domain
 
-The domain holds a skill's directory, document and companions as plain strings
+The domain holds a document's path and a folder's path as plain strings
 rather than as path objects. It reads nothing from disk, so it has no use for a
 path object's behaviour; importing one would put a filesystem module inside the
 layer that is defined by not having one. Infrastructure converts at the
@@ -53,11 +53,11 @@ boundary, which is the only place a path is ever acted on.
 
 ## Read only, as a structural fact
 
-Design plan 13.1 says the application never writes to a skill. That is not left
+The application never writes to a document. That is not left
 to discipline: `tests/structural/test_read_only.py` names the one module allowed
 to write at all, the settings store, then asserts that no other module in the
-package calls a writing operation. Editing a skill is exclusively the external
-editor's job.
+package calls a writing operation. Editing a document is exclusively the
+external editor's job.
 
 The check has one stated limit. It matches the builtin `open` by name but not an
 attribute called `open`, because a port legitimately carries that verb: the
@@ -67,34 +67,41 @@ external opener asks the desktop to open an address and touches no file.
 
 ### Domain
 
-- `skill_document`: splits a `SKILL.md` into its declared fields and its prose.
-  Pure string work over text somebody else read.
-- `skill`: one skill, including the `failure` it carries when its document could
-  not be read. A skill with a failure is still listed, because the user neither
-  caused it nor can fix it from the viewer.
-- `catalogue`: the skills of one root, in display order. The single ordering rule
-  lives here.
+- `parsing`: splits a document into its frontmatter fields and its prose. Pure
+  string work over text somebody else read.
+- `document`: one document, its `DocumentKind` and the `failure` it carries when
+  the file could not be read. A document with a failure is still listed, because
+  the user neither caused it nor can fix it from the viewer. `DocumentKind` is
+  the single home for which file suffixes are read at all; it also settles
+  whether a kind declares frontmatter and whether its text reflows. Discovery, rendering
+  and softening each ask it rather than holding a list of their own, so adding a
+  kind is adding a member and nothing else.
+- `library`: the tree. A `Folder` holds its subfolders and its documents, each
+  ordered case insensitively with folders first; a `Library` holds the roots.
+  The single ordering rule lives here.
 - `settings`: what is remembered between runs, plus the editor choice and its
   validation.
 
 ### Application
 
-`ports` declares the seams as Protocols: `SkillRepository`, `SettingsStore`,
+`ports` declares the seams as Protocols: `DocumentRepository`, `SettingsStore`,
 `EditorLauncher`, `ExternalOpener`, `PathProbe`, `PlatformPaths`,
-`AssetLocator`, `MarkdownRenderer` and `ReleaseSource`. `ReleaseSource` returns a release type
+`AssetLocator`, `DocumentRenderer` and `ReleaseSource`. `ReleaseSource` returns a release type
 declared in `update`, which imports `ports` in turn, so the annotation is
 imported under `TYPE_CHECKING` alone; a runtime import there would close a
 circle.
 
-`defaults` holds the one rule for where skills live when the user has not said
-otherwise. The home directory is injected through `PlatformPaths`, which is what
+`defaults` holds the one rule for which folder is read when the user has not
+said otherwise: the Claude skills folder. That is a default rather than a
+limit; it is also the only place in the package that knows the name of any
+particular tool. The home directory is injected through `PlatformPaths`, which is what
 makes the per-operating-system default testable with no operating system.
 
-`SkillLibraryService` is frozen and holds only its injected dependencies. It
+`LibraryService` is frozen and holds only its injected dependencies. It
 answers questions rather than holding answers: `can_open_in_editor` is the enable
 predicate for the view in editor control, so the user interface asks rather than
-works it out. That predicate needs three things to be true at once: a skill is
-selected, an editor was chosen and that editor is still where it was.
+works it out. That predicate needs three things to be true at once: a document
+is selected, an editor was chosen and that editor is still where it was.
 
 `update` holds the whole update decision above both the toolkit and the network:
 the release types, the comparison, the platform-to-file mapping, `UpdateService`
@@ -106,7 +113,12 @@ raise a prompt.
 
 ### Infrastructure
 
-- `skill_repository`: applies the discovery rules of design plan section 1.
+- `document_repository`: walks a directory tree and reports it as a `Folder`.
+  Every file whose suffix names a `DocumentKind` is a document; every directory
+  holding one at any depth is a folder; hidden and cache directories are passed
+  over. A branch leading to no document is not reported at all, so every branch
+  the reader can open leads somewhere. A directory that cannot be listed costs
+  only itself rather than the whole tree.
 - `settings_store`: versioned JSON, written atomically through a temporary file
   and a replace, so a process that dies halfway leaves the previous settings
   intact. Its `FORMAT_VERSION` is the file's own number and has nothing to do
@@ -115,7 +127,10 @@ raise a prompt.
   user has accumulated needing anything done to them; the format may be revised
   on its own number when it has to be.
 - `platform`: the home directory and the path probe.
-- `markdown_renderer`: rendering through the `markdown` package.
+- `renderer`: rendering through the `markdown` package for a kind that
+  reflows; into an escaped preformatted block for one that does not. Passing plain
+  text through a Markdown renderer would silently rewrite it: a line of hyphens
+  becomes a heading rule and the author's own line breaks disappear.
 - `update_source`: the one place the application opens a connection of its own.
   It asks the GitHub releases endpoint for the latest published release of this
   repository and nothing else. That endpoint returns only a published,
@@ -157,7 +172,7 @@ Two trays around a split body, exactly as design plan part 2 describes.
   class rather than per dialog. A surface beneath a modal is frozen rather than
   suspended; `suspend` is itself gated on the surface being active, so a modal's
   own reset cannot be read as a reader taking hold.
-- `skill_view`: a redraw forced by a change of colour or of text size keeps
+- `document_view`: a redraw forced by a change of colour or of text size keeps
   the reader's place, taken as an offset into the text rather than a scroll
   position. A character survives a reflow where a pixel does not: at another
   size the same fraction of the page is different words. The place is taken by
@@ -176,7 +191,7 @@ Two trays around a split body, exactly as design plan part 2 describes.
   `wear` gives it a palette and the window re-renders after, because a rendered
   document keeps the colours it was rendered under. A frontmatter value longer
   than a few lines is lifted out of the header and given its own section after
-  the body, so a value running to thousands of characters cannot bury the skill
+  the body, so a value running to thousands of characters cannot bury the text
   the reader opened.
 - `top_tray` and `bottom_tray`: each declares `ring_stops()` left to right as
   drawn, so the ring's order is never inferred from a layout walk. The text
@@ -195,33 +210,40 @@ Two trays around a split body, exactly as design plan part 2 describes.
   sender's thread; no widget may be touched from there. `MainWindow` takes
   the update service as an optional dependency, so a test can build a window
   that asks nothing of the network; the composition root always supplies one.
-- `skill_tree`: one stop, walked with Up and Down, with internal cell tab
-  walking turned off so Tab leaves in a single press. Skills sit under a heading
-  for the origin they came from and Enter or Space opens and closes one, since
-  the horizontal arrows step the window's ring everywhere and cannot also be the
-  tree's own keys. The arrow is drawn at runtime in the palette's colour rather
-  than styled: Qt renders a stylesheet triangle as nothing at all and draws a
-  branch arrow only from an image file, while a text glyph would rest on a font
-  holding it, which this harness cannot verify. Restoring a selection never
-  opens a shut heading, because Qt expands ancestors to reach a row and would
-  otherwise undo the reader's decision on every re-read.
-- `skill_tree` and `skill_view` together: a skill already on screen and
-  unchanged is not drawn again. The library is
-  re-read on every activation of the window; each re-read used to send the page
+- `library_tree`: one stop, walked with Up and Down, with internal cell tab
+  walking turned off so Tab leaves in a single press. It mirrors the folders on
+  disk, a document row carrying the file's own name so a reader can find the
+  same file again in a dialogue. Enter or Space opens and closes a folder,
+  since the horizontal arrows step the window's ring everywhere and cannot also
+  be the tree's own keys. A folder is remembered by its path rather than by its
+  label, because two folders can share a name. The arrow is drawn at runtime in
+  the palette's colour rather than styled: Qt renders a stylesheet triangle as
+  nothing at all and draws a branch arrow only from an image file, while a text
+  glyph would rest on a font holding it, which this harness cannot verify.
+  Restoring a selection never opens a shut folder, because Qt expands ancestors
+  to reach a row and would otherwise undo the reader's decision on every
+  re-read.
+- Nothing is ever selected that the reader did not select. There is deliberately
+  no fallback to the first row: the library is re-read on every activation of
+  the window, so a fallback would choose for them again and again; the pane
+  reads itself down the page, so it would be scrolling through a document
+  nobody opened. An empty pane saying "Select a document" is the opening state.
+- `library_tree` and `document_view` together: a document already on screen and
+  unchanged is not drawn again. Each re-read used to send the page
   back to the top, so leaving to look something up lost your place and
-  scrolling looked as though it had been ignored. A skill compares by value, so
-  a document edited on disk is a different skill and is redrawn as it should be.
+  scrolling looked as though it had been ignored. A document compares by value,
+  so one edited on disk is a different document and is redrawn as it should be.
 - `reading_pane`: one home for how a scrolling text region behaves. It attaches
   the reading cycle, gates its own focus on overflow (a page that fits scrolls
   nowhere, so it is no stop at all) and answers Home, End, Ctrl+Home and
   Ctrl+End. Qt binds only the bare pair on a read-only browser, measured rather
   than assumed, so the two chords a reader reaches for first would otherwise do
-  nothing. The skill pane and both dialogs sit on it, which is what stops the
+  nothing. The document pane and both dialogs sit on it, which is what stops the
   three drifting apart.
   It also holds the text column to a readable line length, so a wide window
   buys margins rather than longer lines; text that arrived hard wrapped, a
   licence being the case, is left exactly as it came. The typography lives in
-  `document_style` beside the colours, because a skill's own paragraphs can be
+  `document_style` beside the colours, because a document's own paragraphs can be
   enormous: the longest measured runs past four thousand characters unbroken.
   Nothing here may rewrite what an author wrote, so the levers are the ones a
   reader owns, open line spacing, air between blocks and a capped measure.
@@ -237,7 +259,7 @@ between them; an inventory with no sentence ends in it gets a second pass at
 the divisions its author did write, the end of a bracketed entry and the
 semicolon. Nothing is added, removed or reordered; that is mechanical rather
 than promised: a test takes the breaks back out and requires the
-original text character for character, over every skill on the machine as well
+original text character for character, over every document on the machine as well
 as over invented ones. Measured over the real library, the longest block a
 reader meets falls from 5604 characters to 1893; blocks past 1500 fall from 26
 to 4. It runs in the pane rather than anywhere nearer the file, because it
@@ -245,7 +267,7 @@ is a decision about presenting text and never about storing it.
 
 Every colour pairing that carries text is held to the WCAG AA ratio by a test in
 the application as well as in the setup program. Three were under it and each
-looked deliberate: the selected row, every heading in a rendered skill and a
+looked deliberate: the selected row, every heading in a rendered document and a
 link in the light theme. The dark theme carries a separate selection fill
 because one accent cannot do both jobs there; a heading on the panel wants the
 lighter violet and white on the selected row wants the darker one.
@@ -257,16 +279,17 @@ cycle also watches only its own surface now; listening to the application for
 focus reached back to a surface that could already be gone and took the process
 down on teardown.
 
-`SkillOrigin` in the domain names where a skill was read from and the order the
-groups are shown in; `SkillCatalogue.groups` gathers by it and leaves out an
-origin that contributed nothing, so a machine with no plugins sees one list. The
-axis is origin rather than authorship because authorship is recorded nowhere,
-which means a skill someone else wrote inside the user's own folder is listed
-among theirs. `SkillLibraryService` reads both places and combines them, so
-grouping is a property of the library rather than of the widget showing it.
+`LibraryService` reads two trees and combines them into one `Library`: the
+folder the reader chose, then the plugins tree that sits beside it under the
+same `.claude` directory. Both are found from the chosen root rather than
+guessed at separately, so browsing anywhere with no plugins beside it simply
+yields one root. A tree that is not there contributes no root at all rather
+than a heading over nothing; nor does one leading to no document at any depth. Which
+roots exist is therefore a property of the library rather than of the widget
+showing it.
 
 `MainWindow.apply_appearance` does three things in one call: repaint the
-application stylesheet, re-face the toggle and re-render the open skill. Split
+application stylesheet, re-face the toggle and re-render the open document. Split
 apart, the toggle can be left showing the mode just departed, which invites a
 second press; the document then keeps the old palette's colours too.
 
@@ -278,7 +301,7 @@ trays.
 ## The setup program
 
 `installer/` is a second application in the same repository, not a part of the
-first: nothing in `skillsviewer/` imports it and nothing in it imports the
+first: nothing in `plainsight/` imports it and nothing in it imports the
 application. It follows the house setup model.
 
 - `route` and `wording` are pure, so every state setup can be in is a test
@@ -322,9 +345,9 @@ application. It follows the house setup model.
   are tested at the mechanism: that the grant reaches the process actually
   started, then that the composition root calls `present` rather than `show`.
 
-The read-only invariant of design plan 13.1 is about the application, not the
+The read-only invariant is about the application, not the
 setup program: an installer writes files by definition. What it never touches
-is a skills root; it writes only under `%LOCALAPPDATA%\Programs` and `HKCU`.
+is a folder of documents; it writes only under `%LOCALAPPDATA%\Programs` and `HKCU`.
 
 ## Quality enforcement
 

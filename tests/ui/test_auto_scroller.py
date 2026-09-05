@@ -8,7 +8,7 @@ from __future__ import annotations
 
 from PySide6.QtWidgets import QApplication, QTextBrowser
 
-from skillsviewer.ui.auto_scroller import (
+from plainsight.ui.auto_scroller import (
     BOTTOM_HOLD_MS,
     DESCENT_TICKS_PER_STEP,
     REWIND_PIXELS,

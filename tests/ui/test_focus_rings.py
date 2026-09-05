@@ -20,11 +20,11 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
-from skillsviewer.infrastructure.resources import BundledAssets
-from skillsviewer.ui.about_dialog import AboutDialog
-from skillsviewer.ui.licence_dialog import LicenceDialog
-from skillsviewer.ui.main_window import MainWindow
-from skillsviewer.ui.theme import DARK, LIGHT, stylesheet
+from plainsight.infrastructure.resources import BundledAssets
+from plainsight.ui.about_dialog import AboutDialog
+from plainsight.ui.licence_dialog import LicenceDialog
+from plainsight.ui.main_window import MainWindow
+from plainsight.ui.theme import DARK, LIGHT, stylesheet
 
 CONTAINER_SELECTORS = (
     "*",

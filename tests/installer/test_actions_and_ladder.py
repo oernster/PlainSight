@@ -25,7 +25,7 @@ from installer.performing import (
 from installer.plan import InstallPlan
 from installer.steplog import StepLog
 
-A_FILE = "SkillsViewer.exe"
+A_FILE = "PlainSight.exe"
 SOME_CONTENT = b"x" * 4096
 
 
@@ -78,7 +78,7 @@ def test_the_members_of_a_safe_archive_are_all_returned(
 
     with zipfile.ZipFile(archive) as opened:
         assert sorted(safe_members(opened, target)) == [
-            "SkillsViewer.exe",
+            "PlainSight.exe",
             "assets/icon.png",
         ]
 

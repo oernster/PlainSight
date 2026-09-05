@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Build Skills Viewer as a flatpak bundle.
+# Build PlainSight as a flatpak bundle.
 #
 # Fully offline: the wheels are fetched on the host before the build, so the
 # sandbox needs no network at build time and the application asks for none at
@@ -7,9 +7,9 @@
 # this script is committed.
 set -euo pipefail
 
-APP_ID="uk.codecrafter.SkillsViewer"
-APP_NAME="Skills Viewer"
-COMMAND_NAME="skillsviewer"
+APP_ID="uk.codecrafter.PlainSight"
+APP_NAME="PlainSight"
+COMMAND_NAME="plainsight"
 APP_VERSION="$(tr -d '[:space:]' < VERSION)"
 
 RUNTIME="org.freedesktop.Platform"
@@ -18,7 +18,7 @@ RUNTIME_VERSION="25.08"
 PYTHON_DIR="python3.13"
 PYTHON_TAG="3.13"
 
-BUNDLE="skillsviewer.flatpak"
+BUNDLE="plainsight.flatpak"
 BUILD_DIR=".flatpak-build"
 REPO_DIR=".flatpak-repo"
 WHEELS_DIR=".flatpak-wheels"
@@ -72,7 +72,7 @@ mkdir -p "${PACKAGING_DIR}"
 cat > "${PACKAGING_DIR}/${COMMAND_NAME}" <<'LAUNCHER'
 #!/bin/sh
 SITE="/app/lib/python3.13/site-packages"
-export PYTHONPATH="${SITE}:/app/share/skillsviewer${PYTHONPATH:+:$PYTHONPATH}"
+export PYTHONPATH="${SITE}:/app/share/plainsight${PYTHONPATH:+:$PYTHONPATH}"
 export QT_PLUGIN_PATH="${SITE}/PySide6/Qt/plugins"
 export QT_QPA_PLATFORM_PLUGIN_PATH="${SITE}/PySide6/Qt/plugins/platforms"
 if [ -n "$WAYLAND_DISPLAY" ] && [ -z "$FORCE_X11" ]; then
@@ -80,7 +80,7 @@ if [ -n "$WAYLAND_DISPLAY" ] && [ -z "$FORCE_X11" ]; then
 else
     export QT_QPA_PLATFORM=xcb
 fi
-exec python3 /app/share/skillsviewer/main.py "$@"
+exec python3 /app/share/plainsight/main.py "$@"
 LAUNCHER
 chmod 755 "${PACKAGING_DIR}/${COMMAND_NAME}"
 
@@ -106,7 +106,7 @@ cat > "${PACKAGING_DIR}/${APP_ID}.metainfo.xml" <<METAINFO
   <developer id="uk.codecrafter"><name>Oliver Ernster</name></developer>
   <description>
     <p>
-      Skills Viewer finds the Claude skills on your machine, lists them,
+      PlainSight finds the Claude skills on your machine, lists them,
       renders the one you pick and hands editing to an editor you choose. It
       is not a text editor and it never writes to a skill.
     </p>
@@ -152,18 +152,18 @@ modules:
       - type: file
         path: requirements.txt
 
-  - name: skillsviewer
+  - name: plainsight
     buildsystem: simple
     build-commands:
-      - install -d /app/share/skillsviewer
-      - cp -r main.py skillsviewer assets VERSION LICENSE LICENSE-GPL-3.0.txt /app/share/skillsviewer/
+      - install -d /app/share/plainsight
+      - cp -r main.py plainsight assets VERSION LICENSE LICENSE-GPL-3.0.txt /app/share/plainsight/
       - install -Dm755 ${PACKAGING_DIR}/${COMMAND_NAME} /app/bin/${COMMAND_NAME}
       - install -Dm644 ${PACKAGING_DIR}/${APP_ID}.desktop /app/share/applications/${APP_ID}.desktop
       - install -Dm644 ${PACKAGING_DIR}/${APP_ID}.metainfo.xml /app/share/metainfo/${APP_ID}.metainfo.xml
 MANIFEST_HEAD
 for size in "${ICON_SIZES[@]}"; do
 cat <<ICON_LINE
-      - install -Dm644 assets/skillsviewer_icon_${size}.png /app/share/icons/hicolor/${size}x${size}/apps/${APP_ID}.png
+      - install -Dm644 assets/plainsight_icon_${size}.png /app/share/icons/hicolor/${size}x${size}/apps/${APP_ID}.png
 ICON_LINE
 done
 cat <<MANIFEST_TAIL

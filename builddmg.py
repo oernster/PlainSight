@@ -28,11 +28,11 @@ from dmg_icon import png_to_icns, set_file_icon
 
 PROJECT_ROOT = pathlib.Path(__file__).resolve().parent
 
-APP_DISPLAY_NAME = "Skills Viewer"
-APP_NAME = "SkillsViewer"
-BUNDLE_ID = "uk.codecrafter.SkillsViewer"
+APP_DISPLAY_NAME = "PlainSight"
+APP_NAME = "PlainSight"
+BUNDLE_ID = "uk.codecrafter.PlainSight"
 ENTRY_SCRIPT = PROJECT_ROOT / "main.py"
-ICON_SOURCE = PROJECT_ROOT / "assets" / "skillsviewer_icon_1024.png"
+ICON_SOURCE = PROJECT_ROOT / "assets" / "plainsight_icon_1024.png"
 
 DIST_DIR = PROJECT_ROOT / "dist"
 WORK_DIR = PROJECT_ROOT / "build"
@@ -54,11 +54,11 @@ APPLE_TEAM_ID = os.environ.get("APPLE_TEAM_ID", "W7K465GKFJ")
 # A notarytool credential profile keeps the app-specific password in the
 # login keychain, so it never reaches the environment or this file. Create
 # it once with:
-#   xcrun notarytool store-credentials "SkillsViewer" \
+#   xcrun notarytool store-credentials "PlainSight" \
 #       --apple-id <apple id> --team-id <team id>
 NOTARY_PROFILE = os.environ.get("NOTARY_PROFILE", APP_NAME)
 
-# Skills Viewer loads the Qt frameworks it ships, all signed with this same
+# PlainSight loads the Qt frameworks it ships, all signed with this same
 # identity, so library validation is the one entitlement it needs.
 ENTITLEMENTS = """<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN"
@@ -235,7 +235,7 @@ def credentials() -> list[str]:
 
     A stored profile is preferred because it keeps the app-specific password
     out of the environment entirely. The environment pair stays as the fallback
-    for a machine that has no profile, a build server for instance, and the
+    for a machine that has no profile, a build server for instance; the
     reason the profile was rejected is printed rather than swallowed, so a
     skipped notarization never looks like a deliberate one.
     """

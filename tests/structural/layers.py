@@ -5,9 +5,9 @@ from __future__ import annotations
 import ast
 from pathlib import Path
 
-PACKAGE_ROOT = Path(__file__).resolve().parents[2] / "skillsviewer"
+PACKAGE_ROOT = Path(__file__).resolve().parents[2] / "plainsight"
 REPOSITORY_ROOT = PACKAGE_ROOT.parent
-PACKAGE_NAME = "skillsviewer"
+PACKAGE_NAME = "plainsight"
 
 LAYERS = ("domain", "application", "infrastructure", "ui")
 

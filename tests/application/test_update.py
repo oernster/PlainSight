@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import pytest
 
-from skillsviewer.application.update import (
+from plainsight.application.update import (
     LINUX_KEY,
     MACOS_KEY,
     WINDOWS_KEY,
@@ -107,9 +107,9 @@ def test_each_operating_system_maps_to_its_own_file(
 
 def test_the_asset_for_this_platform_is_picked_by_its_ending() -> None:
     assets = (
-        ReleaseAsset(name="SkillsViewer.flatpak", download_url="linux"),
-        ReleaseAsset(name="SkillsViewerSetup.EXE", download_url="windows"),
-        ReleaseAsset(name="SkillsViewer.dmg", download_url="macos"),
+        ReleaseAsset(name="PlainSight.flatpak", download_url="linux"),
+        ReleaseAsset(name="PlainSightSetup.EXE", download_url="windows"),
+        ReleaseAsset(name="PlainSight.dmg", download_url="macos"),
     )
 
     assert select_asset_url(assets, WINDOWS_KEY) == "windows"
@@ -125,7 +125,7 @@ def test_a_release_carrying_nothing_for_this_platform_offers_no_file() -> None:
 
 
 def test_a_platform_nobody_ships_for_offers_no_file() -> None:
-    assets = (ReleaseAsset(name="SkillsViewerSetup.exe", download_url="windows"),)
+    assets = (ReleaseAsset(name="PlainSightSetup.exe", download_url="windows"),)
 
     assert select_asset_url(assets, "solaris") is None
 
@@ -138,7 +138,7 @@ def test_an_unreachable_source_is_reported_as_unreachable() -> None:
 
 
 def test_a_newer_release_is_available_with_its_file_and_its_page() -> None:
-    asset = ReleaseAsset(name="SkillsViewerSetup.exe", download_url="the-file")
+    asset = ReleaseAsset(name="PlainSightSetup.exe", download_url="the-file")
 
     status = a_service(a_release("0.2.0", (asset,))).check()
 

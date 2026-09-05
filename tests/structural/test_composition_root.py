@@ -16,13 +16,13 @@ COMPOSITION_ROOT = "__main__.py"
 # The concrete implementations. Nothing but the composition root builds one.
 IMPLEMENTATIONS = frozenset(
     {
-        "FileSystemSkillRepository",
+        "FileSystemDocumentRepository",
         "JsonSettingsStore",
         "DesktopEditorLauncher",
         "QtExternalOpener",
         "FileSystemPathProbe",
         "HomePlatformPaths",
-        "PythonMarkdownRenderer",
+        "DocumentHtmlRenderer",
         "BundledAssets",
         "GitHubReleaseSource",
     }

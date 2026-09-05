@@ -6,44 +6,37 @@ assert about it and nothing more.
 
 from __future__ import annotations
 
-from skillsviewer.domain.catalogue import SkillCatalogue
-from skillsviewer.domain.settings import EditorChoice, Settings
-from skillsviewer.domain.skill import Skill
+from plainsight.domain.document import Document, DocumentKind
+from plainsight.domain.library import Folder
+from plainsight.domain.settings import EditorChoice, Settings
 
 
-def a_skill(name: str = "prose") -> Skill:
-    """A readable skill, for tests that need one rather than describe one."""
-    return Skill(
+def a_document(name: str = "SKILL.md", folder: str = "/skills/prose") -> Document:
+    """A readable document, for tests that need one rather than describe one."""
+    return Document(
         name=name,
-        description="",
-        directory=f"/skills/{name}",
-        document_path=f"/skills/{name}/SKILL.md",
+        path=f"{folder}/{name}",
+        kind=DocumentKind.MARKDOWN,
         body="body",
     )
 
 
+def a_folder(name: str = "skills", path: str = "/skills", *names: str) -> Folder:
+    """A folder holding one document per name given, else a single default one."""
+    wanted = names or ("SKILL.md",)
+    return Folder.of(name, path, documents=[a_document(one, path) for one in wanted])
+
+
 class FakeRepository:
-    """Reports a fixed catalogue and records every root it was asked for."""
+    """Reports a fixed folder per root and records every root it was asked for."""
 
-    def __init__(
-        self,
-        catalogue: SkillCatalogue | None = None,
-        plugin_catalogue: SkillCatalogue | None = None,
-    ) -> None:
-        self.catalogue = catalogue if catalogue is not None else SkillCatalogue()
-        self.plugin_catalogue = (
-            plugin_catalogue if plugin_catalogue is not None else SkillCatalogue()
-        )
+    def __init__(self, folders: dict[str, Folder | None] | None = None) -> None:
+        self.folders: dict[str, Folder | None] = dict(folders or {})
         self.roots_read: list[str] = []
-        self.plugin_roots_read: list[str] = []
 
-    def list_skills(self, root: str) -> SkillCatalogue:
+    def read_folder(self, root: str) -> Folder | None:
         self.roots_read.append(root)
-        return self.catalogue
-
-    def list_plugin_skills(self, root: str) -> SkillCatalogue:
-        self.plugin_roots_read.append(root)
-        return self.plugin_catalogue
+        return self.folders.get(root)
 
 
 class FakeSettingsStore:

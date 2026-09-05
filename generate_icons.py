@@ -21,7 +21,7 @@ import sys
 from PIL import Image
 
 PROJECT_ROOT = pathlib.Path(__file__).resolve().parent
-MASTER_PNG = PROJECT_ROOT / "skillsviewer.png"
+MASTER_PNG = PROJECT_ROOT / "plainsight.png"
 DONATE_MASTER = PROJECT_ROOT / "assets" / "donate-master.png"
 ASSETS_DIR = PROJECT_ROOT / "assets"
 
@@ -30,9 +30,9 @@ ICO_SIZES = (16, 24, 32, 48, 64, 128, 256)
 CANONICAL_PNG_SIZE = 256
 ICNS_SIZE = 1024
 
-ICON_STEM = "skillsviewer_icon"
-ICO_NAME = "skillsviewer.ico"
-ICNS_NAME = "skillsviewer.icns"
+ICON_STEM = "plainsight_icon"
+ICO_NAME = "plainsight.ico"
+ICNS_NAME = "plainsight.icns"
 CANONICAL_PNG_NAME = f"{ICON_STEM}.png"
 
 # The button glyphs are drawn at this height, so each is written at four times

@@ -230,8 +230,8 @@ __marimo__/
 /installer/payload/
 /*.icns
 /*.dmg
-/skillsviewer.flatpak
-/uk.codecrafter.SkillsViewer.yml
+/plainsight.flatpak
+/uk.codecrafter.PlainSight.yml
 /.flatpak-build/
 /.flatpak-repo/
 /.flatpak-builder/

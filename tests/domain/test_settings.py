@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import pytest
 
-from skillsviewer.domain.settings import (
+from plainsight.domain.settings import (
     DEFAULT_APPEARANCE,
     DEFAULT_FONT_SIZE,
     Appearance,
@@ -18,7 +18,7 @@ from skillsviewer.domain.settings import (
 def test_settings_start_with_nothing_remembered() -> None:
     settings = Settings()
 
-    assert settings.skills_root == ""
+    assert settings.documents_root == ""
     assert settings.editor is None
     assert settings.appearance is DEFAULT_APPEARANCE
 
@@ -41,12 +41,12 @@ def test_an_appearance_nobody_recorded_falls_back_to_the_default() -> None:
 def test_remembering_an_appearance_leaves_the_rest_alone() -> None:
     editor = EditorChoice(path="/usr/bin/vi", display_name="vi")
 
-    settings = Settings(skills_root="/skills", editor=editor).with_appearance(
+    settings = Settings(documents_root="/skills", editor=editor).with_appearance(
         Appearance.LIGHT
     )
 
     assert settings.appearance is Appearance.LIGHT
-    assert settings.skills_root == "/skills"
+    assert settings.documents_root == "/skills"
     assert settings.editor is editor
 
 
@@ -55,17 +55,17 @@ def test_remembering_a_root_leaves_the_editor_and_appearance_alone() -> None:
 
     settings = Settings(editor=editor, appearance=Appearance.LIGHT).with_root("/skills")
 
-    assert settings.skills_root == "/skills"
+    assert settings.documents_root == "/skills"
     assert settings.editor is editor
     assert settings.appearance is Appearance.LIGHT
 
 
 def test_remembering_an_editor_leaves_the_root_and_appearance_alone() -> None:
-    settings = Settings(skills_root="/skills", appearance=Appearance.LIGHT).with_editor(
-        EditorChoice(path="/usr/bin/vi", display_name="vi")
-    )
+    settings = Settings(
+        documents_root="/skills", appearance=Appearance.LIGHT
+    ).with_editor(EditorChoice(path="/usr/bin/vi", display_name="vi"))
 
-    assert settings.skills_root == "/skills"
+    assert settings.documents_root == "/skills"
     assert settings.editor is not None
     assert settings.editor.display_name == "vi"
     assert settings.appearance is Appearance.LIGHT
@@ -86,13 +86,13 @@ def test_nothing_is_skipped_by_default() -> None:
 
 
 def test_a_skipped_release_replaces_only_itself() -> None:
-    settings = Settings(skills_root="/skills", opened_groups=("prose",))
+    settings = Settings(documents_root="/skills", opened_folders=("prose",))
 
     changed = settings.with_skipped_update_version("0.2.0")
 
     assert changed.skipped_update_version == "0.2.0"
-    assert changed.skills_root == "/skills"
-    assert changed.opened_groups == ("prose",)
+    assert changed.documents_root == "/skills"
+    assert changed.opened_folders == ("prose",)
     assert settings.skipped_update_version == ""
 
 
@@ -100,7 +100,7 @@ def test_every_other_copy_carries_the_skipped_release_over() -> None:
     settings = Settings().with_skipped_update_version("0.2.0")
 
     assert settings.with_root("/skills").skipped_update_version == "0.2.0"
-    assert settings.with_opened_groups(()).skipped_update_version == "0.2.0"
+    assert settings.with_opened_folders(()).skipped_update_version == "0.2.0"
 
 
 def test_the_default_text_size_is_the_middle_one() -> None:
@@ -139,13 +139,13 @@ def test_a_recorded_size_reads_back_or_falls_to_the_default(
 
 
 def test_a_text_size_replaces_only_itself() -> None:
-    settings = Settings(skills_root="/skills", opened_groups=("prose",))
+    settings = Settings(documents_root="/skills", opened_folders=("prose",))
 
     changed = settings.with_font_size(FontSize.LARGE)
 
     assert changed.font_size is FontSize.LARGE
-    assert changed.skills_root == "/skills"
-    assert changed.opened_groups == ("prose",)
+    assert changed.documents_root == "/skills"
+    assert changed.opened_folders == ("prose",)
     assert settings.font_size is FontSize.MEDIUM
 
 

@@ -12,8 +12,8 @@ import pathlib
 import sys
 
 PAYLOAD_DIRECTORY = "payload"
-ARCHIVE_NAME = "SkillsViewer.zip"
-MARK_NAME = "skillsviewer_icon_256.png"
+ARCHIVE_NAME = "PlainSight.zip"
+MARK_NAME = "plainsight_icon_256.png"
 LIGHT_MODE_NAME = "light-mode.png"
 DARK_MODE_NAME = "dark-mode.png"
 LICENCE_NAME = "INSTALLER_LICENSE"

@@ -6,7 +6,7 @@ its own, so there is exactly one place where dependencies are constructed.
 
 from __future__ import annotations
 
-from skillsviewer.__main__ import main
+from plainsight.__main__ import main
 
 if __name__ == "__main__":
     raise SystemExit(main())

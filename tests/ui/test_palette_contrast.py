@@ -9,7 +9,7 @@ from __future__ import annotations
 
 import pytest
 
-from skillsviewer.ui import theme
+from plainsight.ui import theme
 from tests.contrast import AA_RATIO, contrast
 
 BOTH = (theme.DARK, theme.LIGHT)

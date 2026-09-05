@@ -15,8 +15,8 @@ import shutil
 import sys
 
 PROJECT_ROOT = pathlib.Path(__file__).resolve().parent.parent
-APP_DISPLAY_NAME = "Skills Viewer"
-ARCHIVE_STEM = "SkillsViewer"
+APP_DISPLAY_NAME = "PlainSight"
+ARCHIVE_STEM = "PlainSight"
 
 PAYLOAD_DIR = PROJECT_ROOT / "installer" / "payload"
 BUNDLE_DIR = PAYLOAD_DIR / APP_DISPLAY_NAME
@@ -29,8 +29,8 @@ CARRIED_FILES = (
 # The setup program's own interface reads these, so they are staged beside the
 # payload rather than left inside the zipped bundle it has not extracted yet.
 CARRIED_ASSETS = (
-    "skillsviewer_icon_256.png",
-    "skillsviewer.ico",
+    "plainsight_icon_256.png",
+    "plainsight.ico",
     "light-mode.png",
     "dark-mode.png",
 )

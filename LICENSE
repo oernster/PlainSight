@@ -1,13 +1,13 @@
-Skills Viewer is dual licensed. Which licence applies is decided by directory.
+PlainSight is dual licensed. Which licence applies is decided by directory.
 
-  skillsviewer/ui/         GNU Lesser General Public License, version 3
+  plainsight/ui/         GNU Lesser General Public License, version 3
                            (LICENSE-LGPL-3.0.txt), to align with Qt.
 
-  skillsviewer/domain/     GNU General Public License, version 3
-  skillsviewer/application/    (LICENSE-GPL-3.0.txt)
-  skillsviewer/infrastructure/
-  skillsviewer/version.py
-  skillsviewer/__main__.py
+  plainsight/domain/     GNU General Public License, version 3
+  plainsight/application/    (LICENSE-GPL-3.0.txt)
+  plainsight/infrastructure/
+  plainsight/version.py
+  plainsight/__main__.py
   main.py
   installer/
   the build scripts at the repository root

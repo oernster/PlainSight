@@ -13,9 +13,9 @@ import zipfile
 
 from installer.plan import InstallPlan
 
-APP_DISPLAY_NAME = "Skills Viewer"
-EXE_NAME = "SkillsViewer.exe"
-PAYLOAD_ARCHIVE = "SkillsViewer.zip"
+APP_DISPLAY_NAME = "PlainSight"
+EXE_NAME = "PlainSight.exe"
+PAYLOAD_ARCHIVE = "PlainSight.zip"
 PROGRAMS_DIRECTORY = "Programs"
 SHORTCUT_NAME = f"{APP_DISPLAY_NAME}.lnk"
 START_MENU_TAIL = ("Microsoft", "Windows", "Start Menu", "Programs")
@@ -95,7 +95,7 @@ def install_size_kb(target: pathlib.Path) -> int:
 
 def uninstaller_path(plan: InstallPlan) -> pathlib.Path:
     """Where the setup program copies itself so removal can re-run it."""
-    return plan.target / UNINSTALLER_DIRECTORY / "SkillsViewerSetup.exe"
+    return plan.target / UNINSTALLER_DIRECTORY / "PlainSightSetup.exe"
 
 
 def executable_path(target: pathlib.Path) -> pathlib.Path:

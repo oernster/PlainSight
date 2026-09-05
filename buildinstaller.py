@@ -34,8 +34,8 @@ from installer.build_payload import ARCHIVE_PATH, PAYLOAD_DIR, stage
 
 PROJECT_ROOT = pathlib.Path(__file__).resolve().parent
 
-APP_DISPLAY_NAME = "Skills Viewer"
-SETUP_NAME = "SkillsViewerSetup"
+APP_DISPLAY_NAME = "PlainSight"
+SETUP_NAME = "PlainSightSetup"
 INSTALLER_ENTRY = PROJECT_ROOT / "installer" / "app.py"
 VERSION_FILE = PROJECT_ROOT / "VERSION"
 

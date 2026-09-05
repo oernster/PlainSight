@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import pathlib
 from collections.abc import Iterator
 from pathlib import Path
 
@@ -9,14 +10,15 @@ import pytest
 from PySide6.QtCore import QPoint
 from PySide6.QtWidgets import QApplication
 
-from skillsviewer.application.services import SkillLibraryService
-from skillsviewer.domain.settings import Settings
-from skillsviewer.infrastructure.markdown_renderer import PythonMarkdownRenderer
-from skillsviewer.infrastructure.resources import BundledAssets
-from skillsviewer.infrastructure.skill_repository import FileSystemSkillRepository
-from skillsviewer.ui.auto_scroller import Phase
-from skillsviewer.ui.main_window import MainWindow
-from skillsviewer.ui.skill_view import Place
+from plainsight.application.services import LibraryService
+from plainsight.domain.settings import Settings
+from plainsight.infrastructure.document_repository import FileSystemDocumentRepository
+from plainsight.infrastructure.renderer import DocumentHtmlRenderer
+from plainsight.infrastructure.resources import BundledAssets
+from plainsight.ui.auto_scroller import Phase
+from plainsight.ui.document_view import Place
+from plainsight.ui.library_tree import DOCUMENT_ROLE, FIRST_COLUMN
+from plainsight.ui.main_window import MainWindow
 from tests.application.fakes import (
     FakeLauncher,
     FakeOpener,
@@ -82,20 +84,20 @@ def reading(
     application: QApplication, long_root: Path, store: FakeSettingsStore
 ) -> Iterator[MainWindow]:
     """A window already part way down a long skill."""
-    store.settings = Settings(skills_root=str(long_root))
-    service = SkillLibraryService(
-        repository=FileSystemSkillRepository(),
+    store.settings = Settings(documents_root=str(long_root))
+    service = LibraryService(
+        repository=FileSystemDocumentRepository(),
         settings_store=store,
         launcher=FakeLauncher(),
         opener=FakeOpener(),
         probe=FakeProbe(),
         paths=FakePaths(),
     )
-    window = MainWindow(service, PythonMarkdownRenderer(), BundledAssets())
+    window = MainWindow(service, DocumentHtmlRenderer(), BundledAssets())
     window.resize(WIDE_PX, TALL_PX)
     window.show()
     QApplication.processEvents()
-    window.show_skill(_skill(window, "long"))
+    _select(window, "long")
     QApplication.processEvents()
     yield window
     window.close()
@@ -103,22 +105,32 @@ def reading(
     QApplication.processEvents()
 
 
-def _skill(window: MainWindow, name: str) -> object:
-    for skill in window._service.load().skills:
-        if skill.name == name:
-            return skill
-    raise AssertionError(f"no skill named {name}")
+def _select(window: MainWindow, folder: str) -> None:
+    """Choose the one document inside the named folder, through the tree.
+
+    Through the tree rather than by calling the window directly, because the
+    window re-renders from whatever the tree has selected: a page pushed in
+    behind the tree is wiped the moment anything asks for a repaint.
+    """
+    for item in window.library_tree.folder_items():
+        item.setExpanded(True)
+    for item in window.library_tree.document_items():
+        document = item.data(FIRST_COLUMN, DOCUMENT_ROLE)
+        if pathlib.PurePath(document.path).parent.name == folder:
+            window.library_tree.setCurrentItem(item)
+            return
+    raise AssertionError(f"no document in a folder named {folder}")
 
 
 def top_character(window: MainWindow) -> int:
     """Where in the text the first visible character sits."""
-    return window.skill_view.cursorForPosition(TOP_LEFT).position()
+    return window.document_view.cursorForPosition(TOP_LEFT).position()
 
 
 def glimpse(window: MainWindow) -> str:
     """The words at the top of the page, for a failure that reads plainly."""
     start = top_character(window)
-    return window.skill_view.toPlainText()[start : start + GLIMPSE]
+    return window.document_view.toPlainText()[start : start + GLIMPSE]
 
 
 TICKS_TO_START = 2000
@@ -140,7 +152,7 @@ def settle(window: MainWindow) -> None:
 
 
 def scroll_halfway(window: MainWindow) -> None:
-    bar = window.skill_view.verticalScrollBar()
+    bar = window.document_view.verticalScrollBar()
     assert bar.maximum() > AT_THE_TOP, "the fixture skill has to actually scroll"
     bar.setValue(bar.maximum() // 2)
     QApplication.processEvents()
@@ -152,15 +164,15 @@ def test_switching_appearance_leaves_the_reader_exactly_where_they_were(
     """The reported defect: dark mode used to throw the page back to the top."""
     scroll_halfway(reading)
     before = top_character(reading)
-    before_pixel = reading.skill_view.verticalScrollBar().value()
-    before_height = reading.skill_view.verticalScrollBar().maximum()
+    before_pixel = reading.document_view.verticalScrollBar().value()
+    before_height = reading.document_view.verticalScrollBar().maximum()
 
     reading.switch_appearance()
     settle(reading)
 
     # The words, exactly. The pixel is exact too wherever the page comes back
     # to the height it had, which is what a change of colour normally does.
-    bar = reading.skill_view.verticalScrollBar()
+    bar = reading.document_view.verticalScrollBar()
     if bar.maximum() == before_height:
         # The page came back to the height it had, so the place taken is valid
         # again and goes back untouched. This is the ordinary case.
@@ -183,7 +195,7 @@ def test_switching_back_again_holds_the_place_too(reading: MainWindow) -> None:
     QApplication.processEvents()
 
     assert abs(top_character(reading) - before) <= A_PARAGRAPH, glimpse(reading)
-    assert reading.skill_view.verticalScrollBar().value() > AT_THE_TOP
+    assert reading.document_view.verticalScrollBar().value() > AT_THE_TOP
 
 
 def test_changing_the_text_size_keeps_the_reader_on_the_same_words(
@@ -197,7 +209,7 @@ def test_changing_the_text_size_keeps_the_reader_on_the_same_words(
     QApplication.processEvents()
 
     assert abs(top_character(reading) - before) <= A_PARAGRAPH, glimpse(reading)
-    assert reading.skill_view.verticalScrollBar().value() > AT_THE_TOP
+    assert reading.document_view.verticalScrollBar().value() > AT_THE_TOP
 
 
 def test_the_place_is_held_through_every_size_in_the_cycle(
@@ -217,7 +229,7 @@ def test_a_reader_at_the_top_stays_at_the_top(reading: MainWindow) -> None:
     reading.switch_appearance()
     QApplication.processEvents()
 
-    assert reading.skill_view.verticalScrollBar().value() == AT_THE_TOP
+    assert reading.document_view.verticalScrollBar().value() == AT_THE_TOP
 
 
 def test_a_different_skill_still_opens_at_its_beginning(
@@ -226,12 +238,12 @@ def test_a_different_skill_still_opens_at_its_beginning(
     """Keeping a place must never leak across to a page nobody was reading."""
     scroll_halfway(reading)
 
-    reading.show_skill(_skill(reading, "short"))
+    _select(reading, "short")
     QApplication.processEvents()
-    reading.show_skill(_skill(reading, "long"))
+    _select(reading, "long")
     QApplication.processEvents()
 
-    assert reading.skill_view.verticalScrollBar().value() == AT_THE_TOP
+    assert reading.document_view.verticalScrollBar().value() == AT_THE_TOP
 
 
 def test_the_column_is_re_measured_when_the_text_grows(
@@ -247,7 +259,7 @@ def test_the_column_is_re_measured_when_the_text_grows(
     """
     reading.resize(VERY_WIDE_PX, TALL_PX)
     QApplication.processEvents()
-    view = reading.skill_view
+    view = reading.document_view
     wanted_before = view.readable_width()
     margin_before = view.viewportMargins().left()
     assert margin_before > AT_THE_TOP, "the window has to be wider than the column"
@@ -267,30 +279,30 @@ def test_a_place_taken_is_never_spent_on_a_page_nobody_was_reading(
 ) -> None:
     """A remembered place must not survive into a different document."""
     scroll_halfway(reading)
-    reading.skill_view.remember_place()
+    reading.document_view.remember_place()
 
-    reading.skill_view.show_empty_root()
+    reading.document_view.show_empty_root()
     QApplication.processEvents()
 
-    assert reading.skill_view.verticalScrollBar().value() == AT_THE_TOP
-    assert reading.skill_view._place is None
+    assert reading.document_view.verticalScrollBar().value() == AT_THE_TOP
+    assert reading.document_view._place is None
 
 
 def test_the_same_holds_when_nothing_is_selected(reading: MainWindow) -> None:
     scroll_halfway(reading)
-    reading.skill_view.remember_place()
+    reading.document_view.remember_place()
 
-    reading.skill_view.show_nothing()
+    reading.document_view.show_nothing()
     QApplication.processEvents()
 
-    assert reading.skill_view.verticalScrollBar().value() == AT_THE_TOP
-    assert reading.skill_view._place is None
+    assert reading.document_view.verticalScrollBar().value() == AT_THE_TOP
+    assert reading.document_view._place is None
 
 
 def test_nothing_is_remembered_from_the_top_of_a_page(reading: MainWindow) -> None:
-    reading.skill_view.remember_place()
+    reading.document_view.remember_place()
 
-    assert reading.skill_view._place is None
+    assert reading.document_view._place is None
 
 
 def test_the_page_is_laid_out_before_it_is_ever_shown(reading: MainWindow) -> None:
@@ -310,7 +322,7 @@ def test_the_page_is_laid_out_before_it_is_ever_shown(reading: MainWindow) -> No
     # the return then follows the words; what is asserted is that the reader is
     # still where they were reading, not at the top.
     assert abs(top_character(reading) - before) <= A_PARAGRAPH, glimpse(reading)
-    assert reading.skill_view.verticalScrollBar().value() > AT_THE_TOP
+    assert reading.document_view.verticalScrollBar().value() > AT_THE_TOP
 
 
 def test_the_reading_cycle_holds_still_for_a_moment_after_a_switch(
@@ -323,7 +335,7 @@ def test_the_reading_cycle_holds_still_for_a_moment_after_a_switch(
     to pause, which is why the hold is asked for rather than forced.
     """
     scroll_halfway(reading)
-    scroller = reading.skill_view.scroller
+    scroller = reading.document_view.scroller
     for _tick in range(TICKS_TO_START):
         scroller.tick()
         if scroller.phase is Phase.DOWN:
@@ -345,7 +357,7 @@ def test_a_redraw_that_keeps_the_height_puts_the_pixel_back_exactly(
     had; the position taken then is valid again and is applied unchanged.
     """
     scroll_halfway(reading)
-    view = reading.skill_view
+    view = reading.document_view
     bar = view.verticalScrollBar()
     wanted = Place(pixel=bar.value(), height=bar.maximum(), character=0)
     bar.setValue(AT_THE_TOP)

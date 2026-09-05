@@ -9,7 +9,7 @@ from __future__ import annotations
 
 import ast
 
-from skillsviewer import version
+from plainsight import version
 
 from .layers import PACKAGE_ROOT, package_files, parse
 

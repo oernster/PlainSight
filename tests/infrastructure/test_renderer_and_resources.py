@@ -4,13 +4,14 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from skillsviewer.infrastructure.markdown_renderer import PythonMarkdownRenderer
-from skillsviewer.infrastructure.platform import (
+from plainsight.domain.document import DocumentKind
+from plainsight.infrastructure.platform import (
     FileSystemPathProbe,
     HomePlatformPaths,
     settings_path,
 )
-from skillsviewer.infrastructure.resources import (
+from plainsight.infrastructure.renderer import DocumentHtmlRenderer
+from plainsight.infrastructure.resources import (
     BundledAssets,
     find_asset,
     read_version,
@@ -18,16 +19,31 @@ from skillsviewer.infrastructure.resources import (
 
 
 def test_headings_and_code_fences_both_render() -> None:
-    html = PythonMarkdownRenderer().render("# Title\n\n```py\nx = 1\n```\n")
+    html = DocumentHtmlRenderer().render(
+        "# Title\n\n```py\nx = 1\n```\n", DocumentKind.MARKDOWN
+    )
 
     assert "<h1>Title</h1>" in html
     assert "<code" in html
 
 
 def test_a_table_renders_as_a_table() -> None:
-    html = PythonMarkdownRenderer().render("| a | b |\n|---|---|\n| 1 | 2 |\n")
+    html = DocumentHtmlRenderer().render(
+        "| a | b |\n|---|---|\n| 1 | 2 |\n", DocumentKind.MARKDOWN
+    )
 
     assert "<table>" in html
+
+
+def test_plain_text_is_shown_exactly_as_it_was_typed() -> None:
+    """Through a Markdown renderer a line of hyphens silently becomes a rule."""
+    text = "Shopping\n--------\n* milk & eggs\n"
+
+    html = DocumentHtmlRenderer().render(text, DocumentKind.PLAIN_TEXT)
+
+    assert html == "<pre>Shopping\n--------\n* milk &amp; eggs\n</pre>"
+    assert "<h2>" not in html
+    assert "<li>" not in html
 
 
 def test_the_version_comes_from_the_file_that_holds_it() -> None:
@@ -42,13 +58,13 @@ def test_the_version_comes_from_the_file_that_holds_it() -> None:
 
 def test_the_bundled_artwork_is_found() -> None:
     """Every picture the user interface asks for is really in the build."""
-    from skillsviewer.ui.about_dialog import APPLICATION_ICON
-    from skillsviewer.ui.bottom_tray import (
+    from plainsight.ui.about_dialog import APPLICATION_ICON
+    from plainsight.ui.bottom_tray import (
         DONATE_ICON,
         MODEL_LICENCE_ICON,
         UI_LICENCE_ICON,
     )
-    from skillsviewer.ui.top_tray import (
+    from plainsight.ui.top_tray import (
         CHOOSE_EDITOR_ICON,
         FOLDER_ICON,
         HELP_ICON,

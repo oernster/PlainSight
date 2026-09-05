@@ -4,35 +4,59 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from skillsviewer import version
-from skillsviewer.domain.settings import EditorChoice, Settings
-from skillsviewer.ui.bottom_tray import TRAY_SCALE as BOTTOM_SCALE
-from skillsviewer.ui.main_window import (
+from plainsight import version
+from plainsight.domain.settings import EditorChoice, Settings
+from plainsight.ui.bottom_tray import TRAY_SCALE as BOTTOM_SCALE
+from plainsight.ui.main_window import (
     NO_BROWSER_MESSAGE,
     NO_EDITOR_MESSAGE,
     MainWindow,
 )
-from skillsviewer.ui.top_tray import TRAY_SCALE as TOP_SCALE
-from skillsviewer.ui.widgets import ICON_SIZE_PX
+from plainsight.ui.top_tray import TRAY_SCALE as TOP_SCALE
+from plainsight.ui.widgets import ICON_SIZE_PX
 
 AN_EDITOR = EditorChoice(path="/usr/bin/vi", display_name="vi")
 
 
-def test_every_skill_beneath_the_root_is_listed(window: MainWindow) -> None:
-    listed = [item.text(0) for item in window.skill_tree.skill_items()]
-
-    assert listed == ["dev", "keeb", "prose"]
-
-
-def test_the_first_skill_is_selected_and_rendered(window: MainWindow) -> None:
-    assert window.skill_tree.selected_skill() is not None
-    assert "dev" in window.skill_view.toPlainText()
+def select(window: MainWindow, row: int) -> None:
+    """Open every folder, then choose one document, as a reader would."""
+    for item in window.library_tree.folder_items():
+        item.setExpanded(True)
+    window.library_tree.setCurrentItem(window.library_tree.document_items()[row])
 
 
-def test_selecting_another_skill_renders_it(window: MainWindow) -> None:
-    window.skill_tree.setCurrentItem(window.skill_tree.skill_items()[2])
+def test_every_document_beneath_the_root_is_listed_under_its_folder(
+    window: MainWindow,
+) -> None:
+    """The rows carry file names now; the folders carry the skill names."""
+    folders = [item.text(0) for item in window.library_tree.folder_items()]
+    documents = [item.text(0) for item in window.library_tree.document_items()]
 
-    assert "prose" in window.skill_view.toPlainText()
+    assert folders == ["skills (3)", "dev (1)", "keeb (1)", "prose (1)"]
+    assert documents == ["SKILL.md", "SKILL.md", "SKILL.md"]
+
+
+def test_nothing_is_selected_or_rendered_until_the_reader_chooses(
+    window: MainWindow,
+) -> None:
+    """No default document, so the pane is not reading one nobody opened."""
+    assert window.library_tree.selected_document() is None
+    assert "Select a document" in window.document_view.toPlainText()
+
+
+def test_selecting_a_document_renders_it(window: MainWindow) -> None:
+    select(window, 2)
+
+    assert "prose" in window.document_view.toPlainText()
+
+
+def test_selecting_another_document_renders_that_one_instead(
+    window: MainWindow,
+) -> None:
+    select(window, 2)
+    select(window, 0)
+
+    assert "dev" in window.document_view.toPlainText()
 
 
 def test_the_view_in_editor_button_starts_disabled(window: MainWindow) -> None:
@@ -42,8 +66,11 @@ def test_the_view_in_editor_button_starts_disabled(window: MainWindow) -> None:
 def test_the_button_enables_once_an_editor_is_chosen_and_present(
     window: MainWindow, store, monkeypatch
 ) -> None:
-    store.settings = Settings(skills_root=store.settings.skills_root, editor=AN_EDITOR)
+    store.settings = Settings(
+        documents_root=store.settings.documents_root, editor=AN_EDITOR
+    )
     monkeypatch.setattr(window._service.probe, "present", {AN_EDITOR.path})
+    select(window, 0)
 
     window.sync_editor_button()
 
@@ -53,8 +80,11 @@ def test_the_button_enables_once_an_editor_is_chosen_and_present(
 def test_opening_hands_the_document_to_the_editor(
     window: MainWindow, store, launcher, monkeypatch
 ) -> None:
-    store.settings = Settings(skills_root=store.settings.skills_root, editor=AN_EDITOR)
+    store.settings = Settings(
+        documents_root=store.settings.documents_root, editor=AN_EDITOR
+    )
     monkeypatch.setattr(window._service.probe, "present", {AN_EDITOR.path})
+    select(window, 0)
     window.sync_editor_button()
 
     window.open_in_editor()
@@ -66,8 +96,11 @@ def test_opening_hands_the_document_to_the_editor(
 def test_an_editor_that_will_not_start_is_reported(
     window: MainWindow, store, launcher
 ) -> None:
-    store.settings = Settings(skills_root=store.settings.skills_root, editor=AN_EDITOR)
+    store.settings = Settings(
+        documents_root=store.settings.documents_root, editor=AN_EDITOR
+    )
     launcher.accepts = False
+    select(window, 0)
 
     window.open_in_editor()
 
@@ -80,12 +113,12 @@ def test_opening_with_nothing_selected_does_nothing(
     """An empty root is the real form of nothing being selected."""
     empty = tmp_path / "empty"
     empty.mkdir()
-    store.settings = Settings(skills_root=str(empty))
+    store.settings = Settings(documents_root=str(empty))
     window.refresh()
 
     window.open_in_editor()
 
-    assert window.skill_tree.selected_skill() is None
+    assert window.library_tree.selected_document() is None
     assert launcher.launched == []
 
 
@@ -125,25 +158,25 @@ def test_an_empty_root_invites_the_folder_button(
 ) -> None:
     empty = tmp_path / "empty"
     empty.mkdir()
-    store.settings = Settings(skills_root=str(empty))
+    store.settings = Settings(documents_root=str(empty))
 
     window.refresh()
 
-    assert window.skill_tree.skill_items() == []
-    assert "folder button" in window.skill_view.toPlainText()
+    assert window.library_tree.document_items() == []
+    assert "folder button" in window.document_view.toPlainText()
 
 
-def test_a_skill_that_will_not_read_is_still_listed(
-    window: MainWindow, skills_root: Path
+def test_a_document_that_will_not_read_is_still_listed(
+    window: MainWindow, documents_root: Path
 ) -> None:
-    broken = skills_root / "broken"
+    broken = documents_root / "broken"
     broken.mkdir()
     (broken / "SKILL.md").write_bytes(b"\xff\xfe\x00binary")
 
     window.refresh()
 
-    labels = [item.text(0) for item in window.skill_tree.skill_items()]
-    assert "broken (unreadable)" in labels
+    labels = [item.text(0) for item in window.library_tree.document_items()]
+    assert "SKILL.md (unreadable)" in labels
 
 
 def test_the_top_tray_reads_larger_than_the_bottom_one(window: MainWindow) -> None:
@@ -156,19 +189,19 @@ def test_the_top_tray_reads_larger_than_the_bottom_one(window: MainWindow) -> No
     assert top.width() > bottom.width() > 0
 
 
-def test_opening_a_group_is_carried_into_the_next_run(
+def test_opening_a_folder_is_carried_into_the_next_run(
     window: MainWindow, store
 ) -> None:
-    """The fixture library has one origin, so the wiring is driven directly."""
-    window.skill_tree.groups_changed.emit(("Your skills",))
+    """Driven through the signal, which is the wiring under test."""
+    window.library_tree.folders_changed.emit(("/skills/prose",))
 
-    assert store.settings.opened_groups == ("Your skills",)
+    assert store.settings.opened_folders == ("/skills/prose",)
 
 
-def test_the_tree_is_built_from_the_groups_that_were_left_open(
+def test_the_tree_is_built_from_the_folders_that_were_left_open(
     window: MainWindow,
 ) -> None:
-    assert window.skill_tree._opened == set(window._service.opened_groups())
+    assert window.library_tree._opened == set(window._service.opened_folders())
 
 
 def test_present_puts_the_window_up_rather_than_only_showing_it(
@@ -196,7 +229,7 @@ def test_the_composition_root_presents_rather_than_shows() -> None:
     loop and never returns, so it cannot be called from a test.
     """
     root = (
-        Path(__file__).resolve().parents[2] / "skillsviewer" / "__main__.py"
+        Path(__file__).resolve().parents[2] / "plainsight" / "__main__.py"
     ).read_text(encoding="utf-8")
 
     assert "window.present()" in root

@@ -5,8 +5,8 @@
 # dist belong to the Windows and macOS paths, so the three stay independent.
 set -euo pipefail
 
-APP_ID="uk.codecrafter.SkillsViewer"
-BUNDLE="skillsviewer.flatpak"
+APP_ID="uk.codecrafter.PlainSight"
+BUNDLE="plainsight.flatpak"
 
 echo "Uninstalling ${APP_ID}"
 if flatpak list --user 2>/dev/null | grep -q "${APP_ID}"; then

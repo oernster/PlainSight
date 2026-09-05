@@ -1,15 +1,16 @@
-# Skills Viewer: plan and design
+# PlainSight: plan and design
 
 ## What it does
 
-Displays the skills used by Claude. It reads a directory of Claude skills, lists
-them, renders the selected one for reading and hands editing to an editor the
-user chooses. It is not a text editor and it never writes to a skill.
+Reads a folder of Markdown and text files, shows it as the tree it is on disk,
+renders the document you select and hands editing to an editor the user chooses.
+It opens on the Claude skills folder by default, which is a default rather than
+a limit. It is not a text editor and it never writes to a document.
 
 ## Identity
 
-- GitHub repository: `SkillsViewer`
-- Application name: Skills Viewer
+- GitHub repository: `PlainSight`
+- Application name: PlainSight
 - Author: Oliver Ernster
 - Tech stack: Python plus PySide6
 - UI licence: LGPL-3.0
@@ -17,39 +18,41 @@ user chooses. It is not a text editor and it never writes to a skill.
 
 ## Scope, stated once
 
-For Claude AI by Anthropic and for no other AI. Not affiliated with Anthropic and
-not endorsed by them; the About dialog says both.
+Any folder of Markdown or plain text files. The Claude skills folder is the
+default and the origin of the application, not a limit on it. Not affiliated
+with Anthropic and not endorsed by them; the About dialog says so.
 
 ---
 
 # Part 1: requirements
 
-## 1. What a skill is
+## 1. What a document is
 
-1.1 A skill is a **directory containing `SKILL.md`**. That file is the skill's
-document; the directory name is its fallback identity.
+1.1 A document is a **file whose suffix names a kind the application reads**.
+Two kinds ship: Markdown (`.md`) and plain text (`.txt`). The set lives in one
+place, the `DocumentKind` enumeration, so adding a kind is adding a member and
+nothing else.
 
-1.2 A directory with no `SKILL.md` is **not a skill** and is not listed. Measured
-on the author's own tree, `first_finds` and `references` are exactly this case:
-directories of markdown with no `SKILL.md` between them.
+1.2 Only Markdown carries a frontmatter block; only Markdown is laid out for
+the page. Plain text is shown exactly as it was typed: three hyphens in a text
+file are three hyphens; its line breaks are the author's own layout.
 
-1.3 A loose `SKILL.md` at the root of the tree **is** a skill. Its identity comes
-from its frontmatter `name`, since it has no directory of its own.
+1.3 A directory holding a document at any depth is a **folder** and is listed as
+one. A branch leading to no document at all is not listed, so every branch the
+reader can open leads somewhere.
 
-1.4 Files beside `SKILL.md` inside a skill directory are that skill's
-**companions** (`packaging.md`, `resume-path.md`, `sweep.py`, `audit.py` are all
-real examples). They are recorded on the skill and named in the view; they are not
-listed as skills in their own right.
-
-1.5 Ignored on sight: any directory whose name begins with `.` and any named
+1.4 Ignored on sight: any directory whose name begins with `.` and any named
 `__pycache__`. Both are present in the author's tree (`.ruff_cache`,
-`__pycache__`).
+`__pycache__`). A directory that cannot be listed at all is passed over rather
+than raised on: one unreadable folder must not cost the reader the whole tree.
 
-1.6 A skill's display name is its frontmatter `name` where present, else its
-directory name. Its `description` frontmatter, where present, is the list row's
-tooltip.
+1.5 A document's row carries **the file's own name**, so a reader who finds
+something here can find the same file again in a dialogue or a shell. Where a
+document declares a `name` in its frontmatter, that heads the reading pane
+instead, so a skill opens under the name it calls itself while still listing as
+the `SKILL.md` it is. Its `description`, where present, is the row's tooltip.
 
-## 2. Where skills come from
+## 2. Where documents come from
 
 2.1 The default root per operating system, all resolving to the same place:
 
@@ -59,77 +62,85 @@ tooltip.
 | macOS | `~/.claude/skills` |
 | Linux | `~/.claude/skills` |
 
+That is a default rather than a limit. It is where this application began and is
+still what most readers point it at; `defaults` is the only module in the
+package that knows the name of any particular tool.
+
 2.2 A browse button on the far left of the top tray lets the user choose a
-different folder. The chosen root persists between runs.
+different folder, a notes folder or a project's documentation just as readily.
+The chosen root persists between runs.
 
-2.3 A root that does not exist opens with an empty list and a message inviting
-the browse button; so does a root that holds no skills. Neither is an error and
-neither gets a dialog.
+2.3 A root that does not exist opens with an empty tree and a message inviting
+the browse button; so does a root that holds no document at any depth. Neither
+is an error and neither gets a dialog.
 
-2.4 **Plugin skills are read as well**, from the `plugins` tree that sits beside
-the chosen skills folder under the same `.claude` directory. The scanner takes a
-root and knows nothing about which root it is, so this was added by composition
-rather than by rewrite, exactly as this section originally said a later version
-would. Every `SKILL.md` anywhere beneath that tree is a skill, read by the same
-rules and named for the plugin it arrived with. The measured layout buries one
-four levels deep; that shape belongs to the tool, so a depth rule outlives a
-change to it where a path template does not.
+2.4 **The plugins tree is read as well**, from the `plugins` directory that sits
+beside the chosen folder under the same `.claude` directory. The reader takes a
+root and knows nothing about which root it is, so this is composition rather
+than a special case. Browse somewhere with no plugins beside it and there is
+simply nothing there to read.
 
-2.5 **Skills are gathered by where they came from**, under a heading each, with
-an arrow that opens and closes the group. The axis is origin rather than
-authorship, because authorship is written down nowhere and cannot be read off a
-file. That has one honest consequence worth stating: a skill somebody else wrote
-that sits in the user's own skills folder is listed among his. Where everything
-came from one place the headings are left out and the tree reads as a flat list.
+2.5 **Each tree is a root of its own** in the left pane, named for its own
+directory. A tree that is not there or that leads to no document contributes
+no root at all rather than a heading over nothing. That keeps the
+skills a reader wrote and the ones that arrived with a plugin apart without the
+application needing a notion of authorship, which is written down nowhere and
+cannot be read off a file.
 
-2.6 **Still out of scope:** project-scoped skills under a repository's
-`.claude/skills`, plus any skill that is not a file under the chosen tree.
-Several that a session offers are supplied by the tool rather than stored on
-disk, so nothing here can see them and nothing here pretends to.
+2.6 **Still out of scope:** anything that is not a file under a chosen tree.
+Several skills a Claude session offers are supplied by the tool rather than
+stored on disk, so nothing here can see them and nothing here pretends to.
 
-## 3. Displaying a skill
+## 3. Displaying a document
 
-3.1 Skills are listed one per row, sorted case-insensitively by display name.
-Exactly one skill is displayed at a time.
+3.1 The left pane is a **tree mirroring the folders on disk**, folders before
+documents and each group ordered case insensitively. Every folder opens and
+closes on its own arrow and carries a count of what it holds, so a shut branch
+says whether it is worth opening. Exactly one document is displayed at a time.
 
-3.2 Layout is a list on the left and the rendered skill on the right. Sequential
-presentation alone was rejected: reaching the eleventh skill would mean stepping
-through ten.
+3.2 Layout is that tree on the left and the rendered document on the right.
+Sequential presentation alone was rejected: reaching the eleventh document would
+mean stepping through ten.
 
-3.3 The markdown is **rendered**, not shown as source, in a readable proportional
-font with monospace for fenced code. Rendering brings one new runtime dependency
-(`markdown`, BSD), credited in About.
+3.3 **Nothing is selected until the reader selects it.** There is deliberately no
+fallback to the first row. The library is re-read whenever the window comes back
+to the front, so a fallback would choose again on every return; the pane
+reads itself down the page, so the application would be scrolling through a
+document nobody opened. The opening state is an empty pane saying so.
 
-3.4 The frontmatter block is stripped before rendering and surfaced as a compact
-header above the body: name, description, then any other fields the skill
+3.4 Markdown is **rendered**, not shown as source, in a readable proportional
+font with monospace for fenced code. Rendering brings one runtime dependency
+(`markdown`, BSD), credited in About. Plain text goes into a preformatted block
+with its own characters escaped, since passing it through a Markdown renderer
+would silently rewrite it.
+
+3.5 The frontmatter block is stripped before rendering and surfaced as a compact
+header above the body: name, description, then any other fields the document
 declares.
 
-3.5 Companions are named beneath that header, so a skill that is more than one
-file says so.
-
-3.6 Selecting a different skill replaces the pane's content and returns the
+3.6 Selecting a different document replaces the pane's content and returns the
 auto-scroll cycle to its start hold rather than continuing mid-descent.
 
 ## 4. Auto-scroll (the `scroll` skill)
 
-4.1 Applied to the rendered skill pane, the About dialog, the UI licence dialog
+4.1 Applied to the rendered document pane, the About dialog, the UI licence dialog
 and the model licence dialog. All four are read through rather than acted on,
 which is the boundary that skill draws.
 
-4.2 **Not** applied to the skill list, which is a surface to act on.
+4.2 **Not** applied to the library tree, which is a surface to act on.
 
 4.3 One set of constants on the scroller class, never per surface: 40ms tick,
 5000ms start hold, 1px per two ticks descending, 5000ms bottom hold, 15px per tick
 rewind, 2000ms top hold, 2500ms resume after manual input.
 
-4.4 The overflow guard means attaching it to a short skill is free and correct.
+4.4 The overflow guard means attaching it to a short document is free and correct.
 
 ## 5. Help and About
 
 5.0 An appearance toggle immediately left of the help button. It wears the
 application's own light and dark artwork and shows the appearance it would move
 **to**, so the sun appears while you are in the dark. Repainting, re-facing the
-toggle and re-rendering the open skill all happen in one call, so it can never
+toggle and re-rendering the open document all happen in one call, so it can never
 be left showing the mode just departed. The choice persists between runs; each
 palette names its own ring and danger tokens rather than sharing one pair.
 
@@ -139,9 +150,9 @@ palette names its own ring and danger tokens rather than sharing one pair.
 the copyright with its symbol, the dual licence line and credit where credit is
 due: every real dependency named with its licence.
 
-5.3 About states plainly that Skills Viewer is designed for Claude AI by Anthropic
-and for no other AI. It states just as plainly that it is not affiliated with or
-endorsed by Anthropic.
+5.3 About states plainly that PlainSight opens on the Claude skills folder by
+default and reads any other folder of documents just as well. It states just as
+plainly that it is not affiliated with or endorsed by Anthropic.
 
 ## 6. Choosing an editor
 
@@ -156,11 +167,11 @@ runs, recorded as a path plus a display name.
 7.1 A view in editor button in the top tray, immediately right of the choose
 editor button.
 
-7.2 It launches the chosen editor with the selected skill's `SKILL.md` as the file
+7.2 It launches the chosen editor with the selected document as the file
 to edit. This application is not a text editor replacement.
 
 7.3 It is **disabled by default**. The enable predicate, stated so the keyboard
-ring can honour it: enabled when a skill is selected **and** an editor is chosen
+ring can honour it: enabled when a document is selected **and** an editor is chosen
 **and** the chosen editor path still exists. Otherwise disabled, which means
 skipped by the focus ring and painting the permanent red ring.
 
@@ -181,7 +192,7 @@ everywhere.
 4. text size
 5. appearance toggle
 6. help and about
-7. the skill list (one stop; Up and Down walk the rows)
+7. the library tree (one stop; Up and Down walk the rows)
 8. the rendered pane, **only while it overflows**
 9. donate
 10. UI licence
@@ -198,13 +209,13 @@ first enabled, visible, focusable control.
 8.5 Ring colours: no ring at rest, green while hovered or focused and enabled,
 permanent red while disabled. The brand accent is never a ring.
 
-8.6 No container is a stop and no container paints a ring. The skill list is an
+8.6 No container is a stop and no container paints a ring. The library tree is an
 item view, so it rings in **no** state; its current row is the indicator. The
 rendered pane rings in **no** state either. It is a region the pointer rests
 inside rather than a control it points at, so a rectangle round the words being
 read marks no target; clicking the text to use the document keys drew it every
 time, which is how it was reported. It remains a stop while it overflows, since
-a long skill has to be readable from the keyboard.
+a long document has to be readable from the keyboard.
 
 ## 9. Donations (the `donate` skill)
 
@@ -222,7 +233,7 @@ The artwork is derived from a single master by the icon generator.
 
 9.5 The artwork is in place: `assets/donate-master.png` is the master and the
 icon generator derives `assets/donate.png` from it, cropped to its artwork and
-scaled by height. The address is Skills Viewer's own, generated for this
+scaled by height. The address is PlainSight's own, generated for this
 application rather than borrowed from another. A structural test asserts it
 literally, asserts its scheme and asserts it appears exactly once.
 
@@ -244,16 +255,16 @@ licence button, with its own icon asset.
 ## 12. Freshness and failure
 
 12.1 The library is re-read when the window is activated. A user who leaves to
-edit a skill and comes back sees current content; a skill added or removed while
+edit a document and comes back sees current content; one added or removed while
 away appears or disappears. No file watcher, no polling thread.
 
-12.2 A `SKILL.md` that cannot be decoded is still listed; so is one whose
+12.2 A file that cannot be decoded is still listed; so is one whose
 frontmatter is malformed. The failure is shown in the pane rather than raised as
 a dialog: the user did not cause it and cannot fix it from here.
 
 ## 13. Read only, as an invariant
 
-13.1 The application never writes to any path beneath the skills root. Editing is
+13.1 The application never writes to any path beneath a chosen root. Editing is
 exclusively the external editor's job.
 
 13.2 This is enforced by a structural test rather than by convention, in the same
@@ -261,7 +272,7 @@ spirit as the no-network test in `postal-gambit`.
 
 ## 14. Telling the user a newer release exists
 
-14.1 The help control in the top tray drops a menu of two: About Skills Viewer,
+14.1 The help control in the top tray drops a menu of two: About PlainSight,
 then Check for Updates. There is no menu bar to hang the second on and the tray
 is where the actions already live.
 
@@ -300,7 +311,7 @@ as the appearance toggle does, so the picture answers what pressing it will do.
 
 15.4 The size lives in the one stylesheet the application is painted from and
 the rendered document declares no size of its own, so a change reaches the
-trays, the tree and the skill being read together. It is remembered between
+trays, the tree and the document being read together. It is remembered between
 runs beside the appearance.
 
 15.5 A change of colour or of size redraws the page but does not move the
@@ -338,13 +349,16 @@ presents rather than shows.
 
 Frozen dataclasses with `slots=True`, `tuple[...]` over `list`.
 
-- `SkillDocument`: the parse result of a `SKILL.md`, holding `frontmatter` and
-  `body`. Splitting the two is pure string work, so it lives here.
-- `Skill`: display name, description, directory, document path, companions and
-  body. Validates in `__post_init__`.
-- `SkillCatalogue`: an ordered `tuple[Skill, ...]` with `by_name()` and the sort
-  rule, plus `groups()` gathering by origin.
-- `SkillOrigin`: where a skill was read from and the order the groups appear in.
+- `ParsedDocument`: the parse result of a document's text, holding `frontmatter`
+  and `body`. Splitting the two is pure string work, so it lives here.
+- `DocumentKind`: which file suffixes are read at all, whether a kind declares
+  frontmatter and whether its text reflows. One home for all three.
+- `Document`: file name, path, kind, declared name, description, body and the
+  failure it carries when the file could not be read. Validates in
+  `__post_init__`.
+- `Folder`: a directory's subfolders and documents, each ordered case
+  insensitively with folders first, plus the recursive `document_count`.
+- `Library`: the roots being read, with `by_path()` and the walk in drawn order.
 - `Settings`: what is remembered between runs, holding `EditorChoice` (path plus
   display name, validating that the path is non-empty), `Appearance`, `FontSize`
   and the skipped update tag.
@@ -355,8 +369,7 @@ Frozen dataclasses with `slots=True`, `tuple[...]` over `list`.
 
 Ports, all Protocols:
 
-- `SkillRepository`: `list_skills(root) -> SkillCatalogue`,
-  `list_plugin_skills(root) -> SkillCatalogue`
+- `DocumentRepository`: `read_folder(root) -> Folder | None`
 - `SettingsStore`: `load() -> Settings`, `save(settings)`
 - `EditorLauncher`: `launch(editor, target) -> bool`
 - `ExternalOpener`: `open(address) -> bool`
@@ -364,24 +377,25 @@ Ports, all Protocols:
 - `PlatformPaths`: `home_directory() -> str`,
   `program_directories() -> tuple[str, ...]`, `system_directory() -> str`
 - `AssetLocator`: `find(name) -> str | None`
-- `MarkdownRenderer`: `render(body) -> str`
+- `DocumentRenderer`: `render(body, kind) -> str`
 - `ReleaseSource`: `latest_release() -> ReleaseInfo | None`
 
 Services:
 
-- `SkillLibraryService`, frozen, holding its injected dependencies. It owns which
-  root is active, which skill is current and whether the editor can be launched.
+- `LibraryService`, frozen, holding its injected dependencies. It owns which
+  root is active, which document is current and whether the editor can be
+  launched.
   The enable predicate of 7.3 lives here, so the UI asks a question rather than
   computing one.
-- `default_skills_root(paths)`, a pure function over an injected paths provider,
+- `default_root(paths)`, a pure function over an injected paths provider,
   so the per-OS defaults are unit-testable with no operating system involved.
 
 ## Infrastructure
 
-`FileSystemSkillRepository` (the scan and the ignore rules of section 1),
+`FileSystemDocumentRepository` (the walk and the ignore rules of section 1),
 `JsonSettingsStore` (atomic write by temp file plus `os.replace`, versioned
 `{"version": 1, ...}`), `DesktopEditorLauncher` (`QProcess.startDetached`),
-`QtExternalOpener` (`QDesktopServices.openUrl`), `PythonMarkdownRenderer`, plus
+`QtExternalOpener` (`QDesktopServices.openUrl`), `DocumentHtmlRenderer`, plus
 `resources.py` carrying `find_asset`, `read_version` and the `BundledAssets`
 adapter, so assets resolve under development, a Nuitka bundle and Flatpak
 alike.
@@ -390,7 +404,7 @@ alike.
 
 ```
 top tray:    [folder] [choose editor] [view in editor] | [size] .. [light/dark] [help/about]
-body:        skill list (left)            |  rendered skill (right)
+body:        library tree (left)          |  rendered document (right)
 bottom tray: [donate] [UI licence] [model licence] ..............
 ```
 
@@ -404,7 +418,7 @@ both licence buttons, each derived from the first-stop dialog base.
 
 ## Assets
 
-The master is `skillsviewer.png` at the repository root, square RGBA at 1254
+The master is `plainsight.png` at the repository root, square RGBA at 1254
 pixels. `generate_icons.py` derives the whole set into `assets/`: the sized PNGs,
 the canonical 256, a multi-size Windows `.ico`, a macOS `.icns`, the six tray
 marks and the donate mark. Nothing is ever upscaled: a master smaller than a
@@ -416,7 +430,7 @@ scaled by height alone.
 
 ```
 VERSION
-skillsviewer.png
+plainsight.png
 generate_icons.py  stamp_version.py
 buildexe.py  buildinstaller.py  build_flatpak.sh  clean_flatpak.sh  builddmg.py
 build_utils.py  dmg_icon.py
@@ -424,17 +438,17 @@ LICENSE  LICENSE-GPL-3.0.txt  LICENSE-LGPL-3.0.txt  INSTALLER_LICENSE
 README.md  ARCHITECTURE.md  DESIGN-PLAN.md  TECH_DEBT.md
 docs/              the GitHub Pages site
 installer/         the setup program, a second application in the same tree
-skillsviewer/
+plainsight/
   __main__.py      the composition root
   version.py
-  domain/          skill.py  skill_document.py  catalogue.py  settings.py
-                   origin.py  passage.py
+  domain/          document.py  library.py  parsing.py  settings.py
+                   passage.py
   application/     ports.py  services.py  defaults.py  update.py
-  infrastructure/  skill_repository.py  settings_store.py  desktop.py
-                   markdown_renderer.py  resources.py  platform.py
+  infrastructure/  document_repository.py  settings_store.py  desktop.py
+                   renderer.py  resources.py  platform.py
                    update_source.py
-  ui/              main_window.py  top_tray.py  bottom_tray.py  skill_tree.py
-                   skill_view.py  reading_pane.py  auto_scroller.py
+  ui/              main_window.py  top_tray.py  bottom_tray.py  library_tree.py
+                   document_view.py  reading_pane.py  auto_scroller.py
                    keyboard_nav.py  theme.py  widgets.py  update_check.py
                    about_dialog.py  licence_dialog.py
 tests/             mirrors the source tree, plus tests/structural/
@@ -464,7 +478,7 @@ version literal lives anywhere but `VERSION`.
 
 The licence split is three files: `LICENSE` carrying the overview and the
 directory to licence map, `LICENSE-GPL-3.0.txt` and `LICENSE-LGPL-3.0.txt`. The
-map reads: `skillsviewer/ui` under LGPL-3.0; domain, application, infrastructure,
+map reads: `plainsight/ui` under LGPL-3.0; domain, application, infrastructure,
 the entry point and the build scripts under GPL-3.0.
 
 ## Delivery

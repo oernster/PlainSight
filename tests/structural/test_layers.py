@@ -55,7 +55,7 @@ def test_the_domain_reads_nothing_from_outside_itself() -> None:
 
 def test_the_application_layer_imports_no_third_party_package() -> None:
     permitted_roots = {
-        "skillsviewer",
+        "plainsight",
         "__future__",
         "os",
         "typing",

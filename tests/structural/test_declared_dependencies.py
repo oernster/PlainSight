@@ -20,7 +20,7 @@ DEVELOPMENT_REQUIREMENTS = REPOSITORY_ROOT / "requirements-dev.txt"
 # Code that belongs to this repository rather than to a package it installs.
 FIRST_PARTY = frozenset(
     {
-        "skillsviewer",
+        "plainsight",
         "installer",
         "tests",
         "stamp_version",

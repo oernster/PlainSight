@@ -7,8 +7,8 @@ from typing import Any, Self
 
 import pytest
 
-from skillsviewer.application.update import ReleaseAsset
-from skillsviewer.infrastructure.update_source import (
+from plainsight.application.update import ReleaseAsset
+from plainsight.infrastructure.update_source import (
     ACCEPT_HEADER,
     RELEASE_URL,
     TIMEOUT_SECONDS,
@@ -17,10 +17,10 @@ from skillsviewer.infrastructure.update_source import (
 
 A_BODY = {
     "tag_name": "v0.2.0",
-    "html_url": "https://github.com/oernster/SkillsViewer/releases/tag/v0.2.0",
+    "html_url": "https://github.com/oernster/PlainSight/releases/tag/v0.2.0",
     "assets": [
-        {"name": "SkillsViewerSetup.exe", "browser_download_url": "the-exe"},
-        {"name": "SkillsViewer.dmg", "browser_download_url": "the-dmg"},
+        {"name": "PlainSightSetup.exe", "browser_download_url": "the-exe"},
+        {"name": "PlainSight.dmg", "browser_download_url": "the-dmg"},
     ],
 }
 
@@ -69,8 +69,8 @@ def test_a_published_release_is_read_with_its_page_and_its_files() -> None:
     assert release.version == "v0.2.0"
     assert release.page_url == A_BODY["html_url"]
     assert release.assets == (
-        ReleaseAsset(name="SkillsViewerSetup.exe", download_url="the-exe"),
-        ReleaseAsset(name="SkillsViewer.dmg", download_url="the-dmg"),
+        ReleaseAsset(name="PlainSightSetup.exe", download_url="the-exe"),
+        ReleaseAsset(name="PlainSight.dmg", download_url="the-dmg"),
     )
 
 

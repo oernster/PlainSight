@@ -9,7 +9,7 @@ from __future__ import annotations
 import pathlib
 import tempfile
 
-LOG_NAME = "skillsviewer-setup.log"
+LOG_NAME = "plainsight-setup.log"
 
 
 class StepLog:

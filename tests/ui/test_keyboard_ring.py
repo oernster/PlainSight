@@ -6,14 +6,14 @@ from PySide6.QtCore import QEvent, Qt
 from PySide6.QtGui import QKeyEvent
 from PySide6.QtWidgets import QApplication, QWidget
 
-from skillsviewer.domain.settings import EditorChoice, Settings
-from skillsviewer.infrastructure.resources import BundledAssets
-from skillsviewer.ui.about_dialog import AboutDialog
-from skillsviewer.ui.auto_scroller import AutoScroller
-from skillsviewer.ui.keyboard_nav import is_live
-from skillsviewer.ui.licence_dialog import LicenceDialog
-from skillsviewer.ui.main_window import MainWindow, find_licence
-from skillsviewer.ui.theme import DARK
+from plainsight.domain.settings import EditorChoice, Settings
+from plainsight.infrastructure.resources import BundledAssets
+from plainsight.ui.about_dialog import AboutDialog
+from plainsight.ui.auto_scroller import AutoScroller
+from plainsight.ui.keyboard_nav import is_live
+from plainsight.ui.licence_dialog import LicenceDialog
+from plainsight.ui.main_window import MainWindow, find_licence
+from plainsight.ui.theme import DARK
 
 AN_EDITOR = EditorChoice(path="/usr/bin/vi", display_name="vi")
 REALISTIC_WIDTH_PX = 1100
@@ -57,8 +57,8 @@ def test_the_ring_is_the_eleven_stops_of_the_design_in_order(
     assert stops[3] is window.top_tray.font_size_button
     assert stops[4] is window.top_tray.appearance_button
     assert stops[5] is window.top_tray.help_button
-    assert stops[6] is window.skill_tree
-    assert stops[7] is window.skill_view
+    assert stops[6] is window.library_tree
+    assert stops[7] is window.document_view
     assert stops[8] is window.bottom_tray.donate_button
     assert stops[9] is window.bottom_tray.ui_licence_button
     assert stops[10] is window.bottom_tray.model_licence_button
@@ -132,19 +132,19 @@ def test_the_window_starts_neutral(window: MainWindow) -> None:
 def test_the_tree_leaves_in_one_press_rather_than_walking_its_rows(
     window: MainWindow,
 ) -> None:
-    assert not window.skill_tree.tabKeyNavigation()
+    assert not window.library_tree.tabKeyNavigation()
 
 
 def test_the_reading_pane_is_a_stop_only_while_it_overflows(
     window: MainWindow,
 ) -> None:
-    window.skill_view.setHtml("<p>short</p>")
-    window.skill_view.sync_focus_policy()
-    assert not is_live(window.skill_view)
+    window.document_view.setHtml("<p>short</p>")
+    window.document_view.sync_focus_policy()
+    assert not is_live(window.document_view)
 
-    window.skill_view.setHtml("<p>long</p>" * 500)
-    window.skill_view.sync_focus_policy()
-    assert is_live(window.skill_view)
+    window.document_view.setHtml("<p>long</p>" * 500)
+    window.document_view.sync_focus_policy()
+    assert is_live(window.document_view)
 
 
 def test_the_about_dialog_opens_on_its_first_stop(window: MainWindow) -> None:
@@ -166,7 +166,9 @@ def test_a_licence_dialog_opens_on_its_first_stop(window: MainWindow) -> None:
 
 
 def test_a_button_activates_on_enter_and_on_space(window: MainWindow, store) -> None:
-    store.settings = Settings(skills_root=store.settings.skills_root, editor=AN_EDITOR)
+    store.settings = Settings(
+        documents_root=store.settings.documents_root, editor=AN_EDITOR
+    )
     window.top_tray.open_in_editor_button.setEnabled(True)
     window.top_tray.open_in_editor_button.setFocus(Qt.FocusReason.TabFocusReason)
 
@@ -176,7 +178,7 @@ def test_a_button_activates_on_enter_and_on_space(window: MainWindow, store) -> 
 def test_activate_does_nothing_when_focus_is_not_on_a_button(
     window: MainWindow,
 ) -> None:
-    window.skill_tree.setFocus(Qt.FocusReason.TabFocusReason)
+    window.library_tree.setFocus(Qt.FocusReason.TabFocusReason)
 
     assert not window.navigator._activate()
 
@@ -251,4 +253,4 @@ def test_a_dialog_is_gone_once_it_is_closed(window: MainWindow) -> None:
         QApplication.processEvents()
 
     assert window.findChildren(LicenceDialog) == []
-    assert window.findChildren(AutoScroller) == [window.skill_view.scroller]
+    assert window.findChildren(AutoScroller) == [window.document_view.scroller]

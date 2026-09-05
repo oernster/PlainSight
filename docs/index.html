@@ -3,41 +3,41 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Skills Viewer: see the skills you cannot see</title>
-  <meta name="description" content="Your Claude skills are invisible. They sit in directories you rarely open and are read without ever being shown to you. Skills Viewer finds every one on your machine, lists them in one place and renders the one you pick. Local-first, read only, no account, no cloud.">
-  <link rel="canonical" href="https://ernster.dev/SkillsViewer/">
+  <title>PlainSight: read the documents you never open</title>
+  <meta name="description" content="A local-first reader for folders of Markdown and text files. PlainSight shows a folder as the tree it is on disk and renders the document you pick. It opens on your Claude skills folder by default and reads any other folder just as well. Read only, no account, no cloud.">
+  <link rel="canonical" href="https://ernster.dev/PlainSight/">
   <meta name="theme-color" content="#1e1e2e">
   <!-- Social link previews. og:image must be an absolute URL and a raster
        format; Discord and X will not resolve a relative path or render SVG. -->
   <meta property="og:type" content="website">
-  <meta property="og:site_name" content="Skills Viewer">
-  <meta property="og:url" content="https://ernster.dev/SkillsViewer/">
-  <meta property="og:title" content="Skills Viewer: see the skills you cannot see">
-  <meta property="og:description" content="Your Claude skills are invisible: read without ever being shown to you, accumulating out of sight. Skills Viewer makes the whole set visible, in one list, without changing a thing.">
-  <meta property="og:image" content="https://ernster.dev/SkillsViewer/skillsviewer-512.png">
+  <meta property="og:site_name" content="PlainSight">
+  <meta property="og:url" content="https://ernster.dev/PlainSight/">
+  <meta property="og:title" content="PlainSight: read the documents you never open">
+  <meta property="og:description" content="A local-first reader for folders of Markdown and text files, opening on your Claude skills folder by default. It shows the tree and renders what you pick, without changing a thing.">
+  <meta property="og:image" content="https://ernster.dev/PlainSight/plainsight-512.png">
   <meta property="og:image:width" content="512">
   <meta property="og:image:height" content="512">
-  <meta property="og:image:alt" content="Skills Viewer app icon">
+  <meta property="og:image:alt" content="PlainSight app icon">
   <meta property="og:locale" content="en_GB">
   <meta name="twitter:card" content="summary">
-  <meta name="twitter:title" content="Skills Viewer: see the skills you cannot see">
-  <meta name="twitter:description" content="Your Claude skills are invisible. Skills Viewer makes the whole set visible, in one list, without changing a thing.">
-  <meta name="twitter:image" content="https://ernster.dev/SkillsViewer/skillsviewer-512.png">
+  <meta name="twitter:title" content="PlainSight: read the documents you never open">
+  <meta name="twitter:description" content="A local-first reader for your Markdown and text files, opening on your Claude skills folder by default. It changes nothing it shows you.">
+  <meta name="twitter:image" content="https://ernster.dev/PlainSight/plainsight-512.png">
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
     "@type": "SoftwareApplication",
-    "name": "Skills Viewer",
-    "alternateName": "SkillsViewer",
+    "name": "PlainSight",
+    "alternateName": "PlainSight",
     "operatingSystem": "Windows, Linux, macOS",
     "applicationCategory": "DeveloperApplication",
-    "applicationSubCategory": "Skill library reader",
-    "description": "A local-first reader that makes your Claude skills visible. It finds every skill on your machine, lists them in one place and renders the one you pick. Read only: it never writes to a skill.",
-    "url": "https://ernster.dev/SkillsViewer/",
-    "downloadUrl": "https://github.com/oernster/SkillsViewer/releases",
-    "softwareHelp": "https://github.com/oernster/SkillsViewer",
+    "applicationSubCategory": "Document reader",
+    "description": "A local-first reader for folders of Markdown and text files. It shows a folder as the tree it is on disk and renders the document you pick, opening on your Claude skills folder by default. Read only: it never writes to a document.",
+    "url": "https://ernster.dev/PlainSight/",
+    "downloadUrl": "https://github.com/oernster/PlainSight/releases",
+    "softwareHelp": "https://github.com/oernster/PlainSight",
     "license": ["https://www.gnu.org/licenses/gpl-3.0.html", "https://www.gnu.org/licenses/lgpl-3.0.html"],
-    "image": "https://ernster.dev/SkillsViewer/skillsviewer-512.png",
+    "image": "https://ernster.dev/PlainSight/plainsight-512.png",
     "offers": {"@type": "Offer", "price": "0", "priceCurrency": "USD"},
     "author": {"@type": "Person", "name": "Oliver Ernster", "url": "https://github.com/oernster"}
   }
@@ -55,8 +55,8 @@
 <!-- Nav -->
 <nav>
   <a class="nav-brand" href="./">
-    <img src="skillsviewer-512.png" alt="Skills Viewer icon">
-    <span>Skills Viewer</span>
+    <img src="plainsight-512.png" alt="PlainSight icon">
+    <span>PlainSight</span>
   </a>
   <div class="nav-right">
     <a class="nav-link" href="features.html">Features</a>
@@ -71,20 +71,20 @@
 
 <!-- Hero -->
 <section class="hero">
-  <img class="hero-icon fade" src="skillsviewer-512.png" width="168" height="168" alt="Skills Viewer app icon" fetchpriority="high" decoding="async">
+  <img class="hero-icon fade" src="plainsight-512.png" width="168" height="168" alt="PlainSight app icon" fetchpriority="high" decoding="async">
 
   <div class="badge fade">
     <span class="badge-dot"></span>
     Windows &middot; Linux &middot; macOS
   </div>
 
-  <h1 class="fade d1">The skills you wrote<br>are <span class="accent">invisible</span>.</h1>
+  <h1 class="fade d1">The documents you wrote<br>are <span class="accent">invisible</span>.</h1>
 
   <p class="hero-desc fade d2">
-    They sit in directories you rarely open. Claude reads them without ever showing them to you.
-    They accumulate quietly: some written months ago, some arrived with a plugin, most long out of mind.
+    They sit in folders you rarely open. They accumulate quietly: some written months ago, most long out of mind.
     <strong>You cannot review what you cannot see.</strong>
-    Skills Viewer makes the whole set visible, in one list, on your own machine.
+    PlainSight walks a folder of Markdown and text files, shows it as the tree it is on disk and renders the one you
+    pick. It opens on your Claude skills folder by default; point it anywhere else and it reads that the same way.
   </p>
 
   <div class="hero-cta fade d3">
@@ -92,7 +92,7 @@
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
       Download
     </a>
-    <a class="btn-secondary" href="https://github.com/oernster/SkillsViewer">
+    <a class="btn-secondary" href="https://github.com/oernster/PlainSight">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg>
       GitHub
     </a>
@@ -100,16 +100,16 @@
 
   <div class="hero-shot fade d4">
     <div class="shot">
-      <img src="screenshots/main-ui.png" width="1100" height="788" loading="lazy" decoding="async" alt="Skills Viewer: the skill library listed on the left, grouped into the skills you wrote and the skills that arrived with a plugin, with the selected skill rendered on the right.">
+      <img src="screenshots/main-ui.png" width="1100" height="788" loading="lazy" decoding="async" alt="PlainSight: a folder tree on the left with its folders and documents, beside the selected document rendered on the right.">
     </div>
-    <p class="shot-caption">Every skill on the machine in one list, with the one you pick rendered beside it.</p>
+    <p class="shot-caption">The folders as they are on disk, with the document you pick rendered beside them.</p>
   </div>
 </section>
 
 <!-- Stats bar -->
 <div class="stats-bar">
   <div class="stats-inner">
-    <div class="stat"><div class="stat-value">All of them</div><div class="stat-label">Yours and your plugins'</div></div>
+    <div class="stat"><div class="stat-value">.md and .txt</div><div class="stat-label">Any folder you point it at</div></div>
     <div class="stat"><div class="stat-value">Read only</div><div class="stat-label">Enforced by a test</div></div>
     <div class="stat"><div class="stat-value">Local</div><div class="stat-label">Nothing leaves the machine</div></div>
     <div class="stat"><div class="stat-value">0</div><div class="stat-label">Accounts or cloud</div></div>
@@ -124,21 +124,21 @@
       <div class="split-text">
         <div class="section-label">What it reveals</div>
         <h2 class="section-title" style="margin-bottom:1.25rem;">Things you own<br>but have never read.</h2>
-        <p>A skill library grows the way a drawer fills. Nothing announces itself, nothing asks to be reviewed, so the set that shapes every answer you get is the one set you have never looked at. Skills Viewer opens the drawer.</p>
+        <p>A folder of documents grows the way a drawer fills. Nothing announces itself, nothing asks to be reviewed, so the writing you rely on most is the writing you have never gone back to. PlainSight opens the drawer.</p>
         <ul>
-          <li><strong>Which skills are actually here.</strong> Not which you meant to write: which are on this machine, right now.</li>
+          <li><strong>What is actually here.</strong> Not what you meant to write: what is on this machine, right now, folder by folder.</li>
           <li><strong>What each one still says.</strong> Rendered to read, with the fields it declares laid out plainly.</li>
-          <li><strong>Whose it is.</strong> Skills you wrote and skills that arrived with a plugin are separated under a heading each, so you can tell instantly which is which.</li>
-          <li><strong>What travels with it.</strong> The other files sitting beside the document are named, so a multi file skill says so.</li>
-          <li><strong>What is broken.</strong> A skill whose frontmatter will not parse is still listed, with the failure shown rather than quietly dropped.</li>
+          <li><strong>Where it lives.</strong> The tree mirrors your folders exactly, each one carrying a count so a shut branch tells you whether it is worth opening.</li>
+          <li><strong>Your Claude skills, if you keep them.</strong> That folder is the default, with the plugins tree beside it as a second root, so the skills you wrote and the ones that arrived with a plugin stay apart.</li>
+          <li><strong>What is broken.</strong> A file that will not read as text is still listed, with the reason shown rather than quietly dropped.</li>
         </ul>
         <a class="btn-secondary" href="features.html">Everything it does</a>
       </div>
       <div>
         <div class="shot">
-          <img src="screenshots/main-ui.png" width="1100" height="788" loading="lazy" decoding="async" alt="The skill list grouped into your own skills and plugin skills, beside the rendered text of the selected skill.">
+          <img src="screenshots/main-ui.png" width="1100" height="788" loading="lazy" decoding="async" alt="The folder tree on the left, beside the rendered text of the selected document.">
         </div>
-        <p class="shot-caption">Your own skills and your plugins' skills, told apart at a glance.</p>
+        <p class="shot-caption">Your folders as they are, with nothing chosen until you choose it.</p>
       </div>
     </div>
   </section>
@@ -148,7 +148,7 @@
 <section class="section" style="text-align:center;">
   <h2 class="section-title">Looking changes nothing.</h2>
   <p class="section-sub" style="margin-left:auto;margin-right:auto;">
-    Skills Viewer never writes to a skill. That is not a promise made in a readme: a structural test reads the whole
+    PlainSight never writes to a document. That is not a promise made in a readme: a structural test reads the whole
     program and fails the build if any part of it but the settings file calls a writing operation. When you want to
     change something, it hands the document to the editor you chose and stands back.
   </p>
@@ -164,8 +164,8 @@
 
 <!-- Supporting the project -->
 <section class="section" id="support" style="text-align:center;">
-  <h2 class="section-title">Supporting Skills Viewer</h2>
-  <p class="section-sub" style="margin-left:auto;margin-right:auto;">Skills Viewer is free and stays free. There is no paid tier, no licence key and no feature held back behind a donation. If it has shown you something you needed to see, a contribution supports its maintenance and continued development. The same button sits in the window's own bottom tray.</p>
+  <h2 class="section-title">Supporting PlainSight</h2>
+  <p class="section-sub" style="margin-left:auto;margin-right:auto;">PlainSight is free and stays free. There is no paid tier, no licence key and no feature held back behind a donation. If it has shown you something you needed to see, a contribution supports its maintenance and continued development. The same button sits in the window's own bottom tray.</p>
   <div class="hero-cta">
     <a class="btn-secondary" href="https://www.paypal.com/ncp/payment/BCZF8TZTUGTEA">
       <img src="donate.png" alt="">
@@ -179,21 +179,21 @@
   <div class="footer-inner">
     <div class="footer-top">
       <a class="footer-brand" href="./">
-        <img src="skillsviewer-512.png" alt="Skills Viewer">
-        <span>Skills Viewer</span>
+        <img src="plainsight-512.png" alt="PlainSight">
+        <span>PlainSight</span>
       </a>
       <nav class="footer-links">
         <a href="features.html">Features</a>
         <a href="why.html">Why</a>
         <a href="download.html">Download</a>
-        <a href="https://github.com/oernster/SkillsViewer">GitHub</a>
-        <a href="https://github.com/oernster/SkillsViewer/releases">Releases</a>
-        <a href="https://github.com/oernster/SkillsViewer/blob/main/ARCHITECTURE.md">Architecture</a>
-        <a href="https://github.com/oernster/SkillsViewer/blob/main/LICENSE">Licence</a>
+        <a href="https://github.com/oernster/PlainSight">GitHub</a>
+        <a href="https://github.com/oernster/PlainSight/releases">Releases</a>
+        <a href="https://github.com/oernster/PlainSight/blob/main/ARCHITECTURE.md">Architecture</a>
+        <a href="https://github.com/oernster/PlainSight/blob/main/LICENSE">Licence</a>
       </nav>
     </div>
     <div class="footer-bottom">
-      <p>A local-first reader that makes your Claude skills visible. Read only, open source, no cloud. Designed for Claude AI by Anthropic and for no other AI; not affiliated with Anthropic and not endorsed by them.</p>
+      <p>A local-first reader for folders of Markdown and text files, opening on your Claude skills folder by default. Read only, open source, no cloud. Not affiliated with Anthropic and not endorsed by them.</p>
       <div class="chips">
         <span class="chip">Version <!--VERSION-->1.0.0<!--/VERSION--></span>
         <span class="chip">Python</span>

@@ -1,9 +1,9 @@
-Skills Viewer setup program
+PlainSight setup program
 
 Copyright (C) Oliver Ernster
 
 This setup program is distributed as-is, with no warranty of any kind, express
-or implied. It installs Skills Viewer into your own user account and writes
+or implied. It installs PlainSight into your own user account and writes
 nothing outside it.
 
 The setup program is built with Qt for Python (PySide6) and is covered by the
@@ -11,6 +11,6 @@ GNU Lesser General Public License, version 3. The Qt libraries it carries are
 distributed under that same licence, and the licence text is available from the
 Licence button in the setup window and from https://www.gnu.org/licenses/.
 
-Skills Viewer itself carries its own licences: its user interface under the
+PlainSight itself carries its own licences: its user interface under the
 LGPL-3.0 and everything beneath it under the GPL-3.0. Those are separate from
 this notice and are shown from within the application.

@@ -12,10 +12,10 @@ from __future__ import annotations
 
 from PySide6.QtWidgets import QApplication, QTextBrowser
 
-from skillsviewer.ui import licence_dialog
-from skillsviewer.ui.main_window import find_licence
-from skillsviewer.ui.reading_pane import MAX_LINE_CHARACTERS, ReadingPane
-from skillsviewer.ui.theme import (
+from plainsight.ui import licence_dialog
+from plainsight.ui.main_window import find_licence
+from plainsight.ui.reading_pane import MAX_LINE_CHARACTERS, ReadingPane
+from plainsight.ui.theme import (
     DARK,
     LINE_HEIGHT_PERCENT,
     PARAGRAPH_GAP_PX,

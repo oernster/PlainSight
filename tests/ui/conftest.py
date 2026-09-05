@@ -8,12 +8,12 @@ from pathlib import Path
 import pytest
 from PySide6.QtWidgets import QApplication
 
-from skillsviewer.application.services import SkillLibraryService
-from skillsviewer.domain.settings import Settings
-from skillsviewer.infrastructure.markdown_renderer import PythonMarkdownRenderer
-from skillsviewer.infrastructure.resources import BundledAssets
-from skillsviewer.infrastructure.skill_repository import FileSystemSkillRepository
-from skillsviewer.ui.main_window import MainWindow
+from plainsight.application.services import LibraryService
+from plainsight.domain.settings import Settings
+from plainsight.infrastructure.document_repository import FileSystemDocumentRepository
+from plainsight.infrastructure.renderer import DocumentHtmlRenderer
+from plainsight.infrastructure.resources import BundledAssets
+from plainsight.ui.main_window import MainWindow
 from tests.application.fakes import (
     FakeLauncher,
     FakeOpener,
@@ -46,7 +46,7 @@ def close_orphans(application: QApplication) -> Iterator[None]:
 
 
 @pytest.fixture
-def skills_root(tmp_path: Path) -> Path:
+def documents_root(tmp_path: Path) -> Path:
     root = tmp_path / "skills"
     for name in ("prose", "dev", "keeb"):
         directory = root / name
@@ -75,21 +75,21 @@ def opener() -> FakeOpener:
 @pytest.fixture
 def window(
     application: QApplication,
-    skills_root: Path,
+    documents_root: Path,
     store: FakeSettingsStore,
     launcher: FakeLauncher,
     opener: FakeOpener,
 ) -> Iterator[MainWindow]:
-    store.settings = Settings(skills_root=str(skills_root))
-    service = SkillLibraryService(
-        repository=FileSystemSkillRepository(),
+    store.settings = Settings(documents_root=str(documents_root))
+    service = LibraryService(
+        repository=FileSystemDocumentRepository(),
         settings_store=store,
         launcher=launcher,
         opener=opener,
         probe=FakeProbe(),
         paths=FakePaths(),
     )
-    main = MainWindow(service, PythonMarkdownRenderer(), BundledAssets())
+    main = MainWindow(service, DocumentHtmlRenderer(), BundledAssets())
     main.show()
     yield main
     main.close()

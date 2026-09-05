@@ -4,10 +4,10 @@ from __future__ import annotations
 
 from PySide6.QtWidgets import QApplication
 
-from skillsviewer.domain.settings import Appearance
-from skillsviewer.ui import top_tray
-from skillsviewer.ui.main_window import MainWindow
-from skillsviewer.ui.theme import DARK, LIGHT, palette_for
+from plainsight.domain.settings import Appearance
+from plainsight.ui import top_tray
+from plainsight.ui.main_window import MainWindow
+from plainsight.ui.theme import DARK, LIGHT, palette_for
 
 
 def test_it_sits_immediately_left_of_help(window: MainWindow) -> None:
@@ -64,26 +64,30 @@ def test_the_choice_is_remembered(window: MainWindow, store) -> None:
 
 
 def test_a_remembered_light_appearance_opens_light(
-    application, skills_root, store, launcher, opener
+    application, documents_root, store, launcher, opener
 ) -> None:
-    from skillsviewer.application.services import SkillLibraryService
-    from skillsviewer.domain.settings import Settings
-    from skillsviewer.infrastructure.markdown_renderer import PythonMarkdownRenderer
-    from skillsviewer.infrastructure.resources import BundledAssets
-    from skillsviewer.infrastructure.skill_repository import FileSystemSkillRepository
+    from plainsight.application.services import LibraryService
+    from plainsight.domain.settings import Settings
+    from plainsight.infrastructure.document_repository import (
+        FileSystemDocumentRepository,
+    )
+    from plainsight.infrastructure.renderer import DocumentHtmlRenderer
+    from plainsight.infrastructure.resources import BundledAssets
     from tests.application.fakes import FakePaths, FakeProbe
 
-    store.settings = Settings(skills_root=str(skills_root), appearance=Appearance.LIGHT)
+    store.settings = Settings(
+        documents_root=str(documents_root), appearance=Appearance.LIGHT
+    )
     made = MainWindow(
-        SkillLibraryService(
-            repository=FileSystemSkillRepository(),
+        LibraryService(
+            repository=FileSystemDocumentRepository(),
             settings_store=store,
             launcher=launcher,
             opener=opener,
             probe=FakeProbe(),
             paths=FakePaths(),
         ),
-        PythonMarkdownRenderer(),
+        DocumentHtmlRenderer(),
         BundledAssets(),
     )
     try:
@@ -109,8 +113,8 @@ def test_the_open_skill_is_re_rendered_in_the_new_palette(
     """A document keeps the colours it was rendered under unless it is redone."""
     window.switch_appearance()
 
-    assert LIGHT.accent in window.skill_view.document().defaultStyleSheet()
-    assert window.skill_view.toPlainText().strip() != ""
+    assert LIGHT.accent in window.document_view.document().defaultStyleSheet()
+    assert window.document_view.toPlainText().strip() != ""
 
 
 def test_each_palette_names_its_own_ring_and_danger() -> None:
@@ -126,7 +130,7 @@ def test_the_accent_is_never_a_ring_in_either_palette() -> None:
 
 
 def test_both_marks_are_bundled() -> None:
-    from skillsviewer.infrastructure.resources import BundledAssets
+    from plainsight.infrastructure.resources import BundledAssets
 
     assets = BundledAssets()
     assert assets.find(top_tray.LIGHT_MODE_ICON) is not None

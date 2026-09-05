@@ -1,4 +1,4 @@
-/* Skills Viewer site styles, shared by every page. Catppuccin Mocha. */
+/* PlainSight site styles, shared by every page. Catppuccin Mocha. */
 
 /* Catppuccin Mocha palette */
 :root {
@@ -24,7 +24,7 @@
   --red:      #f38ba8;
   --mauve:    #cba6f7;
   --pink:     #f5c2e7;
-  /* Skills Viewer's accent is the violet the application itself reads with. */
+  /* PlainSight's accent is the violet the application itself reads with. */
   --accent:        var(--mauve);
   --accent-rgb:    203, 166, 247;
 }

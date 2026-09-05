@@ -1,6 +1,6 @@
-"""Read only, as an invariant: nothing writes to a skill.
+"""Read only, as an invariant: nothing writes to a document.
 
-Design plan 13.1. Editing is the external editor's job, so the only writing the
+Editing is the external editor's job, so the only writing the
 application does is to its own settings file. This test names the one module
 allowed to write at all and asserts nothing else calls a writing operation.
 """

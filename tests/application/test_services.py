@@ -4,17 +4,15 @@ from __future__ import annotations
 
 import os
 
-from skillsviewer.application.defaults import default_skills_root
-from skillsviewer.application.services import SkillLibraryService
-from skillsviewer.domain.catalogue import SkillCatalogue
-from skillsviewer.domain.origin import SkillOrigin
-from skillsviewer.domain.settings import (
+from plainsight.application.defaults import default_root
+from plainsight.application.services import LibraryService
+from plainsight.domain.library import Folder
+from plainsight.domain.settings import (
     Appearance,
     EditorChoice,
     FontSize,
     Settings,
 )
-from skillsviewer.domain.skill import Skill
 
 from .fakes import (
     FakeLauncher,
@@ -23,7 +21,8 @@ from .fakes import (
     FakeProbe,
     FakeRepository,
     FakeSettingsStore,
-    a_skill,
+    a_document,
+    a_folder,
 )
 
 AN_EDITOR = EditorChoice(path="/usr/bin/vi", display_name="vi")
@@ -37,8 +36,8 @@ def a_service(
     opener: FakeOpener | None = None,
     probe: FakeProbe | None = None,
     paths: FakePaths | None = None,
-) -> SkillLibraryService:
-    return SkillLibraryService(
+) -> LibraryService:
+    return LibraryService(
         repository=repository if repository is not None else FakeRepository(),
         settings_store=store if store is not None else FakeSettingsStore(),
         launcher=launcher if launcher is not None else FakeLauncher(),
@@ -53,27 +52,27 @@ def test_the_current_root_is_the_default_when_nothing_was_remembered() -> None:
 
     service = a_service(paths=paths)
 
-    assert service.current_root() == default_skills_root(paths)
+    assert service.current_root() == default_root(paths)
 
 
 def test_loading_reads_the_current_root() -> None:
     repository = FakeRepository()
-    store = FakeSettingsStore(Settings(skills_root="/elsewhere"))
+    store = FakeSettingsStore(Settings(documents_root="/elsewhere"))
 
     a_service(repository=repository, store=store).load()
 
-    assert repository.roots_read == ["/elsewhere"]
+    assert repository.roots_read[0] == "/elsewhere"
 
 
 def test_choosing_a_root_remembers_it_and_reads_it() -> None:
-    repository = FakeRepository(SkillCatalogue.of([a_skill()]))
+    repository = FakeRepository({"/chosen": a_folder("chosen", "/chosen")})
     store = FakeSettingsStore()
 
-    catalogue = a_service(repository=repository, store=store).choose_root("/chosen")
+    library = a_service(repository=repository, store=store).choose_root("/chosen")
 
-    assert store.settings.skills_root == "/chosen"
-    assert repository.roots_read == ["/chosen"]
-    assert len(catalogue) == 1
+    assert store.settings.documents_root == "/chosen"
+    assert "/chosen" in repository.roots_read
+    assert library.document_count == 1
 
 
 def test_choosing_an_editor_remembers_it() -> None:
@@ -106,12 +105,12 @@ def test_switching_twice_returns_to_where_it_started() -> None:
 
 
 def test_the_settings_can_be_read_back() -> None:
-    store = FakeSettingsStore(Settings(skills_root="/elsewhere"))
+    store = FakeSettingsStore(Settings(documents_root="/elsewhere"))
 
-    assert a_service(store=store).settings().skills_root == "/elsewhere"
+    assert a_service(store=store).settings().documents_root == "/elsewhere"
 
 
-def test_no_skill_selected_means_the_editor_control_can_do_nothing() -> None:
+def test_no_document_selected_means_the_editor_control_can_do_nothing() -> None:
     store = FakeSettingsStore(Settings(editor=AN_EDITOR))
     probe = FakeProbe(present=(AN_EDITOR.path,))
 
@@ -119,7 +118,7 @@ def test_no_skill_selected_means_the_editor_control_can_do_nothing() -> None:
 
 
 def test_no_editor_chosen_means_the_editor_control_can_do_nothing() -> None:
-    assert not a_service().can_open_in_editor(a_skill())
+    assert not a_service().can_open_in_editor(a_document())
 
 
 def test_an_editor_that_has_gone_means_the_control_can_do_nothing() -> None:
@@ -127,29 +126,29 @@ def test_an_editor_that_has_gone_means_the_control_can_do_nothing() -> None:
 
     service = a_service(store=store, probe=FakeProbe(present=()))
 
-    assert not service.can_open_in_editor(a_skill())
+    assert not service.can_open_in_editor(a_document())
 
 
-def test_a_skill_plus_an_editor_that_is_there_enables_the_control() -> None:
+def test_a_document_plus_an_editor_that_is_there_enables_the_control() -> None:
     store = FakeSettingsStore(Settings(editor=AN_EDITOR))
     probe = FakeProbe(present=(AN_EDITOR.path,))
 
-    assert a_service(store=store, probe=probe).can_open_in_editor(a_skill())
+    assert a_service(store=store, probe=probe).can_open_in_editor(a_document())
 
 
 def test_opening_hands_the_document_to_the_chosen_editor() -> None:
     store = FakeSettingsStore(Settings(editor=AN_EDITOR))
     launcher = FakeLauncher()
-    skill = a_skill()
+    document = a_document()
 
-    assert a_service(store=store, launcher=launcher).open_in_editor(skill)
-    assert launcher.launched == [(AN_EDITOR, skill.document_path)]
+    assert a_service(store=store, launcher=launcher).open_in_editor(document)
+    assert launcher.launched == [(AN_EDITOR, document.path)]
 
 
 def test_opening_without_an_editor_reports_that_it_did_nothing() -> None:
     launcher = FakeLauncher()
 
-    assert not a_service(launcher=launcher).open_in_editor(a_skill())
+    assert not a_service(launcher=launcher).open_in_editor(a_document())
     assert launcher.launched == []
 
 
@@ -158,7 +157,7 @@ def test_a_desktop_that_declines_the_editor_is_reported() -> None:
 
     service = a_service(store=store, launcher=FakeLauncher(accepts=False))
 
-    assert not service.open_in_editor(a_skill())
+    assert not service.open_in_editor(a_document())
 
 
 def test_the_donation_address_is_handed_over_untouched() -> None:
@@ -176,41 +175,51 @@ def test_a_desktop_that_declines_the_donation_page_is_reported() -> None:
 
 def test_loading_reads_the_plugins_tree_beside_the_root_too() -> None:
     repository = FakeRepository()
-    store = FakeSettingsStore(
-        Settings(skills_root=os.path.join("home", ".claude", "skills"))
-    )
+    chosen = os.path.join("home", ".claude", "skills")
+    store = FakeSettingsStore(Settings(documents_root=chosen))
 
     a_service(repository=repository, store=store).load()
 
-    assert repository.plugin_roots_read == [os.path.join("home", ".claude", "plugins")]
+    assert repository.roots_read == [chosen, os.path.join("home", ".claude", "plugins")]
 
 
-def test_both_places_arrive_as_one_catalogue_gathered_by_origin() -> None:
-    mine = Skill(
-        name="prose",
-        description="",
-        directory="/d",
-        document_path="/d/SKILL.md",
-        body="body",
+def test_both_trees_arrive_as_one_library_in_the_order_they_are_shown() -> None:
+    """The chosen folder first, the plugins tree beside it second."""
+    skills = os.path.join("home", ".claude", "skills")
+    plugins = os.path.join("home", ".claude", "plugins")
+    repository = FakeRepository(
+        {
+            skills: a_folder("skills", skills, "SKILL.md"),
+            plugins: a_folder("plugins", plugins, "SKILL.md"),
+        }
     )
-    theirs = Skill(
-        name="hookify",
-        description="",
-        directory="/p",
-        document_path="/p/SKILL.md",
-        body="body",
-        origin=SkillOrigin.PLUGIN,
-        source_name="hookify",
-    )
-    repository = FakeRepository(SkillCatalogue.of([mine]), SkillCatalogue.of([theirs]))
+    store = FakeSettingsStore(Settings(documents_root=skills))
 
-    catalogue = a_service(repository=repository).load()
+    library = a_service(repository=repository, store=store).load()
 
-    assert len(catalogue) == 2
-    assert [group.origin for group in catalogue.groups] == [
-        SkillOrigin.PERSONAL,
-        SkillOrigin.PLUGIN,
-    ]
+    assert library.document_count == 2
+    assert [root.name for root in library.roots] == ["skills", "plugins"]
+
+
+def test_a_tree_that_is_not_there_contributes_no_root() -> None:
+    """Browse anywhere with no plugins beside it and one tree is what shows."""
+    repository = FakeRepository({"/notes": a_folder("notes", "/notes")})
+    store = FakeSettingsStore(Settings(documents_root="/notes"))
+
+    library = a_service(repository=repository, store=store).load()
+
+    assert [root.name for root in library.roots] == ["notes"]
+
+
+def test_a_tree_that_leads_to_no_document_contributes_no_root() -> None:
+    """A heading over nothing is worse than no heading: it promises content."""
+    repository = FakeRepository({"/notes": Folder.of("notes", "/notes")})
+    store = FakeSettingsStore(Settings(documents_root="/notes"))
+
+    library = a_service(repository=repository, store=store).load()
+
+    assert library.roots == ()
+    assert library.is_empty
 
 
 def test_choosing_a_root_reads_the_plugins_beside_that_one() -> None:
@@ -219,7 +228,10 @@ def test_choosing_a_root_reads_the_plugins_beside_that_one() -> None:
 
     a_service(repository=repository).choose_root(chosen)
 
-    assert repository.plugin_roots_read == [os.path.join("other", ".claude", "plugins")]
+    assert repository.roots_read == [
+        chosen,
+        os.path.join("other", ".claude", "plugins"),
+    ]
 
 
 def test_a_remembered_editor_beats_the_machine_default() -> None:
@@ -251,10 +263,10 @@ def test_the_control_can_act_on_a_default_nobody_chose() -> None:
         probe=FakeProbe((notepad,)),
     )
 
-    assert service.can_open_in_editor(a_skill())
+    assert service.can_open_in_editor(a_document())
 
 
-def test_a_skill_opens_in_the_default_when_nothing_was_chosen() -> None:
+def test_a_document_opens_in_the_default_when_nothing_was_chosen() -> None:
     notepad = os.path.join("/system", "notepad.exe")
     launcher = FakeLauncher()
     service = a_service(
@@ -263,22 +275,22 @@ def test_a_skill_opens_in_the_default_when_nothing_was_chosen() -> None:
         probe=FakeProbe((notepad,)),
     )
 
-    assert service.open_in_editor(a_skill())
+    assert service.open_in_editor(a_document())
     assert launcher.launched[0][0].path == notepad
 
 
-def test_a_fresh_install_has_every_group_shut() -> None:
-    assert a_service().opened_groups() == ()
+def test_a_fresh_install_has_every_folder_shut() -> None:
+    assert a_service().opened_folders() == ()
 
 
-def test_the_groups_a_reader_opens_are_remembered() -> None:
+def test_the_folders_a_reader_opens_are_remembered() -> None:
     store = FakeSettingsStore()
     service = a_service(store=store)
 
-    service.remember_opened_groups(("Your skills",))
+    service.remember_opened_folders(("/skills/prose",))
 
-    assert service.opened_groups() == ("Your skills",)
-    assert store.settings.opened_groups == ("Your skills",)
+    assert service.opened_folders() == ("/skills/prose",)
+    assert store.settings.opened_folders == ("/skills/prose",)
 
 
 def test_nothing_is_skipped_until_something_is() -> None:
@@ -296,12 +308,12 @@ def test_a_skipped_release_is_remembered() -> None:
 
 
 def test_skipping_a_release_keeps_everything_else_remembered() -> None:
-    store = FakeSettingsStore(Settings(skills_root="/skills", editor=AN_EDITOR))
+    store = FakeSettingsStore(Settings(documents_root="/skills", editor=AN_EDITOR))
     service = a_service(store=store)
 
     service.skip_update_version("0.2.0")
 
-    assert store.settings.skills_root == "/skills"
+    assert store.settings.documents_root == "/skills"
     assert store.settings.editor == AN_EDITOR
 
 
@@ -341,10 +353,10 @@ def test_cycling_past_the_largest_returns_to_the_smallest() -> None:
 
 
 def test_cycling_the_text_size_keeps_everything_else_remembered() -> None:
-    store = FakeSettingsStore(Settings(skills_root="/skills", editor=AN_EDITOR))
+    store = FakeSettingsStore(Settings(documents_root="/skills", editor=AN_EDITOR))
     service = a_service(store=store)
 
     service.cycle_font_size()
 
-    assert store.settings.skills_root == "/skills"
+    assert store.settings.documents_root == "/skills"
     assert store.settings.editor == AN_EDITOR

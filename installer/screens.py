@@ -35,7 +35,7 @@ COMPLETE_PERCENT = 100
 DESKTOP_LABEL = "Put a shortcut on the desktop"
 START_MENU_LABEL = "Add it to the Start menu"
 
-RUNNING_HEADING = "Skills Viewer is open"
+RUNNING_HEADING = "PlainSight is open"
 RUNNING_LEAD = (
     "The files cannot be replaced while it is running. Close it and setup will "
     "carry on. Cancel instead to close it yourself."

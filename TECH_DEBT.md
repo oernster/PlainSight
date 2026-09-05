@@ -29,6 +29,18 @@ temporary directory and against a real offscreen `QApplication`; extending the
 floor to them would mean either a weaker number over everything or a list of
 exclusions that makes the number meaningless.
 
+**The installer header sizes itself from the title, not the tagline.** The
+window grows to fit the title; the tagline is word wrapped, so it has a small
+minimum width and never participates in sizing. A short enough product name
+therefore leaves the tagline too little room and it breaks onto a second line.
+Measured when the name went from thirteen characters to ten: the window shrank
+from 826px to 730px and the tagline lost 96px of the 574px it wanted. Left
+alone because the obvious fix is wrong: a minimum width taken from the label's
+own metrics would be read before the stylesheet is applied, so it would be
+taken from the wrong font. The tagline fits with room to spare;
+`tests/installer/test_setup_window.py::test_the_tagline_reads_on_a_single_line`
+fails the moment that stops being true.
+
 ## Not debt (do not "fix" these)
 
 **The read-only guard ignores an attribute called `open`.** A port legitimately
@@ -36,6 +48,6 @@ carries that verb; the external opener asks the desktop to open an address and
 touches no file. Widening the check to attribute calls would flag that port and
 teach the next reader to weaken the guard.
 
-**A skill whose document cannot be read is still listed.** Design plan 12.2. The
-user neither caused it nor can fix it from the viewer, so the reason is shown in
-place of the body rather than raised as a dialog or hidden.
+**A document that cannot be read is still listed.** The user neither caused it
+nor can fix it from the viewer, so the reason is shown in place of the body
+rather than raised as a dialog or hidden.

@@ -13,7 +13,7 @@ import sys
 from installer import actions
 from installer.plan import InstallPlan
 
-UNINSTALL_KEY = r"Software\Microsoft\Windows\CurrentVersion\Uninstall\SkillsViewer"
+UNINSTALL_KEY = r"Software\Microsoft\Windows\CurrentVersion\Uninstall\PlainSight"
 PUBLISHER = "Oliver Ernster"
 NO_MODIFY = 1
 NO_REPAIR = 1
@@ -56,7 +56,7 @@ def register(plan: InstallPlan) -> None:  # pragma: no cover - Windows only
     if not IS_WINDOWS:
         return
     winreg = _winreg()
-    icon = plan.target / "assets" / "skillsviewer.ico"
+    icon = plan.target / "assets" / "plainsight.ico"
     entries = {
         "DisplayName": actions.APP_DISPLAY_NAME,
         "DisplayVersion": plan.version,

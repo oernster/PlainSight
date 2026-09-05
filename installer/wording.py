@@ -11,8 +11,8 @@ from dataclasses import dataclass
 
 from installer.route import Route
 
-PRODUCT = "Skills Viewer"
-TAGLINE = "A reader for the skills used by Claude AI"
+PRODUCT = "PlainSight"
+TAGLINE = "A reader for your documents"
 FLOW_ARROW = "→"
 
 

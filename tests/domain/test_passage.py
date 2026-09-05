@@ -11,7 +11,7 @@ from pathlib import Path
 
 import pytest
 
-from skillsviewer.domain.passage import (
+from plainsight.domain.passage import (
     GROUP_CHARACTERS,
     MIN_TAIL_CHARACTERS,
     SOFT_BREAK,

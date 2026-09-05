@@ -6,10 +6,10 @@ import pytest
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QApplication, QLabel, QPushButton, QWidget
 
-from skillsviewer.domain.settings import DEFAULT_FONT_SIZE, FontSize
-from skillsviewer.ui import top_tray
-from skillsviewer.ui.main_window import MainWindow
-from skillsviewer.ui.theme import DARK, FONT_SIZE_PX, stylesheet
+from plainsight.domain.settings import DEFAULT_FONT_SIZE, FontSize
+from plainsight.ui import top_tray
+from plainsight.ui.main_window import MainWindow
+from plainsight.ui.theme import DARK, FONT_SIZE_PX, stylesheet
 
 # Wide enough that the tray lays out as it really does, rather than
 # compressed into an order the measurement cannot read.
@@ -147,7 +147,7 @@ def test_the_rendered_page_is_drawn_at_the_size_the_pane_was_given(
     through all three settings. This compares the two fonts rather than the
     stylesheet, since it was the widget and its document disagreeing.
     """
-    view = window.skill_view
+    view = window.document_view
     seen = []
     for _ in range(len(FontSize)):
         view.ensurePolished()

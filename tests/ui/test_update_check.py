@@ -13,20 +13,20 @@ from PySide6.QtGui import QKeyEvent
 from PySide6.QtTest import QTest
 from PySide6.QtWidgets import QApplication, QWidget
 
-from skillsviewer.application.services import SkillLibraryService
-from skillsviewer.application.update import (
+from plainsight.application.services import LibraryService
+from plainsight.application.update import (
     ReleaseAsset,
     ReleaseInfo,
     UpdateService,
     UpdateStatus,
 )
-from skillsviewer.domain.settings import Settings
-from skillsviewer.infrastructure.markdown_renderer import PythonMarkdownRenderer
-from skillsviewer.infrastructure.resources import BundledAssets
-from skillsviewer.infrastructure.skill_repository import FileSystemSkillRepository
-from skillsviewer.ui.main_window import MainWindow
-from skillsviewer.ui.top_tray import ABOUT_ITEM, CHECK_UPDATES_ITEM, TopTray
-from skillsviewer.ui.update_check import UpdateCheckController, update_message
+from plainsight.domain.settings import Settings
+from plainsight.infrastructure.document_repository import FileSystemDocumentRepository
+from plainsight.infrastructure.renderer import DocumentHtmlRenderer
+from plainsight.infrastructure.resources import BundledAssets
+from plainsight.ui.main_window import MainWindow
+from plainsight.ui.top_tray import ABOUT_ITEM, CHECK_UPDATES_ITEM, TopTray
+from plainsight.ui.update_check import UpdateCheckController, update_message
 from tests.application.fakes import (
     FakeLauncher,
     FakeOpener,
@@ -54,7 +54,7 @@ def a_release(version: str = "9.9.9") -> ReleaseInfo:
     return ReleaseInfo(
         version=version,
         page_url=A_PAGE,
-        assets=(ReleaseAsset(name="SkillsViewerSetup.exe", download_url="the-exe"),),
+        assets=(ReleaseAsset(name="PlainSightSetup.exe", download_url="the-exe"),),
     )
 
 
@@ -103,10 +103,10 @@ def spin_until(predicate: object) -> bool:
 
 
 @pytest.fixture
-def library(skills_root: Path, store: FakeSettingsStore) -> SkillLibraryService:
-    store.settings = Settings(skills_root=str(skills_root))
-    return SkillLibraryService(
-        repository=FileSystemSkillRepository(),
+def library(documents_root: Path, store: FakeSettingsStore) -> LibraryService:
+    store.settings = Settings(documents_root=str(documents_root))
+    return LibraryService(
+        repository=FileSystemDocumentRepository(),
         settings_store=store,
         launcher=FakeLauncher(),
         opener=FakeOpener(),
@@ -118,7 +118,7 @@ def library(skills_root: Path, store: FakeSettingsStore) -> SkillLibraryService:
 @pytest.fixture
 def checked_window(
     application: QApplication,
-    library: SkillLibraryService,
+    library: LibraryService,
 ) -> Iterator[MainWindow]:
     # The release matches the running version on purpose. This window carries a
     # real controller whose automatic check fires three seconds in; a real
@@ -126,7 +126,7 @@ def checked_window(
     # the whole run rather than failing it. Measured, not guessed: it hung here.
     main = MainWindow(
         library,
-        PythonMarkdownRenderer(),
+        DocumentHtmlRenderer(),
         BundledAssets(),
         an_update_service(a_release("0.1.0")),
     )
@@ -153,10 +153,10 @@ def host(application: QApplication) -> Iterator[QWidget]:
 
 
 def a_controller(
-    host: QWidget, library: SkillLibraryService, release: ReleaseInfo | None
+    host: QWidget, library: LibraryService, release: ReleaseInfo | None
 ) -> RecordingController:
     return RecordingController(
-        host, an_update_service(release), library, "Skills Viewer", None
+        host, an_update_service(release), library, "PlainSight", None
     )
 
 
@@ -234,7 +234,7 @@ def test_a_window_built_with_an_update_service_has_one(
 
 
 def test_the_result_is_reported_on_the_interface_thread(
-    host: QWidget, library: SkillLibraryService
+    host: QWidget, library: LibraryService
 ) -> None:
     """The whole reason the controller exists; measured rather than assumed."""
     controller = a_controller(host, library, a_release())
@@ -246,7 +246,7 @@ def test_the_result_is_reported_on_the_interface_thread(
 
 
 def test_a_newer_release_is_offered_with_its_file(
-    host: QWidget, library: SkillLibraryService
+    host: QWidget, library: LibraryService
 ) -> None:
     controller = a_controller(host, library, a_release("9.9.9"))
 
@@ -259,7 +259,7 @@ def test_a_newer_release_is_offered_with_its_file(
 
 
 def test_an_up_to_date_check_the_user_asked_for_says_so(
-    host: QWidget, library: SkillLibraryService
+    host: QWidget, library: LibraryService
 ) -> None:
     controller = a_controller(host, library, a_release("0.1.0"))
 
@@ -270,7 +270,7 @@ def test_an_up_to_date_check_the_user_asked_for_says_so(
 
 
 def test_an_unreachable_check_the_user_asked_for_says_so(
-    host: QWidget, library: SkillLibraryService
+    host: QWidget, library: LibraryService
 ) -> None:
     controller = a_controller(host, library, None)
 
@@ -281,7 +281,7 @@ def test_an_unreachable_check_the_user_asked_for_says_so(
 
 
 def test_an_automatic_check_that_finds_nothing_says_nothing(
-    host: QWidget, library: SkillLibraryService
+    host: QWidget, library: LibraryService
 ) -> None:
     """The silent branch, proved by a probe that fires after it would have."""
     controller = a_controller(host, library, None)
@@ -296,7 +296,7 @@ def test_an_automatic_check_that_finds_nothing_says_nothing(
 
 
 def test_an_automatic_check_honours_a_skipped_release(
-    host: QWidget, library: SkillLibraryService
+    host: QWidget, library: LibraryService
 ) -> None:
     library.skip_update_version("9.9.9")
     controller = a_controller(host, library, a_release("9.9.9"))
@@ -310,7 +310,7 @@ def test_an_automatic_check_honours_a_skipped_release(
 
 
 def test_a_check_the_user_asked_for_ignores_a_skipped_release(
-    host: QWidget, library: SkillLibraryService
+    host: QWidget, library: LibraryService
 ) -> None:
     library.skip_update_version("9.9.9")
     controller = a_controller(host, library, a_release("9.9.9"))
@@ -324,6 +324,6 @@ def test_a_check_the_user_asked_for_ignores_a_skipped_release(
 def test_the_prompt_names_both_versions() -> None:
     status = UpdateStatus(current="0.1.0", latest="0.2.0", update_available=True)
 
-    assert update_message("Skills Viewer", status) == (
-        "Skills Viewer 0.2.0 is available. You are running 0.1.0."
+    assert update_message("PlainSight", status) == (
+        "PlainSight 0.2.0 is available. You are running 0.1.0."
     )
