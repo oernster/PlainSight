@@ -42,6 +42,7 @@ wish.
 | An unrelated folder implies no plugins tree | `tests/application/test_defaults.py::test_an_unrelated_folder_implies_no_plugins_tree_at_all` |
 | Opening one file lists no directory | `tests/application/test_open_file.py::test_the_folder_row_is_named_from_the_path_rather_than_listed` |
 | Every declared dependency is credited in About | `tests/structural/test_credits.py::test_every_declared_dependency_is_credited` |
+| Every kind this application reads has a reader | `tests/structural/test_readers.py::test_every_kind_has_a_reader` |
 
 Every one of these has been proved to bite by planting a violation and reading
 the exit code.
@@ -95,7 +96,7 @@ external opener asks the desktop to open an address and touches no file.
 
 `ports` declares the seams as Protocols: `DocumentRepository`, `SettingsStore`,
 `EditorLauncher`, `ExternalOpener`, `PathProbe`, `PlatformPaths`,
-`AssetLocator`, `DocumentRenderer` and `ReleaseSource`. `ReleaseSource` returns a release type
+`AssetLocator`, `DocumentRenderer`, `DocumentReader` and `ReleaseSource`. `ReleaseSource` returns a release type
 declared in `update`, which imports `ports` in turn, so the annotation is
 imported under `TYPE_CHECKING` alone; a runtime import there would close a
 circle.
@@ -133,6 +134,10 @@ raise a prompt.
   the reader can open leads somewhere. A directory that cannot be listed costs
   only itself rather than the whole tree.
 
+  What a file of a given kind says about itself is not its business; it walks
+  the tree, decides what is a document at all, records what each file was and
+  asks a reader for the rest.
+
   A listing does not keep the bodies it read. What it keeps is what a document
   says about itself, whether it can be read at all and a fingerprint of the
   file; `read_body` fetches the text when a document is actually opened.
@@ -141,6 +146,20 @@ raise a prompt.
   This matters more the further it goes: a Markdown body costs a decode, while
   a kind that has to be extracted rather than decoded would have cost that
   extraction for every document in the tree in order to show one of them.
+- `document_reader`: one reader per kind, told which kind it serves rather than
+  asked to recognise what it was given. `TextDocumentReader` covers every kind
+  read today, since all three are text and differ only in whether a leading
+  fence is a block of fields. Its two halves are apart because they cost
+  differently: `summarise` runs for every document beneath a chosen folder and
+  must stay cheap, while `read_body` runs for the one document that was opened
+  and may be as dear as its kind demands. A kind that must be extracted rather
+  than decoded brings its own reader and this one never learns of it.
+
+  The readers are named in the composition root, written out rather than
+  derived from the enumeration, so a kind added without a reader is a gap
+  somebody fills on purpose instead of one filled silently with the wrong
+  reader. `tests/structural/test_readers.py` holds that map to covering every
+  kind there is.
 - `settings_store`: versioned JSON, written atomically through a temporary file
   and a replace, so a process that dies halfway leaves the previous settings
   intact. Its `FORMAT_VERSION` is the file's own number and has nothing to do

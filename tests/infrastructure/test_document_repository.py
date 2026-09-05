@@ -4,26 +4,35 @@ from __future__ import annotations
 
 from pathlib import Path
 
+from plainsight.__main__ import build_readers
 from plainsight.domain.document import DocumentKind
 from plainsight.domain.library import Folder
-from plainsight.infrastructure.document_repository import (
+from plainsight.infrastructure.document_reader import (
     EMPTY_MARKDOWN_TEXT,
     EMPTY_TEXT,
     UNREADABLE_TEXT,
+)
+from plainsight.infrastructure.document_repository import (
+    UNKNOWN_KIND,
     FileSystemDocumentRepository,
 )
 
 A_SKILL = "---\nname: prose\ndescription: writing\n---\n\n# Prose\n\nBody.\n"
 
 
+def a_repository() -> FileSystemDocumentRepository:
+    """The repository as the composition root builds it, readers and all."""
+    return FileSystemDocumentRepository(build_readers())
+
+
 def read(root: Path) -> Folder | None:
     """The tree beneath this directory, as the application would read it."""
-    return FileSystemDocumentRepository().read_folder(str(root))
+    return a_repository().read_folder(str(root))
 
 
 def body(path: Path) -> str:
     """The text of one document, fetched the way opening it fetches it."""
-    return FileSystemDocumentRepository().read_body(str(path))
+    return a_repository().read_body(str(path)).text
 
 
 def names(folder: Folder) -> list[str]:
@@ -214,10 +223,14 @@ def test_reading_the_same_unchanged_file_twice_gives_the_same_document(
     assert read(tmp_path).documents[0] == read(tmp_path).documents[0]
 
 
-def test_the_body_of_a_file_that_is_not_a_document_is_empty(tmp_path: Path) -> None:
+def test_the_body_of_a_file_that_is_not_a_document_says_why(tmp_path: Path) -> None:
+    """No reader claims it, so the repository answers rather than looking one up."""
     (tmp_path / "photo.png").write_bytes(b"\x89PNG")
 
-    assert body(tmp_path / "photo.png") == ""
+    asked = a_repository().read_body(str(tmp_path / "photo.png"))
+
+    assert asked.text == ""
+    assert asked.failure == UNKNOWN_KIND
 
 
 def test_the_body_of_a_file_that_is_not_there_is_empty(tmp_path: Path) -> None:

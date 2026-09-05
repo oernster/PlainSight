@@ -10,26 +10,31 @@ Nothing here is specific to any one tool. A Claude skills folder reads as the
 folders of skills it is, each holding its ``SKILL.md`` and whatever travels
 with it; a folder of notes reads as the notes it holds. That is the same rule
 applied to both rather than two rules that happen to agree.
+
+Nor is anything here specific to any one kind of file. What a file of a given
+kind says about itself is a reader's business; this walks the tree, decides
+what is a document at all and says what each file was when it was listed.
 """
 
 from __future__ import annotations
 
+from collections.abc import Mapping
 from pathlib import Path
 
-from ..domain.document import Document, DocumentKind, kind_of
+from ..application.ports import DocumentReader
+from ..domain.document import Document, DocumentBody, DocumentKind, kind_of
 from ..domain.library import Folder
-from ..domain.parsing import EMPTY_FIELDS, ParsedDocument, parse_document
 
 HIDDEN_PREFIX = "."
 IGNORED_DIRECTORY_NAMES = frozenset({"__pycache__"})
-UNREADABLE_TEXT = "This file could not be read as text."
-MISSING_TEXT = "This file could not be opened."
-EMPTY_TEXT = "This file holds no text."
-EMPTY_MARKDOWN_TEXT = "This file holds no text beneath its frontmatter."
+UNKNOWN_KIND = "This file is not one this application reads."
 
 
 class FileSystemDocumentRepository:
     """Reads the documents held beneath a directory on this machine."""
+
+    def __init__(self, readers: Mapping[DocumentKind, DocumentReader]) -> None:
+        self._readers = dict(readers)
 
     def read_folder(self, root: str) -> Folder | None:
         """``root`` as a tree; None when it is not a folder or holds nothing."""
@@ -49,22 +54,20 @@ class FileSystemDocumentRepository:
         kind = kind_of(wanted.name)
         if kind is None or not wanted.is_file():
             return None
-        return _document(wanted, kind)
+        return self._document(wanted, kind)
 
-    def read_body(self, path: str) -> str:
-        """The text of this file, read now; empty when it cannot be read.
+    def read_body(self, path: str) -> DocumentBody:
+        """The text of this file, read now, else why there is none.
 
         The body of a document is fetched when it is opened rather than kept
         from when it was listed. A library of two hundred documents held two
         hundred bodies to show one of them, which was free for Markdown and
         will not be for a kind that has to be extracted rather than decoded.
         """
-        wanted = Path(path)
-        kind = kind_of(wanted.name)
+        kind = kind_of(Path(path).name)
         if kind is None:
-            return ""
-        text, failure = _read_text(wanted)
-        return "" if failure else _parse(text, kind).body
+            return DocumentBody(failure=UNKNOWN_KIND)
+        return self._readers[kind].read_body(path)
 
     def _folder(self, directory: Path, name: str) -> Folder | None:
         """This directory as a folder; None when nothing beneath it is read."""
@@ -80,33 +83,29 @@ class FileSystemDocumentRepository:
                 continue
             kind = kind_of(entry.name)
             if kind is not None:
-                documents.append(_document(entry, kind))
+                documents.append(self._document(entry, kind))
         if not folders and not documents:
             return None
         return Folder.of(name, str(directory), folders, documents)
 
+    def _document(self, path: Path, kind: DocumentKind) -> Document:
+        """One document as it was listed, its reader saying what it declares.
 
-def _document(path: Path, kind: DocumentKind) -> Document:
-    """One document read from this file, reporting a read that failed.
-
-    The body is read here and deliberately not kept. What a listing needs is
-    what a document says about itself, plus whether it can be read at all;
-    the text itself is fetched again when the reader opens it.
-    """
-    text, failure = _read_text(path)
-    parsed = _parse(text, kind)
-    if not failure and not parsed.body.strip():
-        failure = EMPTY_MARKDOWN_TEXT if kind.declares_fields else EMPTY_TEXT
-    return Document(
-        name=path.name,
-        path=str(path),
-        kind=kind,
-        fingerprint=_fingerprint(path),
-        declared_name=parsed.name,
-        description=parsed.description,
-        failure=failure,
-        declared_fields=tuple(parsed.frontmatter.items()),
-    )
+        The body is not among what is kept. What a listing needs is what a
+        document says about itself, whether it can be read at all and what the
+        file was at the time; the text itself is fetched when it is opened.
+        """
+        summary = self._readers[kind].summarise(str(path))
+        return Document(
+            name=path.name,
+            path=str(path),
+            kind=kind,
+            fingerprint=_fingerprint(path),
+            declared_name=summary.declared_name,
+            description=summary.description,
+            failure=summary.failure,
+            declared_fields=summary.declared_fields,
+        )
 
 
 def _fingerprint(path: Path) -> str:
@@ -127,23 +126,6 @@ def _fingerprint(path: Path) -> str:
     except OSError:
         return ""
     return f"{status.st_size}:{status.st_mtime_ns}"
-
-
-def _parse(text: str, kind: DocumentKind) -> ParsedDocument:
-    """The text split into fields and body, where this kind declares fields."""
-    if kind.declares_fields:
-        return parse_document(text)
-    return ParsedDocument(frontmatter=EMPTY_FIELDS, body=text)
-
-
-def _read_text(path: Path) -> tuple[str, str]:
-    """The file's text with no failure; else empty text with a reason."""
-    try:
-        return path.read_text(encoding="utf-8"), ""
-    except UnicodeDecodeError:
-        return "", UNREADABLE_TEXT
-    except OSError:
-        return "", MISSING_TEXT
 
 
 def _entries(directory: Path) -> list[Path]:

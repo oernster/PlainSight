@@ -6,7 +6,7 @@ assert about it and nothing more.
 
 from __future__ import annotations
 
-from plainsight.domain.document import Document, DocumentKind
+from plainsight.domain.document import Document, DocumentBody, DocumentKind
 from plainsight.domain.library import Folder
 from plainsight.domain.settings import EditorChoice, Settings
 
@@ -58,9 +58,9 @@ class FakeRepository:
         self.files_read.append(path)
         return self.documents.get(path)
 
-    def read_body(self, path: str) -> str:
+    def read_body(self, path: str) -> DocumentBody:
         self.bodies_read.append(path)
-        return self.bodies.get(path, "")
+        return DocumentBody(text=self.bodies.get(path, ""))
 
 
 class FakeSettingsStore:

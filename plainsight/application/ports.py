@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Protocol
 
-from ..domain.document import Document, DocumentKind
+from ..domain.document import Document, DocumentBody, DocumentKind, DocumentSummary
 from ..domain.library import Folder
 from ..domain.settings import EditorChoice, Settings
 
@@ -26,13 +26,31 @@ class DocumentRepository(Protocol):
         """One file, listing no directory; None when it is not one we read."""
         ...
 
-    def read_body(self, path: str) -> str:
-        """The text of this file, read now; empty when it cannot be read.
+    def read_body(self, path: str) -> DocumentBody:
+        """The text of this file, read now, else why there is none.
 
         Asked when a document is opened rather than when it is listed. A
         library holds every document it found, so holding every body would
         mean reading every file to show one of them.
         """
+        ...
+
+
+class DocumentReader(Protocol):
+    """Reads one kind of file: what it declares, then its text on demand.
+
+    One per kind, chosen by kind rather than asked to recognise anything. The
+    two halves are separate because they cost differently: a listing wants the
+    first for every document in a tree, while the second is wanted for one
+    document at a time and may mean extracting a file rather than decoding it.
+    """
+
+    def summarise(self, path: str) -> DocumentSummary:
+        """What a listing needs, without the cost of the whole body."""
+        ...
+
+    def read_body(self, path: str) -> DocumentBody:
+        """The text to put in front of a reader, else why there is none."""
         ...
 
 

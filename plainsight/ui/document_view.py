@@ -15,7 +15,7 @@ from PySide6.QtGui import QTextDocument
 from PySide6.QtWidgets import QWidget
 
 from ..application.ports import DocumentRenderer
-from ..domain.document import Document
+from ..domain.document import Document, DocumentBody
 from ..domain.passage import soften
 from .reading_pane import ReadingPane
 from .theme import Palette, document_style
@@ -37,7 +37,7 @@ GONE_SINCE_LISTED = (
     "the folder was listed."
 )
 
-BodySource = Callable[[], str]
+BodySource = Callable[[], DocumentBody]
 """Somewhere to get a body from, called only when a redraw needs one."""
 
 AT_THE_TOP = 0
@@ -230,17 +230,20 @@ class DocumentView(ReadingPane):
         by it. A kind that does not reflow is not softened at all, since its
         line breaks are the author's own layout rather than the renderer's.
 
-        A document that listed as readable and has nothing to give now is a
-        file that went away between being listed and being opened, so it is
-        reported rather than shown as an empty page.
+        A document that listed as readable and has nothing to give now has
+        changed since it was listed. Where its reader said why, that is what
+        is shown, since a file that is locked and a file that has gone want
+        different words; where it did not, the general reason stands.
         """
         if not document.is_readable:
             return f"<p><b>{escape(document.failure)}</b></p>"
-        text = read_body()
-        if not text.strip():
+        body = read_body()
+        if body.failure:
+            return f"<p><b>{escape(body.failure)}</b></p>"
+        if not body.text.strip():
             return f"<p><b>{escape(GONE_SINCE_LISTED)}</b></p>"
-        body = soften(text) if document.kind.reflows else text
-        return self._renderer.render(body, document.kind)
+        text = soften(body.text) if document.kind.reflows else body.text
+        return self._renderer.render(text, document.kind)
 
     def _set(self, html: str) -> None:
         """Show this content, at the start unless a place was kept for it.

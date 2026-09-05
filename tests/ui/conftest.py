@@ -8,6 +8,7 @@ from pathlib import Path
 import pytest
 from PySide6.QtWidgets import QApplication
 
+from plainsight.__main__ import build_readers
 from plainsight.application.services import LibraryService
 from plainsight.domain.settings import Settings
 from plainsight.infrastructure.document_repository import FileSystemDocumentRepository
@@ -82,7 +83,7 @@ def window(
 ) -> Iterator[MainWindow]:
     store.settings = Settings(documents_root=str(documents_root))
     service = LibraryService(
-        repository=FileSystemDocumentRepository(),
+        repository=FileSystemDocumentRepository(build_readers()),
         settings_store=store,
         launcher=launcher,
         opener=opener,

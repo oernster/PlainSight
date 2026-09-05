@@ -66,6 +66,7 @@ def test_the_choice_is_remembered(window: MainWindow, store) -> None:
 def test_a_remembered_light_appearance_opens_light(
     application, documents_root, store, launcher, opener
 ) -> None:
+    from plainsight.__main__ import build_readers
     from plainsight.application.services import LibraryService
     from plainsight.domain.settings import Settings
     from plainsight.infrastructure.document_repository import (
@@ -80,7 +81,7 @@ def test_a_remembered_light_appearance_opens_light(
     )
     made = MainWindow(
         LibraryService(
-            repository=FileSystemDocumentRepository(),
+            repository=FileSystemDocumentRepository(build_readers()),
             settings_store=store,
             launcher=launcher,
             opener=opener,

@@ -13,6 +13,7 @@ from PySide6.QtGui import QKeyEvent
 from PySide6.QtTest import QTest
 from PySide6.QtWidgets import QApplication, QWidget
 
+from plainsight.__main__ import build_readers
 from plainsight.application.services import LibraryService
 from plainsight.application.update import (
     ReleaseAsset,
@@ -106,7 +107,7 @@ def spin_until(predicate: object) -> bool:
 def library(documents_root: Path, store: FakeSettingsStore) -> LibraryService:
     store.settings = Settings(documents_root=str(documents_root))
     return LibraryService(
-        repository=FileSystemDocumentRepository(),
+        repository=FileSystemDocumentRepository(build_readers()),
         settings_store=store,
         launcher=FakeLauncher(),
         opener=FakeOpener(),

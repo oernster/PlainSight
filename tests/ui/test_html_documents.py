@@ -14,7 +14,7 @@ from http.server import BaseHTTPRequestHandler, HTTPServer
 
 from PySide6.QtWidgets import QApplication
 
-from plainsight.domain.document import Document, DocumentKind
+from plainsight.domain.document import Document, DocumentBody, DocumentKind
 from plainsight.infrastructure.renderer import DocumentHtmlRenderer
 from plainsight.ui.document_view import DocumentView
 from plainsight.ui.theme import DARK
@@ -39,7 +39,7 @@ def an_html_view(body: str) -> DocumentView:
             kind=DocumentKind.HTML,
             fingerprint=f"{len(body)}:1",
         ),
-        lambda: body,
+        lambda: DocumentBody(text=body),
     )
     view.resize(VIEW_WIDTH_PX, VIEW_HEIGHT_PX)
     view.document().adjustSize()

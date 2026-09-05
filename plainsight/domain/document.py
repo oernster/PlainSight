@@ -118,6 +118,37 @@ class InvalidDocument(ValueError):
 
 
 @dataclass(frozen=True, slots=True)
+class DocumentSummary:
+    """What a listing knows about a document without reading all of it.
+
+    A listing needs what a document calls itself and whether it can be opened
+    at all. It does not need the text. That is the whole distinction this type
+    exists to hold: a kind whose text must be extracted rather than decoded
+    would otherwise pay that extraction for every document in a tree in order
+    to show one of them.
+    """
+
+    declared_name: str = ""
+    description: str = ""
+    declared_fields: tuple[tuple[str, str], ...] = field(default=())
+    failure: str = ""
+
+
+@dataclass(frozen=True, slots=True)
+class DocumentBody:
+    """A document's text, else the reason there is none to give.
+
+    The reason travels with the absence rather than being worked out from it.
+    An empty string on its own cannot tell a file that went away from one that
+    is locked or one that holds no text a machine can reach; those want
+    different words in front of a reader.
+    """
+
+    text: str = ""
+    failure: str = ""
+
+
+@dataclass(frozen=True, slots=True)
 class Document:
     """A document as the reader knows it.
 

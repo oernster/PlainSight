@@ -11,7 +11,12 @@ from PySide6.QtGui import QKeyEvent
 from PySide6.QtTest import QTest
 from PySide6.QtWidgets import QApplication
 
-from plainsight.domain.document import HEADER_FIELD_LIMIT, Document, DocumentKind
+from plainsight.domain.document import (
+    HEADER_FIELD_LIMIT,
+    Document,
+    DocumentBody,
+    DocumentKind,
+)
 from plainsight.infrastructure.renderer import DocumentHtmlRenderer
 from plainsight.ui.auto_scroller import START_HOLD_MS, TICK_MS, Phase
 from plainsight.ui.document_view import GONE_SINCE_LISTED, DocumentView
@@ -53,7 +58,7 @@ def show(view: DocumentView, document: Document, body: str = DEFAULT_BODY) -> No
     The pane asks for a body only where it is actually going to redraw, so a
     test that passes one is also saying a redraw was expected.
     """
-    view.show_document(document, lambda: body)
+    view.show_document(document, lambda: DocumentBody(text=body))
 
 
 def press(view: DocumentView, key: Qt.Key, modifier: Qt.KeyboardModifier) -> None:
@@ -255,9 +260,9 @@ def test_a_document_left_alone_is_never_read_off_disk_again(application) -> None
     view = a_view(application)
     asked: list[str] = []
 
-    def read_body() -> str:
+    def read_body() -> DocumentBody:
         asked.append("asked")
-        return DEFAULT_BODY
+        return DocumentBody(text=DEFAULT_BODY)
 
     view.show_document(a_document(), read_body)
     view.show_document(a_document(), read_body)
@@ -275,6 +280,23 @@ def test_a_document_that_went_away_says_so_rather_than_showing_a_blank(
     show(view, a_document(), "")
 
     assert GONE_SINCE_LISTED in view.toPlainText()
+
+
+def test_a_reader_that_says_why_is_quoted_rather_than_second_guessed(
+    application,
+) -> None:
+    """A locked file and a missing one want different words in front of a reader.
+
+    The pane has no way to tell them apart from an empty string, which is why
+    the reason travels with the absence rather than being inferred from it.
+    """
+    view = a_view(application)
+    locked = "This document is protected and cannot be opened."
+
+    view.show_document(a_document(), lambda: DocumentBody(failure=locked))
+
+    assert locked in view.toPlainText()
+    assert GONE_SINCE_LISTED not in view.toPlainText()
 
 
 def test_a_change_of_palette_draws_the_same_document_again(application) -> None:

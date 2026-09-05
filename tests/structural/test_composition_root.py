@@ -17,6 +17,7 @@ COMPOSITION_ROOT = "__main__.py"
 IMPLEMENTATIONS = frozenset(
     {
         "FileSystemDocumentRepository",
+        "TextDocumentReader",
         "JsonSettingsStore",
         "DesktopEditorLauncher",
         "QtExternalOpener",

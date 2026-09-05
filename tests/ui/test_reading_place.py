@@ -10,6 +10,7 @@ import pytest
 from PySide6.QtCore import QPoint
 from PySide6.QtWidgets import QApplication
 
+from plainsight.__main__ import build_readers
 from plainsight.application.services import LibraryService
 from plainsight.domain.settings import Settings
 from plainsight.infrastructure.document_repository import FileSystemDocumentRepository
@@ -86,7 +87,7 @@ def reading(
     """A window already part way down a long skill."""
     store.settings = Settings(documents_root=str(long_root))
     service = LibraryService(
-        repository=FileSystemDocumentRepository(),
+        repository=FileSystemDocumentRepository(build_readers()),
         settings_store=store,
         launcher=FakeLauncher(),
         opener=FakeOpener(),

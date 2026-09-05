@@ -10,7 +10,7 @@ from __future__ import annotations
 import os
 from dataclasses import dataclass
 
-from ..domain.document import Document
+from ..domain.document import Document, DocumentBody
 from ..domain.library import Folder, Library
 from ..domain.settings import Appearance, EditorChoice, FontSize, Settings
 from .defaults import browse_from, chosen_root, default_editor, plugins_root_for
@@ -99,8 +99,8 @@ class LibraryService:
             tuple(one for one in found if one is not None and not one.is_empty)
         )
 
-    def body_of(self, document: Document) -> str:
-        """The text of this document, read now; empty when it cannot be read.
+    def body_of(self, document: Document) -> DocumentBody:
+        """The text of this document, read now, else why there is none.
 
         Asked when a document is opened rather than when the library is read,
         so a folder of documents costs one body at a time rather than all of

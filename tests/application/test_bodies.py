@@ -52,9 +52,10 @@ def test_opening_a_document_reads_its_body_and_only_its_body() -> None:
     document = a_document("a.md", A_ROOT)
     repository = FakeRepository(bodies={document.path: "The text."})
 
-    text = a_service(repository).body_of(document)
+    body = a_service(repository).body_of(document)
 
-    assert text == "The text."
+    assert body.text == "The text."
+    assert not body.failure
     assert repository.bodies_read == [document.path]
 
 
@@ -62,4 +63,4 @@ def test_a_body_that_cannot_be_read_now_comes_back_empty() -> None:
     """A file moved between being listed and being opened is not a crash."""
     document = a_document("gone.md", A_ROOT)
 
-    assert a_service(FakeRepository()).body_of(document) == ""
+    assert a_service(FakeRepository()).body_of(document).text == ""
