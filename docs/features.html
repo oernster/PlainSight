@@ -4,14 +4,14 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>PlainSight features: every document in the folder, as the tree it is</title>
-  <meta name="description" content="Reads Markdown and text files anywhere beneath a folder you choose, shows them as the tree they are on disk and renders the one you pick with the fields it declares; it never writes to any of them.">
+  <meta name="description" content="Reads Markdown, text and HTML files anywhere beneath a folder you choose, shows them as the tree they are on disk and renders the one you pick with the fields it declares; it never writes to any of them.">
   <link rel="canonical" href="https://ernster.dev/PlainSight/features.html">
   <meta name="theme-color" content="#1e1e2e">
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="PlainSight">
   <meta property="og:url" content="https://ernster.dev/PlainSight/features.html">
   <meta property="og:title" content="PlainSight features: every document in the folder, as the tree it is">
-  <meta property="og:description" content="Reads Markdown and text files anywhere beneath a folder you choose, shows them as the tree they are on disk and renders the one you pick with the fields it declares; it never writes to any of them.">
+  <meta property="og:description" content="Reads Markdown, text and HTML files anywhere beneath a folder you choose, shows them as the tree they are on disk and renders the one you pick with the fields it declares; it never writes to any of them.">
   <meta property="og:image" content="https://ernster.dev/PlainSight/plainsight-512.png">
   <meta property="og:image:width" content="512">
   <meta property="og:image:height" content="512">
@@ -19,7 +19,7 @@
   <meta property="og:locale" content="en_GB">
   <meta name="twitter:card" content="summary">
   <meta name="twitter:title" content="PlainSight features: every document in the folder, as the tree it is">
-  <meta name="twitter:description" content="Reads Markdown and text files anywhere beneath a folder you choose, shows them as the tree they are on disk and renders the one you pick with the fields it declares; it never writes to any of them.">
+  <meta name="twitter:description" content="Reads Markdown, text and HTML files anywhere beneath a folder you choose, shows them as the tree they are on disk and renders the one you pick with the fields it declares; it never writes to any of them.">
   <meta name="twitter:image" content="https://ernster.dev/PlainSight/plainsight-512.png">
   <link rel="icon" href="favicon.ico" sizes="any">
   <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
@@ -51,12 +51,14 @@
 
   <h2 class="section-title" style="margin-top:2.5rem;">Finding them</h2>
   <ul>
-    <li>Reads Markdown (<code>.md</code>) and plain text (<code>.txt</code>), anywhere beneath the folder you point it at.</li>
+    <li>Reads Markdown (<code>.md</code>), plain text (<code>.txt</code>) and HTML (<code>.html</code>), anywhere beneath the folder you point it at.</li>
     <li>Reads nothing until you choose a folder. The chooser opens on your Claude skills folder, so the common case is one click; take that one and the plugins tree beside it comes too, as a second root.</li>
     <li>Opens a single document as well, from the button beside the folder one. It reads that file and lists no directory around it, so whatever sits beside it stays unread.</li>
     <li>Browse to any other folder instead, a notes folder or a project's documentation; the choice is remembered for next time.</li>
     <li>Hidden and cache directories are passed over; so is a branch that leads to no document at all, so every branch you can open leads somewhere.</li>
     <li>A folder it cannot open costs only itself rather than the whole tree.</li>
+    <li>Runs nothing a document carries. A page's scripts are dropped rather than executed, so a document somebody sent you cannot act on your machine; anything needing a script runtime is inert and shows as the plain text around it.</li>
+    <li>Fetches nothing on a document's behalf. A picture stored beside the document is shown; one held at a web address is not fetched and not shown, because the reading surface has no way to reach the network at all.</li>
   </ul>
 
   <h2 class="section-title" style="margin-top:2.5rem;">Finding your way around</h2>
@@ -126,7 +128,7 @@
       </nav>
     </div>
     <div class="footer-bottom">
-      <p>A local-first reader for folders of Markdown and text files. It reads nothing until you choose a folder; the chooser opens on your Claude skills one. Read only, open source, no cloud. Not affiliated with Anthropic and not endorsed by them.</p>
+      <p>A local-first reader for folders of Markdown, text and HTML files. It reads nothing until you choose a folder; the chooser opens on your Claude skills one. Read only, open source, no cloud. Not affiliated with Anthropic and not endorsed by them.</p>
       <div class="chips">
         <span class="chip">Version <!--VERSION-->1.0.0<!--/VERSION--></span>
         <span class="chip">Python</span>

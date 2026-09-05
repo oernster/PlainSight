@@ -2,7 +2,7 @@
 
 ## What it does
 
-Reads a folder of Markdown and text files, shows it as the tree it is on disk,
+Reads a folder of Markdown, text and HTML files, shows it as the tree it is on disk,
 renders the document you select and hands editing to an editor the user chooses.
 It reads nothing until the user chooses a folder; the chooser opens on the
 Claude skills folder, which is an offer rather than a scan. It is not a text
@@ -19,7 +19,7 @@ editor and it never writes to a document.
 
 ## Scope, stated once
 
-Any folder of Markdown or plain text files. The Claude skills folder is the
+Any folder of Markdown, plain text or HTML files. The Claude skills folder is the
 default and the origin of the application, not a limit on it. Not affiliated
 with Anthropic and not endorsed by them; the About dialog says so.
 

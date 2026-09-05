@@ -19,8 +19,8 @@ to the editor you choose.
 
 ## Who it is for
 
-Anyone with a folder of Markdown or text files they would rather read than
-grep. If you keep Claude skills, it answers the three questions those raise:
+Anyone with a folder of Markdown, text or HTML files they would rather read
+than grep. If you keep Claude skills, it answers the three questions those raise:
 which are actually on this machine, what one you wrote three months ago still
 says, what arrived with a plugin you installed once. If you keep notes or
 documentation instead, it reads those with no configuration at all.
@@ -47,8 +47,17 @@ prompt. Nothing is fetched or sent without that click.
 
 ## Capabilities
 
-- Reads Markdown (`.md`) and plain text (`.txt`). Markdown is rendered; text is
-  shown exactly as it was typed, so its own line breaks survive.
+- Reads Markdown (`.md`), plain text (`.txt`) and HTML (`.html`, `.htm`).
+  Markdown is rendered; text is shown exactly as it was typed, so its own line
+  breaks survive; HTML is shown as the page it already is.
+- Runs nothing a document carries. A page's scripts are dropped rather than
+  executed, so a document you were sent cannot act on your machine. Anything
+  needing a script runtime, htmx among it, is inert here and shows as the
+  plain text around it.
+- Fetches nothing on a document's behalf. A picture stored beside the document
+  is shown; one held at a web address is not fetched and not shown, because the
+  reading surface has no way to reach the network. That is not a setting to
+  turn on: there is no network in it at all.
 - Shows the folders as a tree, each one opening and closing on its own arrow,
   with a count of what it holds so a shut branch says whether it is worth
   opening.

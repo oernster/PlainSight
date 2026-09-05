@@ -76,9 +76,15 @@ external opener asks the desktop to open an address and touches no file.
   the file could not be read. A document with a failure is still listed, because
   the user neither caused it nor can fix it from the viewer. `DocumentKind` is
   the single home for which file suffixes are read at all; it also settles
-  whether a kind declares frontmatter and whether its text reflows. Discovery, rendering
-  and softening each ask it rather than holding a list of their own, so adding a
-  kind is adding a member and nothing else.
+  whether a kind declares frontmatter and how its text reaches the reading
+  surface. Discovery, rendering and softening each ask it rather than holding a
+  list of their own, so adding a kind is adding a member and nothing else. A
+  kind may answer to more than one suffix, since `.htm` and `.html` name the
+  same thing everywhere outside this application.
+- `Presentation`: the three ways a body becomes what the surface shows. Text
+  laid out for the page, text that is its own layout, then text that is already
+  the thing the surface renders. This was a flag while there were two of them;
+  HTML is the third and had nowhere to go in a boolean.
 - `library`: the tree. A `Folder` holds its subfolders and its documents, each
   ordered case insensitively with folders first; a `Library` holds the roots.
   The single ordering rule lives here.
@@ -134,10 +140,13 @@ raise a prompt.
   user has accumulated needing anything done to them; the format may be revised
   on its own number when it has to be.
 - `platform`: the home directory and the path probe.
-- `renderer`: rendering through the `markdown` package for a kind that
-  reflows; into an escaped preformatted block for one that does not. Passing plain
-  text through a Markdown renderer would silently rewrite it: a line of hyphens
-  becomes a heading rule and the author's own line breaks disappear.
+- `renderer`: rendering through the `markdown` package for a kind that is laid
+  out; into an escaped preformatted block for one kept as typed; untouched for
+  one that is already HTML. Passing plain text through a Markdown renderer would
+  silently rewrite it: a line of hyphens becomes a heading rule and the author's
+  own line breaks disappear. Passing HTML through a parser would lose whatever
+  the parser did not understand, once on every pass, to produce the document it
+  started with.
 - `update_source`: the one place the application opens a connection of its own.
   It asks the GitHub releases endpoint for the latest published release of this
   repository and nothing else. That endpoint returns only a published,

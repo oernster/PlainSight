@@ -9,6 +9,7 @@ from plainsight.domain.document import (
     Document,
     DocumentKind,
     InvalidDocument,
+    Presentation,
     kind_of,
     readable_suffixes,
 )
@@ -26,21 +27,38 @@ def a_document(**changed: object) -> Document:
     return Document(**fields)  # type: ignore[arg-type]
 
 
-def test_every_kind_carries_its_own_suffix() -> None:
-    assert DocumentKind.MARKDOWN.suffix == ".md"
-    assert DocumentKind.PLAIN_TEXT.suffix == ".txt"
+def test_every_kind_carries_its_own_suffixes() -> None:
+    assert DocumentKind.MARKDOWN.suffixes == (".md",)
+    assert DocumentKind.PLAIN_TEXT.suffixes == (".txt",)
+
+
+def test_one_kind_may_answer_to_more_than_one_suffix() -> None:
+    """``.htm`` and ``.html`` name the same thing outside this application."""
+    assert DocumentKind.HTML.suffixes == (".html", ".htm")
+    assert kind_of("page.htm") is DocumentKind.HTML
+    assert kind_of("page.html") is DocumentKind.HTML
 
 
 def test_only_markdown_declares_fields_and_reflows() -> None:
     """Plain text keeps its own line breaks and its own opening lines.
 
     Both properties are asserted here rather than assumed equal: they answer
-    different questions and a kind added later may separate them.
+    different questions and a kind added later may separate them. HTML is the
+    kind that separated them: it carries its own layout as plain text does,
+    while carrying it in markup rather than in line breaks.
     """
     assert DocumentKind.MARKDOWN.declares_fields
     assert DocumentKind.MARKDOWN.reflows
     assert not DocumentKind.PLAIN_TEXT.declares_fields
     assert not DocumentKind.PLAIN_TEXT.reflows
+    assert not DocumentKind.HTML.declares_fields
+    assert not DocumentKind.HTML.reflows
+
+
+def test_each_kind_says_how_it_reaches_the_reading_surface() -> None:
+    assert DocumentKind.MARKDOWN.presentation is Presentation.LAID_OUT
+    assert DocumentKind.PLAIN_TEXT.presentation is Presentation.AS_TYPED
+    assert DocumentKind.HTML.presentation is Presentation.ALREADY_HTML
 
 
 @pytest.mark.parametrize(
@@ -71,9 +89,14 @@ def test_the_readable_suffixes_are_the_kinds_and_nothing_else() -> None:
     Compared against the enumeration itself rather than a written out list, so
     a kind added later is covered here without anyone editing this test.
     """
-    assert readable_suffixes() == tuple(kind.suffix for kind in DocumentKind)
+    assert readable_suffixes() == tuple(
+        suffix for kind in DocumentKind for suffix in kind.suffixes
+    )
     assert ".md" in readable_suffixes()
     assert ".txt" in readable_suffixes()
+    assert ".html" in readable_suffixes()
+    assert ".htm" in readable_suffixes()
+    assert len(readable_suffixes()) == len(set(readable_suffixes()))
 
 
 def test_a_document_needs_a_name() -> None:

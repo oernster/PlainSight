@@ -56,6 +56,30 @@ def test_a_text_file_is_a_document_too(tmp_path: Path) -> None:
     assert folder.documents[0].kind is DocumentKind.PLAIN_TEXT
 
 
+def test_an_html_file_is_a_document_under_either_suffix(tmp_path: Path) -> None:
+    """A reader who saved a page as ``.htm`` asked for the same thing."""
+    (tmp_path / "guide.html").write_text("<p>One</p>", encoding="utf-8")
+    (tmp_path / "manual.htm").write_text("<p>Two</p>", encoding="utf-8")
+
+    folder = read(tmp_path)
+
+    assert names(folder) == ["guide.html", "manual.htm"]
+    for document in folder:
+        assert document.kind is DocumentKind.HTML
+
+
+def test_an_html_file_keeps_its_markup_rather_than_declaring_fields(
+    tmp_path: Path,
+) -> None:
+    """A leading fence in a page is markup, never a block of fields."""
+    (tmp_path / "page.html").write_text("---\n<p>Body.</p>\n", encoding="utf-8")
+
+    document = read(tmp_path).documents[0]
+
+    assert document.declared_fields == ()
+    assert document.body == "---\n<p>Body.</p>\n"
+
+
 def test_anything_else_is_not_a_document(tmp_path: Path) -> None:
     (tmp_path / "notes.md").write_text("Body.", encoding="utf-8")
     (tmp_path / "photo.png").write_bytes(b"\x89PNG")

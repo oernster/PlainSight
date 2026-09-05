@@ -16,22 +16,55 @@ SHOWN_ALREADY = frozenset({"name", "description"})
 SUFFIX_SEPARATOR = "."
 
 
+class Presentation(Enum):
+    """How a kind's text becomes what a reading surface shows.
+
+    Three answers rather than a flag, because there are three of them: text
+    laid out for the page, text that is its own layout and text that is
+    already the thing the surface renders. A flag carried two of these and had
+    nowhere to put the third.
+    """
+
+    LAID_OUT = "laid out"
+    AS_TYPED = "as typed"
+    ALREADY_HTML = "already html"
+
+
 class DocumentKind(Enum):
     """A kind of file this application knows how to read.
 
-    The suffix is the member's own value, so adding a kind is adding a member
-    and nothing else. Discovery, rendering and the reading pane each ask this
-    enumeration rather than holding a list of suffixes of their own, which is
-    what stops the three drifting apart as more kinds arrive.
+    Every suffix that names a kind is the member's own value, so adding a kind
+    is adding a member and nothing else. Discovery, rendering and the reading
+    pane each ask this enumeration rather than holding a list of suffixes of
+    their own, which is what stops the three drifting apart as more kinds
+    arrive.
+
+    A kind may answer to more than one suffix. ``.htm`` and ``.html`` name the
+    same thing, so a reader who opens one and not the other would be reading a
+    distinction that exists nowhere outside this file.
     """
 
-    MARKDOWN = ".md"
-    PLAIN_TEXT = ".txt"
+    MARKDOWN = (".md",)
+    PLAIN_TEXT = (".txt",)
+    HTML = (".html", ".htm")
 
     @property
-    def suffix(self) -> str:
-        """The lower cased file suffix that names this kind."""
+    def suffixes(self) -> tuple[str, ...]:
+        """Every lower cased file suffix that names this kind."""
         return self.value
+
+    @property
+    def presentation(self) -> Presentation:
+        """How this kind's text reaches the reading surface.
+
+        HTML is already what the surface renders, so it is handed over as it
+        stands rather than being rewritten into itself.
+        """
+        if self is DocumentKind.MARKDOWN:
+            return Presentation.LAID_OUT
+        if self is DocumentKind.HTML:
+            return Presentation.ALREADY_HTML
+        return Presentation.AS_TYPED
 
     @property
     def declares_fields(self) -> bool:
@@ -49,9 +82,10 @@ class DocumentKind(Enum):
 
         Markdown is laid out, so an over-long passage in it may be given
         somewhere to breathe. Plain text carries its own line breaks and is the
-        author's own layout, so it is shown exactly as it came.
+        author's own layout, so it is shown exactly as it came; HTML carries
+        its own layout too, in its markup rather than in its line breaks.
         """
-        return self is DocumentKind.MARKDOWN
+        return self.presentation is Presentation.LAID_OUT
 
 
 def readable_suffixes() -> tuple[str, ...]:
@@ -60,7 +94,7 @@ def readable_suffixes() -> tuple[str, ...]:
     Here rather than in the file dialogue that shows them, so the set a chooser
     offers cannot drift from the set discovery accepts.
     """
-    return tuple(kind.suffix for kind in DocumentKind)
+    return tuple(suffix for kind in DocumentKind for suffix in kind.suffixes)
 
 
 def kind_of(file_name: str) -> DocumentKind | None:
@@ -74,7 +108,7 @@ def kind_of(file_name: str) -> DocumentKind | None:
     if not separator or not stem:
         return None
     for kind in DocumentKind:
-        if f"{separator}{suffix}" == kind.suffix:
+        if f"{separator}{suffix}" in kind.suffixes:
             return kind
     return None
 

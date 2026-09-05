@@ -46,6 +46,25 @@ def test_plain_text_is_shown_exactly_as_it_was_typed() -> None:
     assert "<li>" not in html
 
 
+def test_html_is_handed_over_exactly_as_it_stands() -> None:
+    """It is already what this renderer exists to produce.
+
+    Parsing it only to write it back out would lose whatever the parser did
+    not understand, once per pass, for no gain at all.
+    """
+    page = "<h1>Title</h1>\n<p>A paragraph &amp; an entity.</p>\n"
+
+    assert DocumentHtmlRenderer().render(page, DocumentKind.HTML) == page
+
+
+def test_html_is_never_escaped_into_a_preformatted_block() -> None:
+    """The failure this guards is HTML shown as its own source code."""
+    html = DocumentHtmlRenderer().render("<p>Hello</p>", DocumentKind.HTML)
+
+    assert "<pre>" not in html
+    assert "&lt;p&gt;" not in html
+
+
 def test_the_version_comes_from_the_file_that_holds_it() -> None:
     expected = (
         (Path(__file__).resolve().parents[2] / "VERSION")
