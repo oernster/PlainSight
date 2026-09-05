@@ -7,7 +7,6 @@ from pathlib import Path
 from PySide6.QtCore import QEvent, Qt
 from PySide6.QtWidgets import (
     QApplication,
-    QFileDialog,
     QHBoxLayout,
     QMainWindow,
     QSplitter,
@@ -21,12 +20,11 @@ from ..application.services import LibraryService
 from ..application.update import UpdateService
 from ..domain.document import Document
 from ..domain.settings import Appearance, EditorChoice, FontSize
-from .about_dialog import AboutDialog
+from . import dialogs
 from .bottom_tray import BottomTray
 from .document_view import DocumentView
 from .keyboard_nav import KeyboardNavigator, NeutralStart
 from .library_tree import LibraryTree
-from .licence_dialog import LicenceDialog
 from .theme import Palette, palette_for, stylesheet
 from .top_tray import TopTray
 from .update_check import install_update_check
@@ -36,14 +34,7 @@ WINDOW_HEIGHT_PX = 760
 TREE_WIDTH_PX = 280
 STATUS_TIMEOUT_MS = 6000
 
-UI_LICENCE_TITLE = "User interface licence (LGPL-3.0)"
-MODEL_LICENCE_TITLE = "Model licence (GPL-3.0)"
-UI_LICENCE_FILE = "LICENSE-LGPL-3.0.txt"
-MODEL_LICENCE_FILE = "LICENSE-GPL-3.0.txt"
-FALLBACK_LICENCE_FILE = "LICENSE"
-
-FOLDER_PROMPT = "Choose the folder your documents live in"
-EDITOR_PROMPT = "Choose the editor to open a document in"
+UNREADABLE_FILE_MESSAGE = "That is not a kind of document PlainSight reads"
 NO_EDITOR_MESSAGE = "Could not start the editor"
 NO_BROWSER_MESSAGE = "Could not open a browser for the donation page"
 
@@ -71,6 +62,7 @@ class MainWindow(QMainWindow):
             self,
             assets,
             on_choose_folder=self.choose_folder,
+            on_open_file=self.open_file,
             on_choose_editor=self.choose_editor,
             on_open_in_editor=self.open_in_editor,
             on_cycle_font_size=self.cycle_font_size,
@@ -277,9 +269,7 @@ class MainWindow(QMainWindow):
         dialog the user is standing in front of; nothing is read until they
         take something.
         """
-        chosen = QFileDialog.getExistingDirectory(
-            self, FOLDER_PROMPT, self._service.browse_from()
-        )
+        chosen = dialogs.ask_for_folder(self, self._service.browse_from())
         if not chosen:
             return
         library = self._service.choose_root(chosen)
@@ -287,9 +277,35 @@ class MainWindow(QMainWindow):
         self.library_tree.show_library(library)
         self.show_document(self.library_tree.selected_document())
 
+    def open_file(self) -> None:
+        """Open one document, listing no directory around it.
+
+        Selected as soon as it is read, which is not the auto-selection the
+        tree refuses: a reader who names one file has already chosen it, where
+        a reader who names a folder has not chosen anything inside it.
+        """
+        chosen = dialogs.ask_for_document(self, self._service.browse_from())
+        if not chosen:
+            return
+        library = self._service.open_file(chosen)
+        if library.is_empty:
+            self.report_status(UNREADABLE_FILE_MESSAGE)
+            return
+        self._library_is_empty = False
+        self.library_tree.show_library(library)
+        self._select_the_only_document()
+
+    def _select_the_only_document(self) -> None:
+        """Open the one folder there is and land on the document inside it."""
+        for item in self.library_tree.folder_items():
+            item.setExpanded(True)
+        rows = self.library_tree.document_items()
+        if rows:
+            self.library_tree.setCurrentItem(rows[0])
+
     def choose_editor(self) -> None:
         """Pick the editor a document opens in."""
-        chosen, _filter = QFileDialog.getOpenFileName(self, EDITOR_PROMPT)
+        chosen = dialogs.ask_for_editor(self)
         if not chosen:
             return
         self._service.choose_editor(
@@ -321,24 +337,12 @@ class MainWindow(QMainWindow):
 
     def show_about(self) -> None:
         """Open the About dialog."""
-        AboutDialog(self._palette, self._assets, self).exec()
+        dialogs.show_about(self, self._palette, self._assets)
 
     def show_ui_licence(self) -> None:
         """Open the user interface licence."""
-        self._show_licence(UI_LICENCE_TITLE, UI_LICENCE_FILE)
+        dialogs.show_ui_licence(self)
 
     def show_model_licence(self) -> None:
         """Open the model licence."""
-        self._show_licence(MODEL_LICENCE_TITLE, MODEL_LICENCE_FILE)
-
-    def _show_licence(self, title: str, file_name: str) -> None:
-        LicenceDialog(title, find_licence(file_name), self).exec()
-
-
-def find_licence(file_name: str) -> Path | None:
-    """A licence file at the repository root; the single LICENSE as fallback."""
-    root = Path(__file__).resolve().parent.parent.parent
-    for candidate in (root / file_name, root / FALLBACK_LICENCE_FILE):
-        if candidate.is_file():
-            return candidate
-    return None
+        dialogs.show_model_licence(self)

@@ -10,9 +10,10 @@ from plainsight.domain.settings import EditorChoice, Settings
 from plainsight.infrastructure.resources import BundledAssets
 from plainsight.ui.about_dialog import AboutDialog
 from plainsight.ui.auto_scroller import AutoScroller
+from plainsight.ui.dialogs import find_licence
 from plainsight.ui.keyboard_nav import is_live
 from plainsight.ui.licence_dialog import LicenceDialog
-from plainsight.ui.main_window import MainWindow, find_licence
+from plainsight.ui.main_window import MainWindow
 from plainsight.ui.theme import DARK
 
 AN_EDITOR = EditorChoice(path="/usr/bin/vi", display_name="vi")
@@ -46,22 +47,24 @@ def press(widget: QWidget, key: Qt.Key) -> None:
     )
 
 
-def test_the_ring_is_the_eleven_stops_of_the_design_in_order(
+def test_the_ring_is_the_twelve_stops_of_the_design_in_order(
     window: MainWindow,
 ) -> None:
+    """The two openers lead, since everything after acts on what they found."""
     stops = window.ring_stops()
 
     assert stops[0] is window.top_tray.folder_button
-    assert stops[1] is window.top_tray.choose_editor_button
-    assert stops[2] is window.top_tray.open_in_editor_button
-    assert stops[3] is window.top_tray.font_size_button
-    assert stops[4] is window.top_tray.appearance_button
-    assert stops[5] is window.top_tray.help_button
-    assert stops[6] is window.library_tree
-    assert stops[7] is window.document_view
-    assert stops[8] is window.bottom_tray.donate_button
-    assert stops[9] is window.bottom_tray.ui_licence_button
-    assert stops[10] is window.bottom_tray.model_licence_button
+    assert stops[1] is window.top_tray.open_file_button
+    assert stops[2] is window.top_tray.choose_editor_button
+    assert stops[3] is window.top_tray.open_in_editor_button
+    assert stops[4] is window.top_tray.font_size_button
+    assert stops[5] is window.top_tray.appearance_button
+    assert stops[6] is window.top_tray.help_button
+    assert stops[7] is window.library_tree
+    assert stops[8] is window.document_view
+    assert stops[9] is window.bottom_tray.donate_button
+    assert stops[10] is window.bottom_tray.ui_licence_button
+    assert stops[11] is window.bottom_tray.model_licence_button
 
 
 def test_each_tray_declares_its_own_order_left_to_right_as_drawn(

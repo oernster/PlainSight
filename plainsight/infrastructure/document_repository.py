@@ -38,6 +38,19 @@ class FileSystemDocumentRepository:
             return None
         return self._folder(base, base.name or str(base))
 
+    def read_document(self, path: str) -> Document | None:
+        """One file, listing no directory; None when it is not one we read.
+
+        Nothing here calls ``iterdir``. A reader who opened one file asked
+        about that file, so the directory holding it is named from the path
+        rather than looked into: whatever else sits beside it stays unread.
+        """
+        wanted = Path(path)
+        kind = kind_of(wanted.name)
+        if kind is None or not wanted.is_file():
+            return None
+        return _document(wanted, kind)
+
     def _folder(self, directory: Path, name: str) -> Folder | None:
         """This directory as a folder; None when nothing beneath it is read."""
         folders: list[Folder] = []

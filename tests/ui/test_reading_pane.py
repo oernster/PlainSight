@@ -13,7 +13,7 @@ from __future__ import annotations
 from PySide6.QtWidgets import QApplication, QTextBrowser
 
 from plainsight.ui import licence_dialog
-from plainsight.ui.main_window import find_licence
+from plainsight.ui.dialogs import find_licence
 from plainsight.ui.reading_pane import MAX_LINE_CHARACTERS, ReadingPane
 from plainsight.ui.theme import (
     DARK,

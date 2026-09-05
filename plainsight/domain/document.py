@@ -54,6 +54,15 @@ class DocumentKind(Enum):
         return self is DocumentKind.MARKDOWN
 
 
+def readable_suffixes() -> tuple[str, ...]:
+    """Every suffix this application reads, in the order the kinds declare.
+
+    Here rather than in the file dialogue that shows them, so the set a chooser
+    offers cannot drift from the set discovery accepts.
+    """
+    return tuple(kind.suffix for kind in DocumentKind)
+
+
 def kind_of(file_name: str) -> DocumentKind | None:
     """The kind this file name names; None when it is not one that is read.
 

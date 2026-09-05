@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Protocol
 
-from ..domain.document import DocumentKind
+from ..domain.document import Document, DocumentKind
 from ..domain.library import Folder
 from ..domain.settings import EditorChoice, Settings
 
@@ -16,10 +16,14 @@ if TYPE_CHECKING:  # pragma: no cover
 
 
 class DocumentRepository(Protocol):
-    """Reads a directory tree and reports the documents in it."""
+    """Reads a directory tree; also one file on its own, listing no directory."""
 
     def read_folder(self, root: str) -> Folder | None:
         """``root`` as a tree; None when it is not a folder or holds nothing."""
+        ...
+
+    def read_document(self, path: str) -> Document | None:
+        """One file, listing no directory; None when it is not one we read."""
         ...
 
 

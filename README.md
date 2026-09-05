@@ -56,6 +56,9 @@ prompt. Nothing is fetched or sent without that click.
   Claude skills folder; take that one and the plugins tree beside it comes
   too, as a second root. Any other folder is read on its own, with nothing
   beside it touched.
+- Opens a single document too, from the button beside the folder one. That
+  reads the one file and lists no directory around it, so whatever sits
+  beside it on disk stays unread.
 - Renders the document you select, with whatever it declares in its
   frontmatter. Nothing is selected until you select it.
 - Holds the text to a readable column, so a wide window buys margins rather

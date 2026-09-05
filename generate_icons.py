@@ -45,6 +45,7 @@ DONATE_NAME = "donate.png"
 # The tray artwork, each derived from its own master beside it.
 BUTTON_MARKS = (
     "file",
+    "open-file",
     "choose-editor",
     "launch-editor",
     "help-about",

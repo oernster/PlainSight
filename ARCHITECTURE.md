@@ -40,6 +40,7 @@ wish.
 | The composition root presents rather than shows | `tests/ui/test_main_window.py::test_the_composition_root_presents_rather_than_shows` |
 | No folder chosen means no directory is read | `tests/ui/test_first_run.py::test_no_folder_chosen_means_no_directory_is_read` |
 | An unrelated folder implies no plugins tree | `tests/application/test_defaults.py::test_an_unrelated_folder_implies_no_plugins_tree_at_all` |
+| Opening one file lists no directory | `tests/application/test_open_file.py::test_the_folder_row_is_named_from_the_path_rather_than_listed` |
 | Every declared dependency is credited in About | `tests/structural/test_credits.py::test_every_declared_dependency_is_credited` |
 
 Every one of these has been proved to bite by planting a violation and reading
@@ -295,6 +296,13 @@ Reading a person's files is theirs to authorise. Until a folder is chosen,
 nothing at all, so a fresh install walks no home directory. On a machine where
 permissions are explicit, an unasked scan is a rummage through directories
 nobody offered; it is no better on one where they are not.
+
+Opening a single document obeys the same rule from the other end.
+`DocumentRepository.read_document` calls no directory listing at all: the
+folder row a reader sees is named from the path rather than looked into, so
+one file opened is one file read. `dialogs.readable_filter` builds the
+chooser's filter from `readable_suffixes`, so what a chooser offers cannot
+drift from what discovery accepts.
 
 The same rule governs the second root. `LibraryService` combines the chosen
 folder with the plugins tree beside it only where the chosen folder is

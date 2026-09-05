@@ -97,7 +97,16 @@ skills a reader wrote and the ones that arrived with a plugin apart without the
 application needing a notion of authorship, which is written down nowhere and
 cannot be read off a file.
 
-2.6 **Still out of scope:** anything that is not a file under a chosen tree.
+2.6 **One document on its own.** A second button immediately right of the
+browse one opens a single file, offering the suffixes `DocumentKind`
+declares so the chooser cannot drift from what discovery accepts. It reads
+that file and lists no directory: the folder row is named from the path, so
+the reader sees where it came from while whatever sits beside it stays
+unread. It is selected at once, which is not the auto-selection 3.3 refuses,
+since a reader who names one file has already chosen it. The choice is not
+remembered, so the next run opens on the folder that was chosen.
+
+2.7 **Still out of scope:** anything that is not a file under a chosen tree.
 Several skills a Claude session offers are supplied by the tool rather than
 stored on disk, so nothing here can see them and nothing here pretends to.
 

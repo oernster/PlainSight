@@ -28,15 +28,30 @@ def a_folder(name: str = "skills", path: str = "/skills", *names: str) -> Folder
 
 
 class FakeRepository:
-    """Reports a fixed folder per root and records every root it was asked for."""
+    """Reports a fixed folder per root and records every root it was asked for.
 
-    def __init__(self, folders: dict[str, Folder | None] | None = None) -> None:
+    ``roots_read`` and ``files_read`` are kept apart because the difference
+    matters: reading one file must list no directory, which can only be said
+    by watching the two calls separately.
+    """
+
+    def __init__(
+        self,
+        folders: dict[str, Folder | None] | None = None,
+        documents: dict[str, Document | None] | None = None,
+    ) -> None:
         self.folders: dict[str, Folder | None] = dict(folders or {})
+        self.documents: dict[str, Document | None] = dict(documents or {})
         self.roots_read: list[str] = []
+        self.files_read: list[str] = []
 
     def read_folder(self, root: str) -> Folder | None:
         self.roots_read.append(root)
         return self.folders.get(root)
+
+    def read_document(self, path: str) -> Document | None:
+        self.files_read.append(path)
+        return self.documents.get(path)
 
 
 class FakeSettingsStore:

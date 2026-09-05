@@ -7,10 +7,11 @@ control should be enabled instead of working it out for itself.
 
 from __future__ import annotations
 
+import os
 from dataclasses import dataclass
 
 from ..domain.document import Document
-from ..domain.library import Library
+from ..domain.library import Folder, Library
 from ..domain.settings import Appearance, EditorChoice, FontSize, Settings
 from .defaults import browse_from, chosen_root, default_editor, plugins_root_for
 from .ports import (
@@ -61,6 +62,24 @@ class LibraryService:
         settings = self.settings_store.load().with_root(root)
         self.settings_store.save(settings)
         return self._read(root)
+
+    def open_file(self, path: str) -> Library:
+        """One file on its own, shown under the folder that holds it.
+
+        No directory is listed. The folder row is named from the path so the
+        reader can see where the file came from; whatever else sits beside it
+        stays unread, because opening one file asked about one file.
+
+        The choice is deliberately not remembered. This is a look at something
+        in passing, so the next run opens on the folder the reader chose rather
+        than on whatever they last glanced at.
+        """
+        document = self.repository.read_document(path)
+        if document is None:
+            return Library()
+        holder = os.path.dirname(os.path.normpath(path))
+        name = os.path.basename(holder) or holder
+        return Library((Folder.of(name, holder, documents=[document]),))
 
     def _read(self, root: str) -> Library:
         """The chosen folder, plus the plugins tree it implies where it does.

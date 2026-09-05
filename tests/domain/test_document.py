@@ -10,6 +10,7 @@ from plainsight.domain.document import (
     DocumentKind,
     InvalidDocument,
     kind_of,
+    readable_suffixes,
 )
 
 
@@ -62,6 +63,17 @@ def test_a_known_suffix_names_its_kind(file_name: str, expected: DocumentKind) -
 def test_anything_else_is_not_a_document(file_name: str) -> None:
     """A name that is nothing but a suffix has no stem and is not a file we read."""
     assert kind_of(file_name) is None
+
+
+def test_the_readable_suffixes_are_the_kinds_and_nothing_else() -> None:
+    """What a file chooser offers cannot drift from what discovery accepts.
+
+    Compared against the enumeration itself rather than a written out list, so
+    a kind added later is covered here without anyone editing this test.
+    """
+    assert readable_suffixes() == tuple(kind.suffix for kind in DocumentKind)
+    assert ".md" in readable_suffixes()
+    assert ".txt" in readable_suffixes()
 
 
 def test_a_document_needs_a_name() -> None:

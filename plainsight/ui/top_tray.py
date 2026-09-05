@@ -1,4 +1,4 @@
-"""The top tray: the folder, the editor pair, then help at the far right."""
+"""The top tray: the two openers, the editor pair, then help at the right."""
 
 from __future__ import annotations
 
@@ -14,6 +14,7 @@ from ..domain.settings import DEFAULT_FONT_SIZE, Appearance, FontSize
 from .widgets import icon_button
 
 FOLDER_ICON = "file.png"
+OPEN_FILE_ICON = "open-file.png"
 CHOOSE_EDITOR_ICON = "choose-editor.png"
 LAUNCH_EDITOR_ICON = "launch-editor.png"
 HELP_ICON = "help-about.png"
@@ -26,6 +27,7 @@ FONT_SIZE_ICONS = {
 DARK_MODE_ICON = "dark-mode.png"
 
 FOLDER_TOOLTIP = "Choose the folder your documents live in"
+OPEN_FILE_TOOLTIP = "Open a single document"
 CHOOSE_EDITOR_TOOLTIP = "Choose the editor to open a document in"
 LAUNCH_EDITOR_TOOLTIP = "Open the selected document in your editor"
 HELP_TOOLTIP = "About PlainSight; check for updates"
@@ -56,6 +58,7 @@ class TopTray(QWidget):
         parent: QWidget | None,
         assets: AssetLocator,
         on_choose_folder: Callable[[], None],
+        on_open_file: Callable[[], None],
         on_choose_editor: Callable[[], None],
         on_open_in_editor: Callable[[], None],
         on_cycle_font_size: Callable[[], None],
@@ -69,6 +72,16 @@ class TopTray(QWidget):
         self.setFocusPolicy(Qt.FocusPolicy.NoFocus)
         self.folder_button = icon_button(
             self, assets.find(FOLDER_ICON), FOLDER_TOOLTIP, on_choose_folder, TRAY_SCALE
+        )
+        # Immediately right of the folder button: the two are the same
+        # question asked at two scales, so they sit together and ahead of
+        # the editor pair, which acts on whatever they found.
+        self.open_file_button = icon_button(
+            self,
+            assets.find(OPEN_FILE_ICON),
+            OPEN_FILE_TOOLTIP,
+            on_open_file,
+            TRAY_SCALE,
         )
         self.choose_editor_button = icon_button(
             self,
@@ -123,6 +136,7 @@ class TopTray(QWidget):
         )
         row.setSpacing(TRAY_SPACING_PX)
         row.addWidget(self.folder_button)
+        row.addWidget(self.open_file_button)
         row.addWidget(self.choose_editor_button)
         row.addWidget(self.open_in_editor_button)
         row.addWidget(self.separator)
@@ -145,6 +159,7 @@ class TopTray(QWidget):
         """This tray's controls, left to right as they are drawn."""
         return (
             self.folder_button,
+            self.open_file_button,
             self.choose_editor_button,
             self.open_in_editor_button,
             self.font_size_button,
