@@ -95,6 +95,66 @@ def test_bold_and_italic_survive(tmp_path: Path) -> None:
     assert "*leaning*" in text
 
 
+def test_one_phrase_split_across_runs_is_marked_once(tmp_path: Path) -> None:
+    """Word splits a run wherever it likes; the emphasis is still one phrase.
+
+    Marking each run separately gave ``**imp****ortant**``, which renders as
+    the asterisks themselves rather than as emphasis. Measured on a real
+    document before this: three such pairs.
+    """
+
+    def build(document) -> None:
+        paragraph = document.add_paragraph()
+        for piece in ("imp", "ort", "ant"):
+            paragraph.add_run(piece).bold = True
+
+    text = WordDocumentReader().read_body(a_word_file(tmp_path, build)).text
+
+    assert "**important**" in text
+    assert "****" not in text
+
+
+def test_a_space_at_the_edge_of_a_run_stays_outside_the_marks(
+    tmp_path: Path,
+) -> None:
+    """Markdown will not open emphasis on a space; the marks would show."""
+
+    def build(document) -> None:
+        paragraph = document.add_paragraph()
+        paragraph.add_run("before")
+        paragraph.add_run(" bold ").bold = True
+        paragraph.add_run("after")
+
+    text = WordDocumentReader().read_body(a_word_file(tmp_path, build)).text
+
+    assert "before **bold** after" in text
+
+
+def test_a_layout_table_gives_up_its_contents_rather_than_a_table(
+    tmp_path: Path,
+) -> None:
+    """Word arranges pages with tables as often as it tabulates anything.
+
+    Measured on a real CV: one single-row layout table became a Markdown row
+    2550 characters long, with every paragraph of a whole section run together
+    on one line, because a cell's own line breaks were collapsed to fit it.
+    """
+
+    def build(document) -> None:
+        table = document.add_table(rows=1, cols=2)
+        table.cell(0, 0).text = "A heading\n\nA paragraph beneath it."
+        table.cell(0, 1).text = "Something beside it."
+
+    text = WordDocumentReader().read_body(a_word_file(tmp_path, build)).text
+
+    assert "|" not in text
+    assert "A heading" in text
+    assert "A paragraph beneath it." in text
+    assert "Something beside it." in text
+    for line in text.splitlines():
+        assert len(line) < 100
+
+
 def test_a_table_crosses_as_a_markdown_table(tmp_path: Path) -> None:
     def build(document) -> None:
         table = document.add_table(rows=2, cols=2)

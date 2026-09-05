@@ -54,13 +54,41 @@ class PdfDocumentReader:
         if reader is None:
             return DocumentBody(failure=failure)
         try:
-            pages = [page.extract_text() or "" for page in reader.pages]
+            pages = [_page_text(page) for page in reader.pages]
         except Exception:  # noqa: BLE001
             return DocumentBody(failure=NOT_A_PDF)
         text = _joined(pages)
         if not text.strip():
             return DocumentBody(failure=NO_TEXT_IN_PDF)
         return DocumentBody(text=text)
+
+
+def _page_text(page: object) -> str:
+    """One page's text, keeping where on the page the words sat.
+
+    Measured against a real payslip: asked plainly, the extractor returns the
+    words in the order they were drawn, so an address block meant for the left
+    of the page and a reference meant for the right arrive one after another,
+    each indented by whatever happened to precede it. Asked for the layout, the
+    same page comes back with the two beside each other where the reader put
+    them.
+
+    Anything a document made of columns, a form or a table has to say is said
+    by where it sits, so throwing that away leaves the words and loses the
+    document. Lines get long, which is why the reading pane lets a page of this
+    kind be as wide as it is rather than folding it.
+
+    Reading the layout is the better answer rather than the only one, so any
+    failure of it falls back to the plain reading instead of failing the page.
+    Measured: a page carrying no content stream at all, which is what a blank
+    page in a scan is, comes back from the layout reading as a ``KeyError`` for
+    the key that is missing, while the plain reading answers with the empty
+    string it should. An older extractor has no layout to offer at all.
+    """
+    try:
+        return page.extract_text(extraction_mode="layout") or ""
+    except Exception:  # noqa: BLE001
+        return page.extract_text() or ""
 
 
 def _opened(path: str) -> tuple[PdfReader | None, str]:

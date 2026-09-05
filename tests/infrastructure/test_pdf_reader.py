@@ -17,7 +17,12 @@ from plainsight.infrastructure.pdf_reader import (
     PdfDocumentReader,
 )
 
-from .pdf_fixtures import a_locked_pdf, a_pdf, a_pdf_with_no_text
+from .pdf_fixtures import (
+    a_locked_pdf,
+    a_pdf,
+    a_pdf_with_no_text,
+    a_pdf_with_two_columns,
+)
 
 
 def written(tmp_path: Path, name: str, data: bytes) -> str:
@@ -100,6 +105,29 @@ def test_a_pdf_that_is_not_there_says_so(tmp_path: Path) -> None:
 
     assert PdfDocumentReader().summarise(absent).failure
     assert PdfDocumentReader().read_body(absent).failure
+
+
+def test_words_side_by_side_on_the_page_stay_side_by_side(tmp_path: Path) -> None:
+    """What a form says, it says by where it puts the words.
+
+    Read plainly, two things drawn beside each other come back one after the
+    other, so an address meant for the left of a payslip and a reference meant
+    for the right arrive as two unrelated lines. Reading the layout keeps them
+    on the line they were on.
+    """
+    path = written(
+        tmp_path, "form.pdf", a_pdf_with_two_columns("Employee name", "Reference")
+    )
+
+    text = PdfDocumentReader().read_body(path).text
+
+    together = [
+        line
+        for line in text.splitlines()
+        if "Employee name" in line and "Reference" in line
+    ]
+    assert together, text
+    assert together[0].index("Employee name") < together[0].index("Reference")
 
 
 def test_a_pdf_is_shown_as_typed_rather_than_laid_out() -> None:

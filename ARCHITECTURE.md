@@ -170,11 +170,29 @@ raise a prompt.
   `paragraphs` and `tables`, which are two collections each in document order
   only within itself: read that way a table lands after every paragraph in the
   file rather than between the two it sits between.
+
+  Two things a real document does had to be answered for. Word splits a run
+  wherever it likes, on a spell check or an edit made years ago, so one bold
+  phrase commonly arrives as several bold runs; marking each of them gave
+  `**imp****ortant**`, which renders as the asterisks themselves. Runs sharing
+  their emphasis are joined before the marks go on. And Word arranges pages
+  with tables as often as it tabulates anything, so a table earns Markdown by
+  having more than one row and more than one column; anything else gives up its
+  cells as the blocks of text they are, keeping their own line breaks. Measured
+  on a real CV before that: one single-row layout table became a Markdown row
+  2550 characters long with a whole section run together on one line.
 - `pdf_reader`: a PDF, read as the text that can be got out of it and presented
   verbatim. A PDF describes a page rather than a document, so what comes back is
-  a reconstruction: two columns interleave and a table arrives as its cells in
-  drawing order. Softening it would make that worse by running the columns
-  together, which is why this kind is shown as typed. Three failures are told
+  the text and where it sat. The layout is asked for rather than the words
+  alone: measured on a real payslip, the plain reading returned an address
+  block meant for the left of the page and a reference meant for the right one
+  after the other, each indented by whatever preceded it, while the layout
+  reading put them beside each other where the reader had. Softening it or
+  folding it would undo that, which is why this kind is shown as typed and left
+  as wide as it is. Reading the layout is the better answer rather than the
+  only one, so any failure of it falls back to the plain reading: a page with
+  no content stream, which is what a blank page in a scan is, raises a
+  `KeyError` there while the plain reading answers with the empty string. Three failures are told
   apart because they want different words: a locked file, a file that is not a
   PDF and a file holding no text a machine can reach, which is what a scan is.
 - Both of those readers catch every exception when opening a file, which is

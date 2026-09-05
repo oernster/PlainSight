@@ -101,6 +101,53 @@ def a_pdf(pages: list[list[str]]) -> bytes:
     return bytes(out)
 
 
+def a_pdf_with_two_columns(left: str, right: str) -> bytes:
+    """A PDF drawing two pieces of text side by side on the same line.
+
+    What a form, a payslip or an invoice says, it says by where it puts the
+    words. This is the smallest document that has anything to lose.
+
+    The right column is DRAWN first on purpose. Nothing obliges a PDF to lay
+    its text down in reading order; a real one frequently does not, so a reader
+    taking the words in the order they were drawn returns them the wrong way
+    round. That is the difference this fixture exists to
+    expose, so it must not be tidied away.
+    """
+    drawn = (
+        b"BT /F1 12 Tf 400 700 Td (" + right.encode("ascii") + b") Tj ET\n"
+        b"BT /F1 12 Tf 40 700 Td (" + left.encode("ascii") + b") Tj ET"
+    )
+    objects: list[bytes] = [
+        b"<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>",
+        b"<< /Length " + _ascii(len(drawn)) + b" >>\nstream\n" + drawn + b"\nendstream",
+    ]
+    objects.append(
+        b"<< /Type /Page /Parent 4 0 R /MediaBox "
+        + _ascii(PAGE_BOX)
+        + b" /Contents 2 0 R /Resources << /Font << /F1 1 0 R >> >> >>"
+    )
+    objects.append(b"<< /Type /Pages /Kids [3 0 R] /Count 1 >>")
+    objects.append(b"<< /Type /Catalog /Pages 4 0 R >>")
+
+    out = bytearray(HEADER)
+    offsets: list[int] = []
+    for number, body in enumerate(objects, start=1):
+        offsets.append(len(out))
+        out += _ascii(number) + b" 0 obj\n" + body + b"\nendobj\n"
+    started_at = len(out)
+    out += b"xref\n0 " + _ascii(len(objects) + 1) + b"\n" + FREE_ENTRY
+    for offset in offsets:
+        out += f"{offset:010d} 00000 n \n".encode("ascii")
+    out += (
+        b"trailer\n<< /Size "
+        + _ascii(len(objects) + 1)
+        + b" /Root 5 0 R >>\nstartxref\n"
+        + _ascii(started_at)
+        + b"\n%%EOF\n"
+    )
+    return bytes(out)
+
+
 def a_locked_pdf(password: str = "secret") -> bytes:
     """A real PDF encrypted with a password nobody is going to supply."""
     writer = PdfWriter()

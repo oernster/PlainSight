@@ -27,7 +27,7 @@ import stamp_version
 PROJECT_ROOT = pathlib.Path(__file__).resolve().parent
 
 APP_DISPLAY_NAME = "PlainSight"
-APP_DESCRIPTION = "A reader for the skills used by Claude AI"
+APP_DESCRIPTION = "A reader for your documents"
 APP_AUTHOR = "Oliver Ernster"
 EXE_NAME = "PlainSight"
 ENTRY_SCRIPT = PROJECT_ROOT / "main.py"

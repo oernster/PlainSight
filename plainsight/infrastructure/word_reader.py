@@ -15,6 +15,7 @@ shown than refused.
 
 from __future__ import annotations
 
+from itertools import groupby
 from pathlib import Path
 
 import docx
@@ -22,6 +23,7 @@ from docx.document import Document as WordDocument
 from docx.oxml.ns import qn
 from docx.table import Table
 from docx.text.paragraph import Paragraph
+from docx.text.run import Run
 
 from ..domain.document import DocumentBody, DocumentSummary
 
@@ -30,6 +32,10 @@ MISSING_WORD_FILE = "This file could not be opened."
 EMPTY_WORD_FILE = "This Word document holds no text."
 
 HEADING_PREFIX = "#"
+BOLD = "**"
+ITALIC = "*"
+# A table earns Markdown by having something to tabulate: rows AND columns.
+LEAST_TABULAR = 2
 MAX_HEADING_LEVEL = 6
 BULLET = "-"
 NUMBERED = "1."
@@ -141,35 +147,91 @@ def _heading_level(style: str) -> int:
 
 
 def _runs(paragraph: Paragraph) -> str:
-    """The paragraph's text, keeping the emphasis Markdown can say."""
+    """The paragraph's text, keeping the emphasis Markdown can say.
+
+    Runs that share their emphasis are joined before the marks go on. Word
+    splits a run wherever it likes, on a spell check, a language tag or an
+    edit somebody made years ago, so one bold phrase commonly arrives as
+    several bold runs. Marking each of them separately produced ``**imp****
+    ortant**``, which is not emphasis at all: it renders as the asterisks
+    themselves. Measured on a real document, three such pairs in six pages.
+    """
     pieces: list[str] = []
-    for run in paragraph.runs:
-        text = run.text
-        if not text:
-            continue
-        if run.bold:
-            text = f"**{text.strip()}**" if text.strip() else text
-        if run.italic:
-            text = f"*{text.strip()}*" if text.strip() else text
-        pieces.append(text)
+    for emphasis, runs in groupby(paragraph.runs, key=_emphasis_of):
+        text = "".join(run.text for run in runs)
+        if text:
+            pieces.append(_emphasised(text, emphasis))
     return "".join(pieces)
 
 
-def _table(table: Table) -> str:
-    """A table as a Markdown table, its first row taken as the heading.
+def _emphasis_of(run: Run) -> tuple[bool, bool]:
+    """Whether this run is bold and whether it is italic."""
+    return bool(run.bold), bool(run.italic)
 
-    Markdown has no table without a heading row, so the first row becomes one.
-    That is what a Word table almost always opens with; where it does not, the
-    first row of data reads as a heading, which is a good deal better than the
-    table not appearing.
+
+def _emphasised(text: str, emphasis: tuple[bool, bool]) -> str:
+    """The text with its marks on, the spaces around it left outside them.
+
+    Markdown will not open emphasis on a space, so a run beginning or ending
+    with one has to keep it outside the marks; inside, the marks show as
+    themselves and the emphasis is lost with them.
     """
-    rows = [[" ".join(cell.text.split()) for cell in row.cells] for row in table.rows]
+    bold, italic = emphasis
+    if not (bold or italic) or not text.strip():
+        return text
+    lead = text[: len(text) - len(text.lstrip())]
+    trail = text[len(text.rstrip()) :]
+    marks = f"{BOLD if bold else ''}{ITALIC if italic else ''}"
+    return f"{lead}{marks}{text.strip()}{marks}{trail}"
+
+
+def _table(table: Table) -> str:
+    """A table of data as a Markdown table; a table of layout as its contents.
+
+    Word is used to arrange a page as often as to tabulate anything, so a
+    heading beside a photograph and a two column CV are both tables in the
+    file. Rendering those as tables is what made a document unreadable:
+    measured on a real CV, one layout table of a single row became a Markdown
+    row 2550 characters long, every paragraph of a whole section run together
+    on one line, because a cell's own line breaks were collapsed to fit it.
+
+    So a table earns Markdown by having something to tabulate: more than one
+    row and more than one column. Anything else gives up its cells as the
+    blocks of text they are, which is what the author put in them.
+    """
+    rows = list(table.rows)
     if not rows:
         return ""
-    width = max(len(row) for row in rows)
-    lines = [_row(rows[0], width), _row([_RULE] * width, width)]
-    lines.extend(_row(row, width) for row in rows[1:])
+    width = max(len(row.cells) for row in rows)
+    if len(rows) < LEAST_TABULAR or width < LEAST_TABULAR:
+        return _laid_out(rows)
+    cells = [[_flat(cell.text) for cell in row.cells] for row in rows]
+    lines = [_row(cells[0], width), _row([_RULE] * width, width)]
+    lines.extend(_row(row, width) for row in cells[1:])
     return "\n".join(lines)
+
+
+def _laid_out(rows: list) -> str:
+    """The cells of a layout table, as the blocks of text they hold.
+
+    A cell keeps its own line breaks here rather than being flattened, since
+    that is the whole difference between a paragraph and a wall. Merged cells
+    are reported once per column they span, so a repeat of what was just said
+    is dropped rather than shown twice.
+    """
+    blocks: list[str] = []
+    for row in rows:
+        for cell in row.cells:
+            for line in cell.text.splitlines():
+                said = line.strip()
+                if said and (not blocks or blocks[-1] != said):
+                    blocks.append(said)
+    return "\n\n".join(blocks)
+
+
+def _flat(text: str) -> str:
+    """A cell's text on one line, which is all a Markdown table row allows."""
+    return " ".join(text.split())
 
 
 _RULE = "---"

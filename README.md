@@ -53,13 +53,19 @@ prompt. Nothing is fetched or sent without that click.
   was typed, so its own line breaks survive; HTML is shown as the page it
   already is; a Word document is turned into Markdown as it is read, so it
   reads like the rest.
-- Shows a PDF as the plain text that can be taken out of it, with its pages
-  marked. This is worth being plain about: a PDF describes a page rather than a
-  document, so text pulled back out of one is a reconstruction. Two columns come
-  back interleaved and a table comes back as its cells in the order they were
-  drawn. Where a PDF is a scan, which is a picture of a page rather than the
-  words on it, no text can be taken at all and it says so rather than showing
-  you nothing. A PDF that is password protected says that instead.
+- Shows a PDF as the text that can be taken out of it, keeping where on the
+  page the words sat, with its pages marked. A form, a payslip or an invoice
+  says much of what it says by where it puts things, so a column beside another
+  column stays beside it rather than arriving underneath. A page wider than the
+  window scrolls sideways rather than being folded, since folding it is what
+  would lose the arrangement.
+- Is still plain about what a PDF is. It describes a page rather than a
+  document, so what comes back is the text and its positions: no fonts, no
+  rules, no pictures, with a layout close to the original rather than the
+  original itself. Where a PDF is a scan, which is a picture of a page rather
+  than the words on it, no text can be taken at all and it says so rather than showing
+  you nothing. A PDF that is password protected says that instead, on its row
+  in the tree before you open it.
 - Opens a folder of them without reading them. What a listing costs is opening
   each file, never extracting it: measured over forty PDFs of twelve pages,
   listing took 7ms where extracting them all would have taken 515ms. The text
@@ -84,8 +90,9 @@ prompt. Nothing is fetched or sent without that click.
   beside it on disk stays unread.
 - Renders the document you select, with whatever it declares in its
   frontmatter. Nothing is selected until you select it.
-- Holds the text to a readable column, so a wide window buys margins rather
-  than longer lines; text that arrived hard wrapped is left exactly as it came.
+- Holds reflowed text to a readable column, so a wide window buys margins
+  rather than longer lines; text that arrived with its own layout, a licence or
+  a page out of a PDF, is left exactly as it came.
 - Reads itself down the page gently; hands control back the moment you scroll.
 - Light and dark, switched from the tray and remembered between runs.
 - Three text sizes, stepped by one button in the tray and remembered too.
