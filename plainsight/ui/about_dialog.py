@@ -44,8 +44,8 @@ ANTHROPIC_NOTE = (
 )
 
 LICENCE_NOTE = (
-    "<p><b>Licence:</b> the user interface under LGPL-3.0 and everything "
-    "beneath it under GPL-3.0. Both are on the buttons in the bottom tray.</p>"
+    "<p><b>Licence:</b> the user interface under LGPL-3.0 and the model "
+    "under GPL-3.0. Both are on the buttons in the bottom tray.</p>"
 )
 
 

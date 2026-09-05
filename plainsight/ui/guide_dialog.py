@@ -138,9 +138,8 @@ def _foot(assets: AssetLocator) -> str:
     return (
         "<hr><h3>The strip along the foot</h3>"
         f"<p>{_img(assets, DONATE_ICON)}buy the author a drink"
-        f"{DOT}{_img(assets, UI_LICENCE_ICON)}the interface licence"
-        f"{DOT}{_img(assets, MODEL_LICENCE_ICON)}the licence for everything "
-        "beneath it</p>"
+        f"{DOT}{_img(assets, UI_LICENCE_ICON)}the user interface licence"
+        f"{DOT}{_img(assets, MODEL_LICENCE_ICON)}the model licence</p>"
         "<p>The drink hands an address to your browser and opens nothing "
         "here; PlainSight itself sends nothing. Nothing in the application is "
         "held back behind it.</p>"
