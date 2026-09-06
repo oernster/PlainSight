@@ -38,9 +38,9 @@ CREDITS = (
 
 ANTHROPIC_NOTE = (
     "<p>PlainSight reads nothing until you choose a folder; the chooser "
-    "opens on your Claude skills one. It is not affiliated with "
-    "Anthropic and is not endorsed by them; Claude and Anthropic are their "
-    "owners' marks.</p>"
+    "opens on your documents folder. It can be pointed at a Claude skills "
+    "folder. It is not affiliated with Anthropic and is not endorsed by "
+    "them; Claude and Anthropic are their owners' marks.</p>"
 )
 
 LICENCE_NOTE = (

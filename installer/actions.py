@@ -20,6 +20,7 @@ PROGRAMS_DIRECTORY = "Programs"
 SHORTCUT_NAME = f"{APP_DISPLAY_NAME}.lnk"
 START_MENU_TAIL = ("Microsoft", "Windows", "Start Menu", "Programs")
 UNINSTALLER_DIRECTORY = "_uninstall"
+SETTINGS_DIRECTORY = f".{APP_DISPLAY_NAME.lower()}"
 BYTES_PER_KILOBYTE = 1024
 
 
@@ -35,6 +36,18 @@ def local_app_data() -> pathlib.Path:
 def default_target() -> pathlib.Path:
     """Where the application goes unless the record says otherwise."""
     return local_app_data() / PROGRAMS_DIRECTORY / APP_DISPLAY_NAME
+
+
+def settings_directory() -> pathlib.Path:
+    """Where the application keeps this account's settings.
+
+    Named from the display name rather than written out a second time, so the
+    setup program cannot end up removing a directory the application stopped
+    using. A removal takes it: an account that uninstalls has said it is done
+    with the application, so a later install starts as a first install does
+    rather than reviving a folder chosen months ago.
+    """
+    return pathlib.Path.home() / SETTINGS_DIRECTORY
 
 
 def desktop_directory() -> pathlib.Path:

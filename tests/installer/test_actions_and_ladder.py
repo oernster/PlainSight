@@ -7,12 +7,14 @@ import zipfile
 
 import pytest
 
+from installer import actions
 from installer.actions import (
     ExtractionEscape,
     extract_payload,
     install_size_kb,
     remove_tree,
     safe_members,
+    settings_directory,
 )
 from installer.performing import (
     COMPLETE_PERCENT,
@@ -144,6 +146,30 @@ def test_a_removal_takes_the_shortcuts_before_the_files(
 
     assert steps[0].name.startswith("Removing the shortcuts")
     assert steps[-1].name.startswith("Removing the files")
+
+
+def test_the_settings_directory_is_named_after_the_product() -> None:
+    """Derived from the display name, so the two cannot drift apart."""
+    settings = settings_directory()
+
+    assert settings.parent == pathlib.Path.home()
+    assert settings.name == ".plainsight"
+
+
+def test_a_removal_takes_the_settings_with_it(
+    tmp_path: pathlib.Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Uninstalling then installing again starts fresh, not where it left off."""
+    settings = tmp_path / ".plainsight"
+    settings.mkdir()
+    (settings / "settings.json").write_text("{}", encoding="utf-8")
+    monkeypatch.setattr(actions, "settings_directory", lambda: settings)
+
+    for step in uninstall_steps(tmp_path / "install", StepLog()):
+        if step.name == "Removing your settings":
+            step.run()
+
+    assert not settings.exists()
 
 
 def test_the_step_log_is_flushed_as_it_goes() -> None:

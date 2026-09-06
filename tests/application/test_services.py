@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import os
 
-from plainsight.application.defaults import claude_skills_root
+from plainsight.application.defaults import documents_root
 from plainsight.application.services import LibraryService
 from plainsight.domain.library import Folder
 from plainsight.domain.settings import (
@@ -67,11 +67,14 @@ def test_a_chosen_folder_is_the_current_root() -> None:
     assert a_service(store=store).has_root()
 
 
-def test_the_chooser_opens_on_the_skills_folder_before_anything_is_chosen() -> None:
+def test_the_chooser_opens_on_the_documents_folder_before_anything_is_chosen() -> None:
     """Offered as a starting place, which is not the same as reading it."""
     paths = FakePaths(home="/home/oliver")
+    probe = FakeProbe(present=(os.path.join("/home/oliver", "Documents"),))
 
-    assert a_service(paths=paths).browse_from() == claude_skills_root(paths)
+    assert a_service(paths=paths, probe=probe).browse_from() == documents_root(
+        paths, probe
+    )
 
 
 def test_the_chooser_opens_on_the_last_folder_taken() -> None:

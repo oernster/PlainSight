@@ -9,10 +9,11 @@ it at, shows them as the tree they are on disk and renders the one you pick.
 Nothing is chosen for you: the pane stays empty until you select something.
 
 It reads nothing at all until you choose a folder. The chooser opens on your
-Claude skills folder, which is where this began and is still what most people
-point it at, so the common case is one click; take that and the plugins tree
-beside it comes too, as a second root. Point it at your notes, your project
-documentation or anything else and it reads that the same way.
+documents folder, somewhere you already keep your own files, so it asks the
+machine for nothing you have not already granted. Point it at your notes, your
+project documentation or anything else and it reads that the same way. Point it
+at a Claude skills folder, which is where this began, to bring the plugins tree
+beside it too, as a second root.
 
 Nothing is changed by looking. It never writes to a document; editing is handed
 to the editor you choose.
@@ -84,9 +85,9 @@ prompt. Nothing is fetched or sent without that click.
   with a count of what it holds so a shut branch says whether it is worth
   opening.
 - Reads nothing until you point it at a folder. The chooser opens on your
-  Claude skills folder; take that one and the plugins tree beside it comes
-  too, as a second root. Any other folder is read on its own, with nothing
-  beside it touched.
+  documents folder. Point it at a Claude skills folder and the plugins tree
+  beside it comes too, as a second root; any other folder is read on its own,
+  with nothing beside it touched.
 - Opens a single document too, from the button beside the folder one. That
   reads the one file and lists no directory around it, so whatever sits
   beside it on disk stays unread.

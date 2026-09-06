@@ -23,6 +23,7 @@ NO_PROGRESS = 0
 EXTRACT_WEIGHT = 70
 REGISTER_WEIGHT = 10
 SHORTCUT_WEIGHT = 10
+SETTINGS_WEIGHT = 5
 
 
 @dataclass(frozen=True, slots=True)
@@ -84,12 +85,18 @@ def uninstall_steps(target: pathlib.Path, log: StepLog) -> tuple[Step, ...]:
         log.write("removing the Apps list record")
         registry.unregister()
 
+    def remove_settings() -> None:
+        settings = actions.settings_directory()
+        log.write(f"removing {settings}")
+        actions.remove_tree(settings)
+
     def remove_files() -> None:
         log.write(f"removing {target}")
         actions.remove_tree(target)
 
     return (
         Step("Removing the shortcuts", remove_shortcuts, SHORTCUT_WEIGHT),
+        Step("Removing your settings", remove_settings, SETTINGS_WEIGHT),
         Step("Forgetting the install", forget, REGISTER_WEIGHT),
         Step("Removing the files", remove_files, EXTRACT_WEIGHT),
     )

@@ -113,12 +113,12 @@ def test_choosing_a_folder_reads_that_one_and_says_so(
     ]
 
 
-def test_the_chooser_would_open_on_the_claude_skills_folder(
+def test_the_chooser_would_open_somewhere_the_user_already_keeps_files(
     fresh: MainWindow, repository: FakeRepository
 ) -> None:
     """Offered as a starting place; being offered reads nothing."""
     start = fresh._service.browse_from()
 
-    assert start.endswith("skills")
-    assert ".claude" in start
+    assert start
+    assert ".claude" not in start
     assert repository.roots_read == []

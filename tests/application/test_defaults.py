@@ -7,8 +7,8 @@ import os
 from plainsight.application.defaults import (
     browse_from,
     chosen_root,
-    claude_skills_root,
     default_editor,
+    documents_root,
     plugins_root_for,
 )
 from plainsight.domain.settings import EditorChoice
@@ -16,10 +16,20 @@ from plainsight.domain.settings import EditorChoice
 from .fakes import FakePaths, FakeProbe
 
 
-def test_the_claude_skills_folder_sits_beneath_the_home_directory() -> None:
-    root = claude_skills_root(FakePaths(home=os.path.join("/home", "oliver")))
+def test_the_documents_folder_sits_beneath_the_home_directory() -> None:
+    home = os.path.join("/home", "oliver")
+    documents = os.path.join(home, "Documents")
 
-    assert root == os.path.join("/home", "oliver", ".claude", "skills")
+    root = documents_root(FakePaths(home=home), FakeProbe(present=(documents,)))
+
+    assert root == documents
+
+
+def test_a_machine_with_no_documents_folder_falls_back_to_the_home_directory() -> None:
+    """A chooser sent to a folder that is not there opens somewhere arbitrary."""
+    home = os.path.join("/home", "oliver")
+
+    assert documents_root(FakePaths(home=home), FakeProbe()) == home
 
 
 def test_the_root_to_read_is_whatever_the_user_chose() -> None:
@@ -32,14 +42,18 @@ def test_nothing_chosen_means_nothing_to_read() -> None:
 
 
 def test_the_chooser_opens_on_the_last_folder_taken() -> None:
-    assert browse_from("/elsewhere/skills", FakePaths()) == "/elsewhere/skills"
+    assert (
+        browse_from("/elsewhere/skills", FakePaths(), FakeProbe())
+        == "/elsewhere/skills"
+    )
 
 
-def test_with_nothing_taken_the_chooser_opens_on_the_skills_folder() -> None:
+def test_with_nothing_taken_the_chooser_opens_on_the_documents_folder() -> None:
     """A starting place for a dialog, which reads nothing by being offered."""
     paths = FakePaths(home="/home/oliver")
+    probe = FakeProbe(present=(os.path.join("/home/oliver", "Documents"),))
 
-    assert browse_from("   ", paths) == claude_skills_root(paths)
+    assert browse_from("   ", paths, probe) == documents_root(paths, probe)
 
 
 def test_the_plugins_tree_is_found_beside_the_chosen_folder() -> None:

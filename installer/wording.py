@@ -36,7 +36,7 @@ _WORDING = {
     ),
     Route.UPDATE: Wording(
         heading=f"Update {PRODUCT}",
-        lead="Your settings and your chosen skills folder are kept.",
+        lead="Your settings and the folder you chose to read are kept.",
         go_ahead="Update",
     ),
     Route.DOWNGRADE: Wording(
@@ -59,8 +59,9 @@ _WORDING = {
     Route.UNINSTALL: Wording(
         heading=f"Remove {PRODUCT}",
         lead=(
-            "The application and its shortcuts are removed. Your settings and "
-            "your skills themselves are left where they are."
+            "The application, its shortcuts and its settings are removed, so "
+            "installing it again starts fresh. Your documents themselves are "
+            "left where they are."
         ),
         go_ahead="Uninstall",
     ),

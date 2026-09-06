@@ -4,8 +4,16 @@
 nothing gets an empty tree and an invitation, not a walk of their home
 directory: reading a person's files is theirs to authorise, so on a machine
 where permissions are explicit an unasked scan is a rummage through directories
-nobody offered. The Claude skills folder is where the chooser OPENS, which
-makes the common case one click; it is not read unless the user takes it.
+nobody offered. The documents folder is where the chooser OPENS; it is not read
+unless the user takes it.
+
+The chooser opens somewhere ordinary on purpose. It used to open on the Claude
+skills folder, which lives inside a dotted directory the operating system
+treats as the application's own business rather than the user's; opening there
+spent a permission the application has no business spending before the user has
+asked for anything. The documents folder every desktop already gives its user
+costs nothing to offer; the home directory stands in where a machine names no
+such folder.
 
 The same rule governs the plugins tree beside a chosen folder. It is read only
 where the chosen folder is itself a Claude skills folder, which is to say a
@@ -26,6 +34,7 @@ from ..domain.settings import EditorChoice
 from .ports import PathProbe, PlatformPaths
 
 CLAUDE_DIRECTORY = ".claude"
+DOCUMENTS_DIRECTORY = "Documents"
 NOTEPAD_PLUS_NAME = "Notepad++"
 NOTEPAD_PLUS_FILE = "notepad++.exe"
 NOTEPAD_NAME = "Notepad"
@@ -34,12 +43,17 @@ SKILLS_DIRECTORY = "skills"
 PLUGINS_DIRECTORY = "plugins"
 
 
-def claude_skills_root(paths: PlatformPaths) -> str:
-    """Where a Claude skills folder sits for the user this process runs as.
+def documents_root(paths: PlatformPaths, probe: PathProbe) -> str:
+    """The user's own documents folder; their home directory where there is none.
 
-    Somewhere the chooser opens, never somewhere read on its own account.
+    Somewhere the chooser opens, never somewhere read on its own account. The
+    folder is probed rather than assumed because a machine can be set up
+    without one; a chooser pointed at a folder that is not there opens
+    somewhere arbitrary instead of where it was sent.
     """
-    return os.path.join(paths.home_directory(), CLAUDE_DIRECTORY, SKILLS_DIRECTORY)
+    home = paths.home_directory()
+    documents = os.path.join(home, DOCUMENTS_DIRECTORY)
+    return documents if probe.exists(documents) else home
 
 
 def chosen_root(remembered_root: str) -> str:
@@ -51,14 +65,15 @@ def chosen_root(remembered_root: str) -> str:
     return remembered_root.strip()
 
 
-def browse_from(remembered_root: str, paths: PlatformPaths) -> str:
-    """Where the folder chooser opens: the last choice, else the skills folder.
+def browse_from(remembered_root: str, paths: PlatformPaths, probe: PathProbe) -> str:
+    """Where the folder chooser opens: the last choice, else the documents folder.
 
     This is a starting place for a dialog the user is standing in front of, so
-    it reads nothing itself. Offering the Claude skills folder here is what
-    keeps the common case to a single click without taking the choice away.
+    it reads nothing itself. Somewhere the user already keeps their own files
+    is the ordinary place to start; it asks the operating system for nothing
+    the user has not already granted.
     """
-    return chosen_root(remembered_root) or claude_skills_root(paths)
+    return chosen_root(remembered_root) or documents_root(paths, probe)
 
 
 def plugins_root_for(root: str) -> str:
