@@ -104,7 +104,7 @@ circle.
 `defaults` holds the rules about which folder is read; there is
 deliberately no rule that picks one. `chosen_root` returns what the user
 chose or nothing at all; `browse_from` names where the chooser opens, which
-is the user's own documents folder before anything has been taken. Those are two
+is the user's home directory before anything has been taken. Those are two
 different questions and separating them is the whole point: a folder offered
 in a dialog the user is standing in front of has not been read, while a
 folder nobody offered is never read at all. It is also the only place in the package that

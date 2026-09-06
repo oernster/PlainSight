@@ -4,16 +4,18 @@
 nothing gets an empty tree and an invitation, not a walk of their home
 directory: reading a person's files is theirs to authorise, so on a machine
 where permissions are explicit an unasked scan is a rummage through directories
-nobody offered. The documents folder is where the chooser OPENS; it is not read
+nobody offered. The home directory is where the chooser OPENS; it is not read
 unless the user takes it.
 
-The chooser opens somewhere ordinary on purpose. It used to open on the Claude
-skills folder, which lives inside a dotted directory the operating system
-treats as the application's own business rather than the user's; opening there
-spent a permission the application has no business spending before the user has
-asked for anything. The documents folder every desktop already gives its user
-costs nothing to offer; the home directory stands in where a machine names no
-such folder.
+The home directory is chosen because it is the one place no operating system
+gates. It used to be the Claude skills folder, which lives inside a dotted
+directory belonging to another application: the wrong place to point a document
+reader, whatever the permissions. The obvious alternative is the documents
+folder; that is not it either, because macOS gates ``Documents`` by name
+alongside ``Desktop`` and ``Downloads`` while leaving the home directory
+itself alone. Opening on the home directory therefore asks for nothing on any
+of the three, with the documents folder one row down the listing for anyone
+who wants it.
 
 The same rule governs the plugins tree beside a chosen folder. It is read only
 where the chosen folder is itself a Claude skills folder, which is to say a
@@ -21,9 +23,9 @@ where the chosen folder is itself a Claude skills folder, which is to say a
 the user implied, so none is looked at: choosing a notes folder must not send
 this reading its neighbour.
 
-Every operating system resolves to the same place beneath the home directory,
-so there is one rule rather than three. The home directory itself is injected,
-which is what makes this testable without an operating system.
+One rule serves all three operating systems, since every one of them gives a
+user a home directory. That directory is injected, which is what makes this
+testable without an operating system.
 """
 
 from __future__ import annotations
@@ -34,7 +36,6 @@ from ..domain.settings import EditorChoice
 from .ports import PathProbe, PlatformPaths
 
 CLAUDE_DIRECTORY = ".claude"
-DOCUMENTS_DIRECTORY = "Documents"
 NOTEPAD_PLUS_NAME = "Notepad++"
 NOTEPAD_PLUS_FILE = "notepad++.exe"
 NOTEPAD_NAME = "Notepad"
@@ -43,17 +44,14 @@ SKILLS_DIRECTORY = "skills"
 PLUGINS_DIRECTORY = "plugins"
 
 
-def documents_root(paths: PlatformPaths, probe: PathProbe) -> str:
-    """The user's own documents folder; their home directory where there is none.
+def home_root(paths: PlatformPaths) -> str:
+    """The user's home directory: somewhere the chooser opens, never read.
 
-    Somewhere the chooser opens, never somewhere read on its own account. The
-    folder is probed rather than assumed because a machine can be set up
-    without one; a chooser pointed at a folder that is not there opens
-    somewhere arbitrary instead of where it was sent.
+    Nothing is joined onto it. Every folder that could be named here is one
+    the operating system may gate, where the home directory itself is on every
+    machine and gated on none of them.
     """
-    home = paths.home_directory()
-    documents = os.path.join(home, DOCUMENTS_DIRECTORY)
-    return documents if probe.exists(documents) else home
+    return paths.home_directory()
 
 
 def chosen_root(remembered_root: str) -> str:
@@ -65,15 +63,14 @@ def chosen_root(remembered_root: str) -> str:
     return remembered_root.strip()
 
 
-def browse_from(remembered_root: str, paths: PlatformPaths, probe: PathProbe) -> str:
-    """Where the folder chooser opens: the last choice, else the documents folder.
+def browse_from(remembered_root: str, paths: PlatformPaths) -> str:
+    """Where the folder chooser opens: the last choice, else the home directory.
 
     This is a starting place for a dialog the user is standing in front of, so
-    it reads nothing itself. Somewhere the user already keeps their own files
-    is the ordinary place to start; it asks the operating system for nothing
-    the user has not already granted.
+    it reads nothing itself. The home directory is the one starting place no
+    operating system asks the user to approve.
     """
-    return chosen_root(remembered_root) or documents_root(paths, probe)
+    return chosen_root(remembered_root) or home_root(paths)
 
 
 def plugins_root_for(root: str) -> str:

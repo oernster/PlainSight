@@ -5,7 +5,7 @@
 Reads a folder of documents, shows it as the tree it is on disk,
 renders the document you select and hands editing to an editor the user chooses.
 It reads nothing until the user chooses a folder; the chooser opens on the
-user's own documents folder, which is an offer rather than a scan. It is not a text
+user's home directory, which is an offer rather than a scan. It is not a text
 editor and it never writes to a document.
 
 ## Identity
@@ -70,17 +70,19 @@ The chooser **opens** at the place below, all three resolving to the same one:
 
 | OS | Where the chooser opens |
 |---|---|
-| Windows | `%USERPROFILE%\Documents` |
-| macOS | `~/Documents` |
-| Linux | `~/Documents` |
+| Windows | `%USERPROFILE%` |
+| macOS | `~` |
+| Linux | `~` |
 
-A machine that names no such folder opens on the home directory instead, since
-a chooser sent somewhere that is not there opens somewhere arbitrary. That is a
-starting place for a dialog the user is standing in front of, never a folder
-read on its own account. It is somewhere the user already keeps their own
-files, so it asks the operating system for nothing they have not already
-granted; a dotted directory belonging to another application is not. `defaults`
-is the only module in the package that knows the name of any particular tool. Once
+Nothing is joined onto it, which is the point. That is a starting place for a
+dialog the user is standing in front of, never a folder read on its own
+account. The home directory is the one starting place none of the three
+operating systems gates: macOS names `Documents`, `Desktop` and `Downloads`
+individually while leaving the home directory itself alone, so the obvious
+choice is the wrong one. A dotted directory belonging to another application is
+wrong for a different reason: a document reader has no business starting
+there. `defaults` is the only module in the package that knows the name of any
+particular tool. Once
 a folder has been taken the chooser opens there instead. The choice persists
 between runs.
 
@@ -179,7 +181,7 @@ the copyright with its symbol, the dual licence line and credit where credit is
 due: every real dependency named with its licence.
 
 5.3 About states plainly that PlainSight reads nothing until a folder is
-chosen; it names the documents folder as where the chooser opens. It states just as
+chosen; it names the home directory as where the chooser opens. It states just as
 plainly that it is not affiliated with or endorsed by Anthropic.
 
 5.4 **A guide, first on that menu**, ahead of About. It has two jobs and no

@@ -54,8 +54,8 @@ class ReadingChoice:
     def choose_folder(self) -> None:
         """Browse to a folder of documents and read it.
 
-        The chooser opens on the last folder taken, else on the folder the
-        user keeps their own documents in. That is a starting place for a
+        The chooser opens on the last folder taken, else on the user's home
+        directory. That is a starting place for a
         dialog the user is standing in front of; nothing is read until they
         take something.
         """

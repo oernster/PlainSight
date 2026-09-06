@@ -121,4 +121,5 @@ def test_the_chooser_would_open_somewhere_the_user_already_keeps_files(
 
     assert start
     assert ".claude" not in start
+    assert "Documents" not in start
     assert repository.roots_read == []

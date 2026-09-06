@@ -45,9 +45,7 @@ class LibraryService:
 
     def browse_from(self) -> str:
         """Where the folder chooser opens; it reads nothing on its own."""
-        return browse_from(
-            self.settings_store.load().documents_root, self.paths, self.probe
-        )
+        return browse_from(self.settings_store.load().documents_root, self.paths)
 
     def load(self) -> Library:
         """Every document the chosen folder holds; nothing until one is chosen.

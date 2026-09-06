@@ -8,7 +8,7 @@ from plainsight.application.defaults import (
     browse_from,
     chosen_root,
     default_editor,
-    documents_root,
+    home_root,
     plugins_root_for,
 )
 from plainsight.domain.settings import EditorChoice
@@ -16,20 +16,11 @@ from plainsight.domain.settings import EditorChoice
 from .fakes import FakePaths, FakeProbe
 
 
-def test_the_documents_folder_sits_beneath_the_home_directory() -> None:
-    home = os.path.join("/home", "oliver")
-    documents = os.path.join(home, "Documents")
-
-    root = documents_root(FakePaths(home=home), FakeProbe(present=(documents,)))
-
-    assert root == documents
-
-
-def test_a_machine_with_no_documents_folder_falls_back_to_the_home_directory() -> None:
-    """A chooser sent to a folder that is not there opens somewhere arbitrary."""
+def test_the_chooser_starts_at_the_home_directory_with_nothing_joined_on() -> None:
+    """Every folder that could be named beneath it is one an OS may gate."""
     home = os.path.join("/home", "oliver")
 
-    assert documents_root(FakePaths(home=home), FakeProbe()) == home
+    assert home_root(FakePaths(home=home)) == home
 
 
 def test_the_root_to_read_is_whatever_the_user_chose() -> None:
@@ -42,18 +33,14 @@ def test_nothing_chosen_means_nothing_to_read() -> None:
 
 
 def test_the_chooser_opens_on_the_last_folder_taken() -> None:
-    assert (
-        browse_from("/elsewhere/skills", FakePaths(), FakeProbe())
-        == "/elsewhere/skills"
-    )
+    assert browse_from("/elsewhere/skills", FakePaths()) == "/elsewhere/skills"
 
 
-def test_with_nothing_taken_the_chooser_opens_on_the_documents_folder() -> None:
+def test_with_nothing_taken_the_chooser_opens_on_the_home_directory() -> None:
     """A starting place for a dialog, which reads nothing by being offered."""
     paths = FakePaths(home="/home/oliver")
-    probe = FakeProbe(present=(os.path.join("/home/oliver", "Documents"),))
 
-    assert browse_from("   ", paths, probe) == documents_root(paths, probe)
+    assert browse_from("   ", paths) == "/home/oliver"
 
 
 def test_the_plugins_tree_is_found_beside_the_chosen_folder() -> None:
