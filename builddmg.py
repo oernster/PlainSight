@@ -21,6 +21,7 @@ from build_utils import require, require_macos, run, section
 from buildexe import (
     EXCLUDED_MODULES,
     INCLUDED_PACKAGES,
+    LICENCE_FILES,
     parallel_jobs,
     shipped_assets,
 )
@@ -106,6 +107,15 @@ def build_app(icns: pathlib.Path) -> None:
     ]
     command.extend(
         f"--include-data-file={asset}=assets/{asset.name}" for asset in shipped_assets()
+    )
+    # The same licences the Windows build ships, taken from the same list so
+    # the two cannot answer differently. Without them the two buttons in the
+    # bottom tray have nothing to open: the interface licence falls through to
+    # the combined LICENSE and the model licence finds nothing at all.
+    command.extend(
+        f"--include-data-file={licence}={licence.name}"
+        for licence in LICENCE_FILES
+        if licence.is_file()
     )
     command.extend(f"--include-package={package}" for package in INCLUDED_PACKAGES)
     command.extend(f"--nofollow-import-to={module}" for module in EXCLUDED_MODULES)

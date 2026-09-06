@@ -191,10 +191,11 @@ the network.
 
 ## Licence
 
-The user interface is under LGPL-3.0. The domain, application, infrastructure,
-entry point, the setup program and the build scripts are under GPL-3.0. Both
-texts are in the repository and both are reachable from the buttons in the
-bottom tray. See `LICENSE` for the map.
+The user interface is under LGPL-3.0 and the model is under GPL-3.0. The model
+is the domain, the application and the infrastructure, along with the entry
+point, the setup program and the build scripts. Both texts are in the
+repository and both are reachable from the buttons in the bottom tray. See
+`LICENSE` for the map.
 
 ## Status
 
