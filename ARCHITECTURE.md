@@ -213,7 +213,10 @@ raise a prompt.
   with every heading, every bold phrase and every bullet gone; that is what
   this reader exists to answer. Every run of text is taken with where it sat
   and how it looked, then `pdf_structure` reads those back into Markdown, so a
-  PDF reaches the domain laid out exactly as a Word document does. A page that
+  PDF reaches the domain laid out rather than as the words a page happened to
+  carry. Markdown rather than the HTML the Word reader hands over, because what
+  is recovered here is only which lines were headings and which were items,
+  which is the whole of what Markdown is for. A page that
   cannot be read that way still gives up whatever words it has, so a failure of
   the rebuilding costs the layout rather than the page. That last resort asks
   for the layout first: measured on a real payslip, the plain reading returned
@@ -341,8 +344,9 @@ Two trays around a split body, exactly as design plan part 2 describes.
   which, being a container, takes no focus and appears in no ring. Both cycling
   controls wear the state they would move to rather than the current one; both
   put it on through the same `_wear` helper. The help
-  control drops a menu holding About and Check for Updates. It is popped by
-  hand rather than set on the button, because a button carrying a menu grows an
+  control drops a menu holding the Guide, About and Check for Updates, in that
+  order: somebody opening it is more often asking how the application works
+  than who wrote it. It is popped by hand rather than set on the button, because a button carrying a menu grows an
   arrow indicator and every other control in that tray is a picture and nothing
   else.
 - `update_check`: the controller that runs a check off the interface thread and
@@ -431,8 +435,13 @@ than promised: a test takes the breaks back out and requires the
 original text character for character, over every document on the machine as well
 as over invented ones. Measured over the real library, the longest block a
 reader meets falls from 5604 characters to 1893; blocks past 1500 fall from 26
-to 4. It runs in the pane rather than anywhere nearer the file, because it
-is a decision about presenting text and never about storing it.
+to 4. It is a decision about presenting text and never about storing it, so it
+runs at the surface rather than anywhere near the file. Two surfaces reach it,
+in two shapes. The reading pane calls `soften` over a whole body and runs the
+passages together with a gap between them. The Word reader calls `passages` for
+one paragraph at a time and makes each one a paragraph of its own, which is the
+same break in the place HTML keeps it; it has to, since a Word document reaches
+the pane already HTML and the pane no longer softens it.
 
 Every colour pairing that carries text is held to the WCAG AA ratio by a test in
 the application as well as in the setup program. Three were under it and each

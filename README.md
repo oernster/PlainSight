@@ -199,7 +199,15 @@ repository and both are reachable from the buttons in the bottom tray. See
 
 ## Status
 
-Every layer is built and gated; all four delivery paths have produced an
-artefact: the first release carries the Windows setup program, the flatpak
-bundle and the macOS disk image. `ARCHITECTURE.md` holds the invariants and the
-design; `TECH_DEBT.md` holds what is still open.
+Every layer is built and gated. The first release produced all three artefacts:
+the Windows setup program, the flatpak bundle and the macOS disk image.
+
+Nothing has been packaged since Word and PDF reading landed, so those three
+remain the last artefacts actually built. The Linux path is known to have
+broken in the meantime and has been fixed but not yet run on Linux: python-docx
+brings in lxml, which publishes no wheel for the one platform tag the script
+asked for, so the wheel fetch failed before the build began. The macOS path has
+not been run since either.
+
+`ARCHITECTURE.md` holds the invariants and the design; `TECH_DEBT.md` holds
+what is still open.

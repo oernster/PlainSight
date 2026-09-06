@@ -147,9 +147,10 @@ auto-scroll cycle to its start hold rather than continuing mid-descent.
 
 ## 4. Auto-scroll (the `scroll` skill)
 
-4.1 Applied to the rendered document pane, the About dialog, the UI licence dialog
-and the model licence dialog. All four are read through rather than acted on,
-which is the boundary that skill draws.
+4.1 Applied to the rendered document pane, the About dialog, the Guide, the UI
+licence dialog and the model licence dialog. All five are read through rather
+than acted on, which is the boundary that skill draws. They reach it through
+`ReadingPane`, which attaches the cycle once rather than each surface doing it.
 
 4.2 **Not** applied to the library tree, which is a surface to act on.
 
@@ -177,6 +178,16 @@ due: every real dependency named with its licence.
 5.3 About states plainly that PlainSight reads nothing until a folder is
 chosen; it names the Claude skills folder as where the chooser opens. It states just as
 plainly that it is not affiliated with or endorsed by Anthropic.
+
+5.4 **A guide, first on that menu**, ahead of About. It has two jobs and no
+others. It NAMES the furniture, every entry carrying the real icon the tray
+draws, resolved through the same asset lookup and the same file-name constants
+the tray uses so the two cannot drift; a guide showing something other than the
+icon is worse than none. Then it says what each kind of document BECOMES on the
+way to the pane, which is the whole of what this application does and is
+invisible while it is working. Anything a control says for itself is left to the
+control, since every button carries a tooltip: a help screen nobody finishes
+explains nothing. A missing asset costs its picture and never the guide.
 
 ## 6. Choosing an editor
 
@@ -211,16 +222,17 @@ everywhere.
 8.2 Ring order, which is reading order:
 
 1. browse folder
-2. choose editor
-3. view in editor (skipped while disabled)
-4. text size
-5. appearance toggle
-6. help and about
-7. the library tree (one stop; Up and Down walk the rows)
-8. the rendered pane, **only while it overflows**
-9. donate
-10. UI licence
-11. model licence
+2. open one document
+3. choose editor
+4. view in editor (skipped while disabled)
+5. text size
+6. appearance toggle
+7. help and about
+8. the library tree (one stop; Up and Down walk the rows)
+9. the rendered pane, **only while it overflows**
+10. donate
+11. UI licence
+12. model licence
 
 then wrapping back to the browse button.
 
@@ -296,9 +308,9 @@ spirit as the no-network test in `postal-gambit`.
 
 ## 14. Telling the user a newer release exists
 
-14.1 The help control in the top tray drops a menu of two: About PlainSight,
-then Check for Updates. There is no menu bar to hang the second on and the tray
-is where the actions already live.
+14.1 The help control in the top tray drops a menu of three: the Guide, About
+PlainSight, then Check for Updates. There is no menu bar to hang them on and the
+tray is where the actions already live.
 
 14.2 The check asks the GitHub releases endpoint for the latest published
 release of this repository and nothing else. That endpoint answers only with a
@@ -463,14 +475,15 @@ installed as an application event filter, driving the ring of section 8. A theme
 module holding semantic tokens, with `ring` and `danger` named per theme so the
 three-state colour model holds by construction.
 
-Dialogs: `AboutDialog`, plus one `LicenceDialog(title, path, parent)` reused by
-both licence buttons, each derived from the first-stop dialog base.
+Dialogs: `AboutDialog`, `GuideDialog`, plus one `LicenceDialog(title, path,
+parent)` reused by both licence buttons, each derived from the first-stop
+dialog base.
 
 ## Assets
 
 The master is `plainsight.png` at the repository root, square RGBA at 1254
 pixels. `generate_icons.py` derives the whole set into `assets/`: the sized PNGs,
-the canonical 256, a multi-size Windows `.ico`, a macOS `.icns`, the six tray
+the canonical 256, a multi-size Windows `.ico`, a macOS `.icns`, the nine tray
 marks and the donate mark. Nothing is ever upscaled: a master smaller than a
 wanted size is reported rather than stretched. The donate mark does not go
 through the squaring path the icon takes; it is cropped to its artwork and
@@ -502,7 +515,8 @@ plainsight/
   ui/              main_window.py  top_tray.py  bottom_tray.py  library_tree.py
                    document_view.py  reading_pane.py  auto_scroller.py
                    keyboard_nav.py  theme.py  widgets.py  update_check.py
-                   about_dialog.py  licence_dialog.py  dialogs.py
+                   about_dialog.py  guide_dialog.py  licence_dialog.py
+                   dialogs.py
                    reading_choice.py
 tests/             mirrors the source tree, plus tests/structural/
 ```
@@ -533,7 +547,7 @@ version literal lives anywhere but `VERSION`.
 The licence split is three files: `LICENSE` carrying the overview and the
 directory to licence map, `LICENSE-GPL-3.0.txt` and `LICENSE-LGPL-3.0.txt`. The
 map reads: `plainsight/ui` under LGPL-3.0; domain, application, infrastructure,
-the entry point and the build scripts under GPL-3.0.
+the entry point, `installer/` and the build scripts under GPL-3.0.
 
 ## Delivery
 
