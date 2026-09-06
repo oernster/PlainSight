@@ -19,9 +19,11 @@ editor and it never writes to a document.
 
 ## Scope, stated once
 
-Any folder of Markdown, plain text, HTML, Word or PDF files. The Claude skills
-folder is the default and the origin of the application, not a limit on it. Not affiliated
-with Anthropic and not endorsed by them; the About dialog says so.
+Any folder of Markdown, plain text, HTML, Word or PDF files. A Claude skills
+folder is the origin of the application rather than its default or its limit:
+the chooser starts at the home directory and the skills tree is one of the
+places it can be pointed at. Not affiliated with Anthropic and not endorsed by
+them; the About dialog says so.
 
 ---
 
@@ -503,6 +505,7 @@ generate_icons.py  stamp_version.py
 buildexe.py  buildinstaller.py  build_flatpak.sh  clean_flatpak.sh  builddmg.py
 build_utils.py  dmg_icon.py
 LICENSE  LICENSE-GPL-3.0.txt  LICENSE-LGPL-3.0.txt  INSTALLER_LICENSE
+main.py            the entry script the build scripts compile
 README.md  ARCHITECTURE.md  DESIGN-PLAN.md  TECH_DEBT.md
 docs/              the GitHub Pages site
 installer/         the setup program, a second application in the same tree
@@ -558,4 +561,10 @@ the entry point, `installer/` and the build scripts under GPL-3.0.
 
 Windows through `buildexe.py` plus `buildinstaller.py` with a bespoke themed
 installer, Linux through `build_flatpak.sh` and `clean_flatpak.sh`, macOS through
-`builddmg.py`.
+`builddmg.py`. All three compile `main.py` with Nuitka; nothing here builds with
+PyInstaller.
+
+The setup program installs per user and never asks for an administrator. It
+removes what it wrote plus the settings directory, so an account that
+uninstalls and installs again starts as a first install does. A folder of
+documents is never touched by either operation.

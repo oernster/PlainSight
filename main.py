@@ -1,4 +1,4 @@
-"""The entry point the build scripts hand to PyInstaller.
+"""The entry point the build scripts hand to Nuitka.
 
 It defers to the package's own composition root rather than wiring anything of
 its own, so there is exactly one place where dependencies are constructed.

@@ -540,6 +540,12 @@ application. It follows the house setup model.
   payload rather than left inside the bundle the setup program has not extracted
   yet. A test asserts every mark the window reads is one the staging step
   carries.
+- Removing the application removes the settings directory with it. An account
+  that uninstalls has said it is done, so a later install starts as a first
+  install does rather than reviving a folder chosen months ago. The directory is
+  named from the display name rather than written out a second time, so setup
+  cannot end up removing one the application stopped using. Nothing under a
+  folder of documents is touched, then or ever.
 - Starting the application at the end is two halves and neither works alone.
   Windows refuses the foreground to a process that does not already hold it,
   so setup, which does hold it, grants the right to the process it has just
@@ -554,7 +560,9 @@ application. It follows the house setup model.
 
 The read-only invariant is about the application, not the
 setup program: an installer writes files by definition. What it never touches
-is a folder of documents; it writes only under `%LOCALAPPDATA%\Programs` and `HKCU`.
+is a folder of documents. Installing writes under `%LOCALAPPDATA%\Programs` and
+`HKCU` alone; removing reaches one place beyond those, the settings directory
+under the home directory, which it deletes rather than reads.
 
 ## Quality enforcement
 

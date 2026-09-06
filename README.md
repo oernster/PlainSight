@@ -156,7 +156,10 @@ does not, so run it by hand when a Linux build is the only one made.
 
 The setup program installs into your own account only. It writes under
 `%LOCALAPPDATA%\Programs` and `HKCU`, so Windows never asks for an
-administrator; it removes cleanly from the Apps list.
+administrator; it removes cleanly from the Apps list. Removing it takes your
+settings with it, so installing again starts as a first install does rather
+than reviving the folder you chose months ago. Your documents are never
+touched.
 
 ## Test
 
@@ -199,15 +202,16 @@ repository and both are reachable from the buttons in the bottom tray. See
 
 ## Status
 
-Every layer is built and gated. The first release produced all three artefacts:
-the Windows setup program, the flatpak bundle and the macOS disk image.
+Every layer is built and gated. All three delivery paths exist: the Windows
+setup program, the flatpak bundle and the macOS disk image.
 
-Nothing has been packaged since Word and PDF reading landed, so those three
-remain the last artefacts actually built. The Linux path is known to have
-broken in the meantime and has been fixed but not yet run on Linux: python-docx
-brings in lxml, which publishes no wheel for the one platform tag the script
-asked for, so the wheel fetch failed before the build began. The macOS path has
-not been run since either.
+Windows is the one that has been packaged recently; the setup program in
+`dist-installer/` was built from the current tree. Neither of the other two has
+been run since Word and PDF reading landed. The Linux path is known to have
+broken then and has been fixed but not yet run on Linux: python-docx brings in
+lxml, which publishes no wheel for the one platform tag the script asked for,
+so the wheel fetch failed before the build began. The macOS path has not been
+run since either.
 
 `ARCHITECTURE.md` holds the invariants and the design; `TECH_DEBT.md` holds
 what is still open.
