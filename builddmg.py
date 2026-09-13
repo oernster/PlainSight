@@ -476,7 +476,7 @@ def relocate_bundle_resources(app_path: Path) -> None:
 
     The named items are not the whole of it. Packages carry data of their own
     beside their compiled modules: python-docx ships XML templates under
-    docx/templates, and the first bundle signed with only the named items moved
+    docx/templates. The first bundle signed with only the named items moved
     failed on docx/templates/default-footer.xml. Stellody carries no such
     package, which is why its named list is enough there and not here. So every
     remaining file under Contents/MacOS that is not Mach-O goes the same way.
