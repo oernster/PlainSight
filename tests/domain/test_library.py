@@ -3,7 +3,12 @@
 from __future__ import annotations
 
 from plainsight.domain.document import Document, DocumentKind
-from plainsight.domain.library import Folder, Library
+from plainsight.domain.library import ENVIRONMENT_FOLDER_NAMES, Folder, Library
+
+
+def test_the_environment_folders_are_exactly_venv_and_node_modules() -> None:
+    """Named exactly: ``.venv`` is hidden already, by the leading dot."""
+    assert ENVIRONMENT_FOLDER_NAMES == frozenset({"venv", "node_modules"})
 
 
 def a_document(name: str, path: str = "") -> Document:

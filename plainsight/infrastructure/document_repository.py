@@ -2,9 +2,10 @@
 
 The rules are plain enough to state in a sentence: every file whose suffix
 names a kind this application reads is a document; every directory holding
-one at any depth is a folder; hidden and cache directories are passed over. A
-folder leading to no document is not reported at all, so every branch the
-reader can open leads somewhere.
+one at any depth is a folder; hidden and cache directories are passed over, as
+are environment folders unless the reader asked to see them. A folder leading
+to no document is not reported at all, so every branch the reader can open
+leads somewhere.
 
 Nothing here is specific to any one tool. A Claude skills folder reads as the
 folders of skills it is, each holding its ``SKILL.md`` and whatever travels
@@ -23,7 +24,7 @@ from pathlib import Path
 
 from ..application.ports import DocumentReader
 from ..domain.document import Document, DocumentBody, DocumentKind, kind_of
-from ..domain.library import Folder
+from ..domain.library import ENVIRONMENT_FOLDER_NAMES, Folder
 
 HIDDEN_PREFIX = "."
 IGNORED_DIRECTORY_NAMES = frozenset({"__pycache__"})
@@ -36,12 +37,18 @@ class FileSystemDocumentRepository:
     def __init__(self, readers: Mapping[DocumentKind, DocumentReader]) -> None:
         self._readers = dict(readers)
 
-    def read_folder(self, root: str) -> Folder | None:
-        """``root`` as a tree; None when it is not a folder or holds nothing."""
+    def read_folder(
+        self, root: str, include_environment_folders: bool = False
+    ) -> Folder | None:
+        """``root`` as a tree; None when it is not a folder or holds nothing.
+
+        An environment folder is passed over unless it is asked for, so a
+        folder whose only documents sit inside one is not reported either.
+        """
         base = Path(root)
         if not base.is_dir():
             return None
-        return self._folder(base, base.name or str(base))
+        return self._folder(base, base.name or str(base), include_environment_folders)
 
     def read_document(self, path: str) -> Document | None:
         """One file, listing no directory; None when it is not one we read.
@@ -69,15 +76,17 @@ class FileSystemDocumentRepository:
             return DocumentBody(failure=UNKNOWN_KIND)
         return self._readers[kind].read_body(path)
 
-    def _folder(self, directory: Path, name: str) -> Folder | None:
+    def _folder(
+        self, directory: Path, name: str, include_environment_folders: bool
+    ) -> Folder | None:
         """This directory as a folder; None when nothing beneath it is read."""
         folders: list[Folder] = []
         documents: list[Document] = []
         for entry in _entries(directory):
             if entry.is_dir():
-                if _is_ignored(entry.name):
+                if _is_ignored(entry.name, include_environment_folders):
                     continue
-                child = self._folder(entry, entry.name)
+                child = self._folder(entry, entry.name, include_environment_folders)
                 if child is not None:
                     folders.append(child)
                 continue
@@ -141,6 +150,12 @@ def _entries(directory: Path) -> list[Path]:
         return []
 
 
-def _is_ignored(name: str) -> bool:
-    """Whether a directory of this name is passed over rather than scanned."""
-    return name.startswith(HIDDEN_PREFIX) or name in IGNORED_DIRECTORY_NAMES
+def _is_ignored(name: str, include_environment_folders: bool) -> bool:
+    """Whether a directory of this name is passed over rather than scanned.
+
+    Hidden and cache directories always are, whatever was asked. An
+    environment folder is passed over only while nobody asked to see it.
+    """
+    if name.startswith(HIDDEN_PREFIX) or name in IGNORED_DIRECTORY_NAMES:
+        return True
+    return not include_environment_folders and name in ENVIRONMENT_FOLDER_NAMES

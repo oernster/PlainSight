@@ -154,3 +154,26 @@ def test_every_other_copy_carries_the_text_size_over() -> None:
 
     assert settings.with_root("/skills").font_size is FontSize.EXTRA_LARGE
     assert settings.with_appearance(Appearance.LIGHT).font_size is FontSize.EXTRA_LARGE
+
+
+def test_environment_folders_are_hidden_by_default() -> None:
+    assert Settings().show_environment_folders is False
+
+
+def test_showing_environment_folders_replaces_only_itself() -> None:
+    settings = Settings(documents_root="/skills", opened_folders=("prose",))
+
+    changed = settings.with_show_environment_folders(True)
+
+    assert changed.show_environment_folders is True
+    assert changed.documents_root == "/skills"
+    assert changed.opened_folders == ("prose",)
+    assert settings.show_environment_folders is False
+
+
+def test_every_other_copy_carries_the_environment_folder_choice_over() -> None:
+    settings = Settings().with_show_environment_folders(True)
+
+    assert settings.with_root("/skills").show_environment_folders is True
+    assert settings.with_font_size(FontSize.LARGE).show_environment_folders is True
+    assert settings.with_opened_folders(()).show_environment_folders is True

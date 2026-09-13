@@ -130,7 +130,10 @@ raise a prompt.
 - `document_repository`: walks a directory tree and reports it as a `Folder`.
   Every file whose suffix names a `DocumentKind` is a document; every directory
   holding one at any depth is a folder; hidden and cache directories are passed
-  over. A branch leading to no document is not reported at all, so every branch
+  over, as are `venv` and `node_modules` unless the reader asked to see them.
+  Those two names live in the domain as `ENVIRONMENT_FOLDER_NAMES`, since which
+  folders a library holds is a property of the library rather than of whatever
+  walks the disk. A branch leading to no document is not reported at all, so every branch
   the reader can open leads somewhere. A directory that cannot be listed costs
   only itself rather than the whole tree.
 
@@ -372,6 +375,13 @@ Two trays around a split body, exactly as design plan part 2 describes.
   Restoring a selection never opens a shut folder, because Qt expands ancestors
   to reach a row and would otherwise undo the reader's decision on every
   re-read.
+- `tree_menu`: the tree's right-click menu, holding one checkable action that
+  shows `venv` and `node_modules` folders. It is ticked from the saved setting
+  each time it opens rather than when it is built. The tree asks for it through
+  Qt's custom context menu policy, which a right-click reaches; the menu key
+  and Shift+F10 were measured offscreen raising no context menu event at all,
+  so the tree answers those two keys itself. A reader who has opened a single
+  file keeps it on screen across the change.
 - Nothing is ever selected that the reader did not select. There is deliberately
   no fallback to the first row: the library is re-read on every activation of
   the window, so a fallback would choose for them again and again; the pane

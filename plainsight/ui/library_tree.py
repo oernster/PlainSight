@@ -19,7 +19,7 @@ neither problem and follows the theme by construction.
 
 from __future__ import annotations
 
-from PySide6.QtCore import QPointF, QSize, Qt, Signal
+from PySide6.QtCore import QPoint, QPointF, QSize, Qt, Signal
 from PySide6.QtGui import QColor, QIcon, QKeyEvent, QPainter, QPixmap, QPolygonF
 from PySide6.QtWidgets import QTreeWidget, QTreeWidgetItem, QWidget
 
@@ -31,6 +31,13 @@ DOCUMENT_ROLE = int(Qt.ItemDataRole.UserRole)
 FOLDER_ROLE = int(Qt.ItemDataRole.UserRole) + 1
 UNREADABLE_SUFFIX = " (unreadable)"
 TOGGLE_KEYS = (Qt.Key.Key_Return, Qt.Key.Key_Enter, Qt.Key.Key_Space)
+# The two keyboard routes to a context menu. Measured offscreen, neither raised
+# a context menu event on its own, sent to the tree or through its window, so
+# the tree answers them itself rather than trusting the platform to.
+MENU_CHORDS = (
+    (Qt.Key.Key_Menu, Qt.KeyboardModifier.NoModifier),
+    (Qt.Key.Key_F10, Qt.KeyboardModifier.ShiftModifier),
+)
 FIRST_COLUMN = 0
 # Twice the size it began at: at half this the triangle read as a speck
 # rather than as the control it is.
@@ -66,6 +73,9 @@ class LibraryTree(QTreeWidget):
         # below a root drew the toolkit's own small arrow beside the drawn one.
         self.setRootIsDecorated(False)
         self.setIconSize(QSize(ARROW_PX, ARROW_PX))
+        # The tree announces that a menu is wanted; whoever owns the menu
+        # listens. A right-click arrives this way through the policy itself.
+        self.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
         self._palette = palette
         self._selected: Document | None = None
         # What is open is remembered rather than what is shut, so a library
@@ -202,13 +212,29 @@ class LibraryTree(QTreeWidget):
 
         The horizontal arrows step the window's ring everywhere, so they cannot
         also be the tree's own open and close keys; these take their place.
+        The menu key and Shift+F10 ask for the tree's menu at the current row.
         """
+        if (event.key(), event.modifiers()) in MENU_CHORDS:
+            self.customContextMenuRequested.emit(self._menu_point())
+            event.accept()
+            return
         current = self.currentItem()
         if current is not None and _is_folder(current) and event.key() in TOGGLE_KEYS:
             current.setExpanded(not current.isExpanded())
             event.accept()
             return
         super().keyPressEvent(event)
+
+    def _menu_point(self) -> QPoint:
+        """Where a menu asked for from the keyboard opens, in viewport terms.
+
+        Under the current row, which is where the reader is looking; at the
+        top of the tree when no row is current.
+        """
+        current = self.currentItem()
+        if current is None:
+            return QPoint()
+        return self.visualItemRect(current).bottomLeft()
 
 
 def arrow_icon(colour: str, is_open: bool) -> QIcon:

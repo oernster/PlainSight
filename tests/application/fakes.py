@@ -35,6 +35,8 @@ class FakeRepository:
     by watching the two calls separately. ``bodies_read`` is a third for the
     same reason: a body is fetched when a document is opened, so a listing
     that read one would be doing the work this seam exists to avoid.
+    ``environment_folders_asked`` records, per folder read, whether
+    environment folders were asked for.
     """
 
     def __init__(
@@ -49,9 +51,13 @@ class FakeRepository:
         self.roots_read: list[str] = []
         self.files_read: list[str] = []
         self.bodies_read: list[str] = []
+        self.environment_folders_asked: list[bool] = []
 
-    def read_folder(self, root: str) -> Folder | None:
+    def read_folder(
+        self, root: str, include_environment_folders: bool = False
+    ) -> Folder | None:
         self.roots_read.append(root)
+        self.environment_folders_asked.append(include_environment_folders)
         return self.folders.get(root)
 
     def read_document(self, path: str) -> Document | None:

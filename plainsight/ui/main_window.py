@@ -29,6 +29,7 @@ from .library_tree import LibraryTree
 from .reading_choice import ReadingChoice
 from .theme import Palette, palette_for, stylesheet
 from .top_tray import TopTray
+from .tree_menu import TreeMenu
 from .update_check import install_update_check
 
 WINDOW_WIDTH_PX = 1100
@@ -88,6 +89,11 @@ class MainWindow(QMainWindow):
         self._neutral = NeutralStart(self)
         self._started = False
         self._reading = ReadingChoice(self)
+        self.tree_menu = TreeMenu(
+            self.library_tree,
+            service.environment_folders_shown,
+            self._reading.show_environment_folders,
+        )
         self.setCentralWidget(self._body())
         self.statusBar().setSizeGripEnabled(False)
         self.navigator = KeyboardNavigator(self, self.ring_stops)

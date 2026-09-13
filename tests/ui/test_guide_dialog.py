@@ -84,6 +84,14 @@ def test_it_says_what_each_kind_of_document_becomes(html: str) -> None:
         assert f"<b>{kind}</b>" in html
 
 
+def test_it_says_environment_folders_are_hidden_until_the_tree_menu_shows_them(
+    html: str,
+) -> None:
+    """A folder missing from the tree looks like a fault unless somebody says."""
+    for words in ("right-click", "venv", "node_modules", "hidden"):
+        assert words in html
+
+
 def test_the_guide_opens_on_the_reading_pane_and_can_be_closed(
     application: QApplication,
 ) -> None:

@@ -125,3 +125,36 @@ def test_a_text_size_recorded_as_nonsense_reads_as_the_default(tmp_path: Path) -
     path.write_text(json.dumps({"version": 1, "font_size": 9}), encoding="utf-8")
 
     assert JsonSettingsStore(path).load().font_size is FontSize.MEDIUM
+
+
+def test_showing_environment_folders_survives_a_round_trip(tmp_path: Path) -> None:
+    store = JsonSettingsStore(tmp_path / "settings.json")
+
+    store.save(Settings().with_show_environment_folders(True))
+
+    assert store.load().show_environment_folders is True
+
+
+def test_a_file_written_before_the_environment_folder_choice_reads_as_hidden(
+    tmp_path: Path,
+) -> None:
+    path = tmp_path / "settings.json"
+    path.write_text(
+        json.dumps({"version": 1, "documents_root": "/skills"}), encoding="utf-8"
+    )
+
+    assert JsonSettingsStore(path).load().show_environment_folders is False
+
+
+def test_an_environment_folder_choice_that_is_not_a_boolean_reads_as_hidden(
+    tmp_path: Path,
+) -> None:
+    """A one or a word is not the reader saying yes."""
+    path = tmp_path / "settings.json"
+    for recorded in (1, "true"):
+        path.write_text(
+            json.dumps({"version": 1, "show_environment_folders": recorded}),
+            encoding="utf-8",
+        )
+
+        assert JsonSettingsStore(path).load().show_environment_folders is False

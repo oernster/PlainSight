@@ -163,6 +163,10 @@ def _choosing() -> str:
         "they go. Each folder carries a count, so a shut branch tells you "
         "whether it is worth opening; a branch leading to no document at "
         "all is not listed. The ones you leave open are remembered.</p>"
+        "<p>Folders named <code>venv</code> and <code>node_modules</code> are "
+        "hidden by default, since what they hold is somebody else's code. "
+        "A right-click on the folder tree offers to show them; the menu key "
+        "and Shift+F10 open the same menu.</p>"
     )
 
 

@@ -83,6 +83,9 @@ prompt. Nothing is fetched or sent without that click.
 - Shows the folders as a tree, each one opening and closing on its own arrow,
   with a count of what it holds so a shut branch says whether it is worth
   opening.
+- Hides `venv` and `node_modules` folders by default, since what they hold is
+  somebody else's code; show them from the folder tree's right-click menu,
+  which remembers the choice.
 - Reads nothing until you point it at a folder. The chooser opens on your home
   directory. Point it at a Claude skills folder and the plugins tree beside it
   comes too, as a second root; any other folder is read on its own, with

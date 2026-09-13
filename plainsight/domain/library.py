@@ -13,6 +13,12 @@ from dataclasses import dataclass
 
 from .document import Document
 
+# Folders holding somebody else's code rather than the reader's documents: a
+# Python virtual environment and a Node package tree. Named exactly, since
+# ``.venv`` is hidden by its dot already and ``venv-notes`` is somebody's notes.
+# Passed over unless the reader asks to see them.
+ENVIRONMENT_FOLDER_NAMES = frozenset({"venv", "node_modules"})
+
 
 @dataclass(frozen=True, slots=True)
 class Folder:

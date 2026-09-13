@@ -94,7 +94,11 @@ class LibraryService:
         """
         plugins = plugins_root_for(root)
         wanted = (root, plugins) if plugins else (root,)
-        found = tuple(self.repository.read_folder(one) for one in wanted)
+        include = self.settings_store.load().show_environment_folders
+        found = tuple(
+            self.repository.read_folder(one, include_environment_folders=include)
+            for one in wanted
+        )
         return Library(
             tuple(one for one in found if one is not None and not one.is_empty)
         )
@@ -149,6 +153,21 @@ class LibraryService:
         wanted = self.settings_store.load().font_size.next_in_cycle
         self.settings_store.save(self.settings_store.load().with_font_size(wanted))
         return wanted
+
+    def environment_folders_shown(self) -> bool:
+        """Whether ``venv`` and ``node_modules`` folders are read at all."""
+        return self.settings_store.load().show_environment_folders
+
+    def show_environment_folders(self, shown: bool) -> Library:
+        """Remember whether environment folders are shown; read the library again.
+
+        Read through ``load``, so a reader who has chosen no folder has the
+        choice remembered while nothing at all is read.
+        """
+        self.settings_store.save(
+            self.settings_store.load().with_show_environment_folders(shown)
+        )
+        return self.load()
 
     def settings(self) -> Settings:
         """What is remembered right now."""
