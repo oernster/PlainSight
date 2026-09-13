@@ -30,7 +30,7 @@ APPEARANCE_KEY = "appearance"
 FONT_SIZE_KEY = "font_size"
 OPENED_KEY = "opened_folders"
 SKIPPED_UPDATE_KEY = "skipped_update_version"
-ENVIRONMENT_FOLDERS_KEY = "show_environment_folders"
+FILTER_TREE_KEY = "filter_tree"
 
 
 class JsonSettingsStore:
@@ -54,7 +54,7 @@ class JsonSettingsStore:
             font_size=FontSize.of(_text(raw.get(FONT_SIZE_KEY))),
             opened_folders=_names(raw.get(OPENED_KEY)),
             skipped_update_version=_text(raw.get(SKIPPED_UPDATE_KEY)),
-            show_environment_folders=_flag(raw.get(ENVIRONMENT_FOLDERS_KEY)),
+            filter_tree=_unless_false(raw.get(FILTER_TREE_KEY)),
         )
 
     def save(self, settings: Settings) -> None:
@@ -66,7 +66,7 @@ class JsonSettingsStore:
             FONT_SIZE_KEY: settings.font_size.value,
             OPENED_KEY: list(settings.opened_folders),
             SKIPPED_UPDATE_KEY: settings.skipped_update_version,
-            ENVIRONMENT_FOLDERS_KEY: settings.show_environment_folders,
+            FILTER_TREE_KEY: settings.filter_tree,
             EDITOR_KEY: (
                 None
                 if settings.editor is None
@@ -96,9 +96,9 @@ def _text(value: object) -> str:
     return value if isinstance(value, str) else ""
 
 
-def _flag(value: object) -> bool:
-    """A yes recorded as JSON true; anything else at all is a no."""
-    return value is True
+def _unless_false(value: object) -> bool:
+    """On unless JSON false was recorded; missing or anything else is on."""
+    return value is not False
 
 
 def _editor(value: object) -> EditorChoice | None:

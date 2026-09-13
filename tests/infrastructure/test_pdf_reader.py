@@ -115,6 +115,16 @@ def test_a_pdf_holding_no_text_says_it_is_most_likely_a_scan(
     assert not body.text
 
 
+def test_a_pdf_holding_no_text_is_not_judged_empty_at_listing(tmp_path: Path) -> None:
+    """Knowing would mean extracting its pages, which a listing never does."""
+    path = written(tmp_path, "scan.pdf", a_pdf_with_no_text())
+
+    summary = PdfDocumentReader().summarise(path)
+
+    assert not summary.holds_no_text
+    assert not summary.failure
+
+
 def test_a_file_that_is_not_a_pdf_at_all_says_so(tmp_path: Path) -> None:
     path = written(tmp_path, "notreally.pdf", b"this is not a PDF at all")
 

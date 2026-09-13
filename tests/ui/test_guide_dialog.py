@@ -14,7 +14,13 @@ import pytest
 from PySide6.QtWidgets import QApplication
 
 from plainsight.infrastructure.resources import BundledAssets
-from plainsight.ui.bottom_tray import DONATE_ICON, MODEL_LICENCE_ICON, UI_LICENCE_ICON
+from plainsight.ui.bottom_tray import (
+    DONATE_ICON,
+    MODEL_LICENCE_ICON,
+    NEGATIVE_ICON,
+    TREE_FILTER_ICON,
+    UI_LICENCE_ICON,
+)
 from plainsight.ui.guide_dialog import GuideDialog, guide_html
 from plainsight.ui.theme import DARK
 from plainsight.ui.top_tray import (
@@ -38,6 +44,8 @@ NAMED_IN_THE_TRAYS = (
     DONATE_ICON,
     UI_LICENCE_ICON,
     MODEL_LICENCE_ICON,
+    TREE_FILTER_ICON,
+    NEGATIVE_ICON,
 )
 
 
@@ -84,12 +92,12 @@ def test_it_says_what_each_kind_of_document_becomes(html: str) -> None:
         assert f"<b>{kind}</b>" in html
 
 
-def test_it_says_environment_folders_are_hidden_until_the_tree_menu_shows_them(
-    html: str,
-) -> None:
-    """A folder missing from the tree looks like a fault unless somebody says."""
-    for words in ("right-click", "venv", "node_modules", "hidden"):
+def test_it_says_what_the_tree_filter_hides_and_names_no_menu(html: str) -> None:
+    """A folder or a file missing from the tree looks like a fault unless said."""
+    for words in ("venv", "node_modules", "empty documents", "hidden"):
         assert words in html
+    assert "right-click" not in html
+    assert "Shift+F10" not in html
 
 
 def test_the_guide_opens_on_the_reading_pane_and_can_be_closed(

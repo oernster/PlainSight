@@ -72,6 +72,49 @@ def test_a_summarised_word_document_declares_nothing(tmp_path: Path) -> None:
     assert not summary.failure
 
 
+def test_a_word_document_holding_no_text_is_known_at_listing(tmp_path: Path) -> None:
+    """Judged from the text the opened container already holds; no body is built."""
+    summary = WordDocumentReader().summarise(a_word_file(tmp_path, lambda d: None))
+
+    assert summary.holds_no_text
+    assert not summary.failure
+
+
+def test_a_word_document_of_blank_paragraphs_holds_no_text(tmp_path: Path) -> None:
+    def build(document) -> None:
+        document.add_paragraph("   ")
+        document.add_paragraph("")
+
+    assert WordDocumentReader().summarise(a_word_file(tmp_path, build)).holds_no_text
+
+
+def test_a_word_document_with_a_paragraph_holds_text(tmp_path: Path) -> None:
+    path = a_word_file(tmp_path, lambda d: d.add_paragraph("Text."))
+
+    assert not WordDocumentReader().summarise(path).holds_no_text
+
+
+def test_a_word_document_with_words_only_in_a_table_holds_text(tmp_path: Path) -> None:
+    def build(document) -> None:
+        document.add_table(rows=1, cols=1).cell(0, 0).text = "Inside a cell"
+
+    path = a_word_file(tmp_path, build)
+
+    assert not WordDocumentReader().summarise(path).holds_no_text
+
+
+def test_a_word_document_that_will_not_open_is_a_failure_rather_than_empty(
+    tmp_path: Path,
+) -> None:
+    path = tmp_path / "notreally.docx"
+    path.write_bytes(b"this is not a Word document")
+
+    summary = WordDocumentReader().summarise(str(path))
+
+    assert summary.failure
+    assert not summary.holds_no_text
+
+
 def test_a_word_document_arrives_as_the_html_its_reader_made_of_it() -> None:
     """So the renderer hands it over untouched rather than rewriting it."""
     assert DocumentKind.WORD.presentation is Presentation.ALREADY_HTML

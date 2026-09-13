@@ -24,6 +24,69 @@ def plain_text() -> TextDocumentReader:
     return TextDocumentReader(DocumentKind.PLAIN_TEXT)
 
 
+def html() -> TextDocumentReader:
+    return TextDocumentReader(DocumentKind.HTML)
+
+
+def test_a_file_with_a_body_holds_text(tmp_path: Path) -> None:
+    written = tmp_path / "SKILL.md"
+    written.write_text(A_SKILL, encoding="utf-8")
+
+    assert not markdown().summarise(str(written)).holds_no_text
+
+
+def test_an_empty_file_of_either_text_kind_holds_no_text(tmp_path: Path) -> None:
+    hollow = tmp_path / "SKILL.md"
+    hollow.write_text("---\nname: hollow\n---\n\n", encoding="utf-8")
+    blank = tmp_path / "notes.txt"
+    blank.write_text("   \n", encoding="utf-8")
+
+    assert markdown().summarise(str(hollow)).holds_no_text
+    assert plain_text().summarise(str(blank)).holds_no_text
+
+
+def test_a_file_that_cannot_be_read_is_a_failure_rather_than_empty(
+    tmp_path: Path,
+) -> None:
+    broken = tmp_path / "broken.md"
+    broken.write_bytes(b"\xff\xfe\x00binary")
+
+    assert not markdown().summarise(str(broken)).holds_no_text
+    assert not markdown().summarise(str(tmp_path / "absent.md")).holds_no_text
+
+
+def test_a_page_of_scripts_and_markup_alone_holds_no_text_without_failing(
+    tmp_path: Path,
+) -> None:
+    """It still opens as the blank page it is; a filtered tree leaves it out."""
+    written = tmp_path / "redoc.html"
+    written.write_text(
+        "<html><head><title>API</title></head>"
+        "<body><redoc></redoc><script src='redoc.js'></script></body></html>",
+        encoding="utf-8",
+    )
+
+    summary = html().summarise(str(written))
+
+    assert summary.holds_no_text
+    assert not summary.failure
+
+
+def test_a_page_with_words_on_it_holds_text(tmp_path: Path) -> None:
+    written = tmp_path / "page.html"
+    written.write_text("<p>Words</p>", encoding="utf-8")
+
+    assert not html().summarise(str(written)).holds_no_text
+
+
+def test_tags_in_a_plain_text_file_are_its_text(tmp_path: Path) -> None:
+    """Only HTML is read as markup; a text file of tags shows those tags."""
+    written = tmp_path / "notes.txt"
+    written.write_text("<script>shown as typed</script>", encoding="utf-8")
+
+    assert not plain_text().summarise(str(written)).holds_no_text
+
+
 def test_a_summary_carries_what_the_document_declares(tmp_path: Path) -> None:
     written = tmp_path / "SKILL.md"
     written.write_text(A_SKILL, encoding="utf-8")

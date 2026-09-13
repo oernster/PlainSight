@@ -8,6 +8,7 @@ from plainsight.domain.document import (
     HEADER_FIELD_LIMIT,
     Document,
     DocumentKind,
+    DocumentSummary,
     InvalidDocument,
     Presentation,
     kind_of,
@@ -133,6 +134,18 @@ def test_the_same_file_edited_since_is_a_different_document() -> None:
 
 def test_a_document_that_read_cleanly_is_readable() -> None:
     assert a_document().is_readable
+
+
+def test_a_document_holds_text_unless_its_reader_said_it_holds_none() -> None:
+    assert not a_document().holds_no_text
+    assert a_document(holds_no_text=True).holds_no_text
+    assert not DocumentSummary().holds_no_text
+    assert DocumentSummary(holds_no_text=True).holds_no_text
+
+
+def test_holding_no_text_is_not_on_its_own_a_failure_to_read() -> None:
+    """A page of scripts alone opens as the blank page it is; nothing refuses it."""
+    assert a_document(holds_no_text=True).is_readable
 
 
 def test_the_title_is_the_declared_name_where_there_is_one() -> None:

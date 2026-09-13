@@ -100,7 +100,9 @@ def test_an_html_file_keeps_its_markup_rather_than_declaring_fields(
 
 def test_a_word_document_and_a_pdf_are_documents_too(tmp_path: Path) -> None:
     """Listed from the suffix like any other kind; their readers do the rest."""
-    docx.Document().save(str(tmp_path / "report.docx"))
+    report = docx.Document()
+    report.add_paragraph("Text in a report.")
+    report.save(str(tmp_path / "report.docx"))
     (tmp_path / "manual.pdf").write_bytes(a_pdf([["Text on a page."]]))
 
     folder = read(tmp_path)
@@ -298,23 +300,23 @@ def test_a_file_that_is_not_text_is_still_listed(tmp_path: Path) -> None:
     assert document.failure == UNREADABLE_TEXT
 
 
-def test_an_empty_markdown_file_reports_that_rather_than_vanishing(
+def test_an_empty_markdown_file_listed_unfiltered_says_why_it_is_empty(
     tmp_path: Path,
 ) -> None:
     (tmp_path / "SKILL.md").write_text("---\nname: hollow\n---\n\n", encoding="utf-8")
 
-    document = read(tmp_path).documents[0]
+    root = a_repository().read_folder(str(tmp_path), filter_tree=False)
 
-    assert document.failure == EMPTY_MARKDOWN_TEXT
+    assert root.documents[0].failure == EMPTY_MARKDOWN_TEXT
 
 
 def test_an_empty_text_file_reports_the_plainer_reason(tmp_path: Path) -> None:
     """It has no frontmatter to be empty beneath, so it must not say it has."""
     (tmp_path / "notes.txt").write_text("   \n", encoding="utf-8")
 
-    document = read(tmp_path).documents[0]
+    root = a_repository().read_folder(str(tmp_path), filter_tree=False)
 
-    assert document.failure == EMPTY_TEXT
+    assert root.documents[0].failure == EMPTY_TEXT
 
 
 def test_a_directory_that_cannot_be_listed_costs_only_itself(tmp_path: Path) -> None:

@@ -25,7 +25,13 @@ from PySide6.QtWidgets import QVBoxLayout, QWidget
 
 from .. import version
 from ..application.ports import AssetLocator
-from .bottom_tray import DONATE_ICON, MODEL_LICENCE_ICON, UI_LICENCE_ICON
+from .bottom_tray import (
+    DONATE_ICON,
+    MODEL_LICENCE_ICON,
+    NEGATIVE_ICON,
+    TREE_FILTER_ICON,
+    UI_LICENCE_ICON,
+)
 from .reading_pane import ReadingPane
 from .theme import Palette, document_style
 from .top_tray import (
@@ -143,6 +149,11 @@ def _foot(assets: AssetLocator) -> str:
         "<p>The drink hands an address to your browser and opens nothing "
         "here; PlainSight itself sends nothing. Nothing in the application is "
         "held back behind it.</p>"
+        f"<p>At the right end, {_img(assets, TREE_FILTER_ICON)}hides "
+        "<code>venv</code>, <code>node_modules</code> and empty documents "
+        "from the tree. They start hidden, so the picture starts wearing "
+        f"{_img(assets, NEGATIVE_ICON)}over it; a press shows them again and "
+        "takes the cross away.</p>"
     )
 
 
@@ -164,9 +175,12 @@ def _choosing() -> str:
         "whether it is worth opening; a branch leading to no document at "
         "all is not listed. The ones you leave open are remembered.</p>"
         "<p>Folders named <code>venv</code> and <code>node_modules</code> are "
-        "hidden by default, since what they hold is somebody else's code. "
-        "A right-click on the folder tree offers to show them; the menu key "
-        "and Shift+F10 open the same menu.</p>"
+        "hidden by default, since what they hold is somebody else's code. So "
+        "are empty documents: a file holding no text, a web page that is "
+        "nothing but scripts and markup, a Word document with no words in it. "
+        "A folder left with nothing to read goes with them. The filter button "
+        "at the right end of the foot shows them all again. A PDF is never "
+        "hidden this way, since knowing would mean reading every page.</p>"
     )
 
 

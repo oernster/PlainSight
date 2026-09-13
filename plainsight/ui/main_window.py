@@ -29,7 +29,6 @@ from .library_tree import LibraryTree
 from .reading_choice import ReadingChoice
 from .theme import Palette, palette_for, stylesheet
 from .top_tray import TopTray
-from .tree_menu import TreeMenu
 from .update_check import install_update_check
 
 WINDOW_WIDTH_PX = 1100
@@ -80,7 +79,9 @@ class MainWindow(QMainWindow):
             on_donate=self.open_donation,
             on_ui_licence=self.show_ui_licence,
             on_model_licence=self.show_model_licence,
+            on_filter=self.toggle_tree_filter,
         )
+        self.bottom_tray.face_filter(service.tree_filtered())
         self.library_tree = LibraryTree(self._palette, service.opened_folders(), self)
         self.document_view = DocumentView(renderer, self._palette, self)
         self.library_tree.document_selected.connect(self.show_document)
@@ -89,11 +90,6 @@ class MainWindow(QMainWindow):
         self._neutral = NeutralStart(self)
         self._started = False
         self._reading = ReadingChoice(self)
-        self.tree_menu = TreeMenu(
-            self.library_tree,
-            service.environment_folders_shown,
-            self._reading.show_environment_folders,
-        )
         self.setCentralWidget(self._body())
         self.statusBar().setSizeGripEnabled(False)
         self.navigator = KeyboardNavigator(self, self.ring_stops)
@@ -283,6 +279,12 @@ class MainWindow(QMainWindow):
         self.top_tray.open_in_editor_button.setEnabled(
             self._service.can_open_in_editor(selected)
         )
+
+    def toggle_tree_filter(self) -> None:
+        """Turn the tree filter the other way, remember it and show the tree."""
+        filter_on = not self._service.tree_filtered()
+        self._reading.filter_tree(filter_on)
+        self.bottom_tray.face_filter(filter_on)
 
     def choose_folder(self) -> None:
         """Browse to a folder of documents and read it."""

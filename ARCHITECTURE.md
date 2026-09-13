@@ -130,12 +130,15 @@ raise a prompt.
 - `document_repository`: walks a directory tree and reports it as a `Folder`.
   Every file whose suffix names a `DocumentKind` is a document; every directory
   holding one at any depth is a folder; hidden and cache directories are passed
-  over, as are `venv` and `node_modules` unless the reader asked to see them.
-  Those two names live in the domain as `ENVIRONMENT_FOLDER_NAMES`, since which
-  folders a library holds is a property of the library rather than of whatever
-  walks the disk. A branch leading to no document is not reported at all, so every branch
-  the reader can open leads somewhere. A directory that cannot be listed costs
-  only itself rather than the whole tree.
+  over whatever else is asked. While the tree filter is on, which it is until
+  the reader turns it off, `venv` and `node_modules` are passed over too and a
+  document whose reader says it holds no text is left out. Those two names live
+  in the domain as `ENVIRONMENT_FOLDER_NAMES`, since which folders a library
+  holds is a property of the library rather than of whatever walks the disk. A
+  branch leading to no document is not reported at all, so every branch the
+  reader can open leads somewhere. A directory that cannot be listed costs only
+  itself rather than the whole tree. One file opened on its own is never
+  filtered, since no folder is walked to reach it.
 
   What a file of a given kind says about itself is not its business; it walks
   the tree, decides what is a document at all, records what each file was and
@@ -158,6 +161,17 @@ raise a prompt.
   must stay cheap, while `read_body` runs for the one document that was opened
   and may be as dear as its kind demands. A kind that must be extracted rather
   than decoded brings its own reader and this one never learns of it.
+
+  Each reader also says whether a document holds no text, judged only from
+  what its listing already cost; that is what the tree filter leaves out. A
+  text kind holds none when its body is blank. HTML holds none when
+  `html_text` finds nothing left once scripts, styles, the title and the head
+  are set aside; that rule was measured against what a Qt text document shows
+  for the same markup and `tests/ui/test_html_text_agrees_with_the_pane.py`
+  holds the two together. A Word document holds none when no text node in the
+  XML its opening already parsed is more than whitespace: measured over 26 real
+  documents, a median of 0.012ms against 1.62ms to open one. A PDF is never
+  judged, since only extracting its pages could tell.
 
   The readers are named in the composition root, written out rather than
   derived from the enumeration, so a kind added without a reader is a gap
@@ -352,6 +366,13 @@ Two trays around a split body, exactly as design plan part 2 describes.
   than who wrote it. It is popped by hand rather than set on the button, because a button carrying a menu grows an
   arrow indicator and every other control in that tray is a picture and nothing
   else.
+  The bottom tray ends, after a stretch, with the tree filter button, the one
+  control for the filter. It wears what a press would do in the same way: the
+  filter picture alone offers to hide; the same picture with the red cross laid
+  over it offers to show again. The cross is composed at runtime with
+  `QPainter` rather than stored as a third picture, so the pair has one source
+  each and cannot drift. A reader who has opened a single file keeps it on
+  screen across a press.
 - `update_check`: the controller that runs a check off the interface thread and
   reports what it found. Its result crosses back on a signal connected to a
   bound method of an object living on the interface thread, which is the whole
@@ -375,13 +396,6 @@ Two trays around a split body, exactly as design plan part 2 describes.
   Restoring a selection never opens a shut folder, because Qt expands ancestors
   to reach a row and would otherwise undo the reader's decision on every
   re-read.
-- `tree_menu`: the tree's right-click menu, holding one checkable action that
-  shows `venv` and `node_modules` folders. It is ticked from the saved setting
-  each time it opens rather than when it is built. The tree asks for it through
-  Qt's custom context menu policy, which a right-click reaches; the menu key
-  and Shift+F10 were measured offscreen raising no context menu event at all,
-  so the tree answers those two keys itself. A reader who has opened a single
-  file keeps it on screen across the change.
 - Nothing is ever selected that the reader did not select. There is deliberately
   no fallback to the first row: the library is re-read on every activation of
   the window, so a fallback would choose for them again and again; the pane

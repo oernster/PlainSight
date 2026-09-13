@@ -51,14 +51,14 @@ class ReadingChoice:
         """
         self._show(self._again())
 
-    def show_environment_folders(self, shown: bool) -> None:
-        """Remember whether environment folders are walked; show the tree again.
+    def filter_tree(self, on: bool) -> None:
+        """Remember whether the tree is filtered; show the tree again.
 
         The tree keeps the folders the reader left open, as any re-read does.
-        A single opened file is re-read as itself, since the choice is about
+        A single opened file is re-read as itself, since the filter is about
         walking folders and one file walks none.
         """
-        library = self._window.service.show_environment_folders(shown)
+        library = self._window.service.filter_tree(on)
         if self._opened_file is None:
             self._show(library)
         else:

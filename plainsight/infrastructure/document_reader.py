@@ -17,6 +17,7 @@ from pathlib import Path
 
 from ..domain.document import DocumentBody, DocumentKind, DocumentSummary
 from ..domain.parsing import EMPTY_FIELDS, ParsedDocument, parse_document
+from .html_text import shows_text
 
 UNREADABLE_TEXT = "This file could not be read as text."
 MISSING_TEXT = "This file could not be opened."
@@ -45,6 +46,7 @@ class TextDocumentReader:
         """
         text, failure = self._text(path)
         parsed = self._parse(text)
+        holds_no_text = not failure and not self._shows_text(parsed.body)
         if not failure and not parsed.body.strip():
             failure = EMPTY_MARKDOWN_TEXT if self._kind.declares_fields else EMPTY_TEXT
         return DocumentSummary(
@@ -52,7 +54,20 @@ class TextDocumentReader:
             description=parsed.description,
             declared_fields=tuple(parsed.frontmatter.items()),
             failure=failure,
+            holds_no_text=holds_no_text,
         )
+
+    def _shows_text(self, body: str) -> bool:
+        """Whether this body puts any text in front of a reader.
+
+        Text shows whatever is not blank. HTML shows only what its markup
+        leaves once scripts, styles and the head are set aside, so a template
+        holding a script tag and an empty element shows nothing. Both are
+        judged from the text this listing has already read.
+        """
+        if self._kind is DocumentKind.HTML:
+            return shows_text(body)
+        return bool(body.strip())
 
     def read_body(self, path: str) -> DocumentBody:
         """The text beneath whatever this kind declares, else why there is none."""

@@ -127,15 +127,25 @@ def test_a_text_size_recorded_as_nonsense_reads_as_the_default(tmp_path: Path) -
     assert JsonSettingsStore(path).load().font_size is FontSize.MEDIUM
 
 
-def test_showing_environment_folders_survives_a_round_trip(tmp_path: Path) -> None:
+def test_turning_the_tree_filter_off_survives_a_round_trip(tmp_path: Path) -> None:
     store = JsonSettingsStore(tmp_path / "settings.json")
 
-    store.save(Settings().with_show_environment_folders(True))
+    store.save(Settings().with_filter_tree(False))
 
-    assert store.load().show_environment_folders is True
+    assert store.load().filter_tree is False
 
 
-def test_a_file_written_before_the_environment_folder_choice_reads_as_hidden(
+def test_the_tree_filter_is_recorded_under_its_own_name(tmp_path: Path) -> None:
+    path = tmp_path / "settings.json"
+
+    JsonSettingsStore(path).save(Settings().with_filter_tree(False))
+
+    record = json.loads(path.read_text(encoding="utf-8"))
+    assert record["filter_tree"] is False
+    assert "show_environment_folders" not in record
+
+
+def test_a_file_written_before_the_tree_filter_reads_as_filtered(
     tmp_path: Path,
 ) -> None:
     path = tmp_path / "settings.json"
@@ -143,18 +153,17 @@ def test_a_file_written_before_the_environment_folder_choice_reads_as_hidden(
         json.dumps({"version": 1, "documents_root": "/skills"}), encoding="utf-8"
     )
 
-    assert JsonSettingsStore(path).load().show_environment_folders is False
+    assert JsonSettingsStore(path).load().filter_tree is True
 
 
-def test_an_environment_folder_choice_that_is_not_a_boolean_reads_as_hidden(
+def test_a_tree_filter_recorded_as_anything_but_false_reads_as_filtered(
     tmp_path: Path,
 ) -> None:
-    """A one or a word is not the reader saying yes."""
+    """Only a recorded JSON false turns it off; a zero or a word is not that."""
     path = tmp_path / "settings.json"
-    for recorded in (1, "true"):
+    for recorded in (0, "false", None, 1):
         path.write_text(
-            json.dumps({"version": 1, "show_environment_folders": recorded}),
-            encoding="utf-8",
+            json.dumps({"version": 1, "filter_tree": recorded}), encoding="utf-8"
         )
 
-        assert JsonSettingsStore(path).load().show_environment_folders is False
+        assert JsonSettingsStore(path).load().filter_tree is True

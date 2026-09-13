@@ -89,9 +89,9 @@ class Settings:
     the empty tuple a fresh install carries is every folder shut, which is how it
     opens by design rather than by accident. ``skipped_update_version`` holds the
     exact release tag the user asked not to be told about again; empty means
-    every release is worth mentioning. ``show_environment_folders`` says whether
-    ``venv`` and ``node_modules`` folders are walked; they are hidden until the
-    reader asks to see them.
+    every release is worth mentioning. ``filter_tree`` says whether the tree
+    leaves out ``venv`` and ``node_modules`` folders and documents holding no
+    text; it is on until the reader turns it off.
     """
 
     documents_root: str = ""
@@ -100,7 +100,7 @@ class Settings:
     font_size: FontSize = DEFAULT_FONT_SIZE
     opened_folders: tuple[str, ...] = ()
     skipped_update_version: str = ""
-    show_environment_folders: bool = False
+    filter_tree: bool = True
 
     def with_root(self, root: str) -> Settings:
         """A copy remembering this root."""
@@ -126,9 +126,9 @@ class Settings:
         """A copy that will not mention this release again."""
         return self._but(skipped_update_version=tag)
 
-    def with_show_environment_folders(self, shown: bool) -> Settings:
-        """A copy remembering whether environment folders are shown."""
-        return self._but(show_environment_folders=shown)
+    def with_filter_tree(self, on: bool) -> Settings:
+        """A copy remembering whether the tree is filtered."""
+        return self._but(filter_tree=on)
 
     def _but(self, **changed: object) -> Settings:
         """A copy with these fields replaced and every other one carried over."""
@@ -139,7 +139,7 @@ class Settings:
             "font_size": self.font_size,
             "opened_folders": self.opened_folders,
             "skipped_update_version": self.skipped_update_version,
-            "show_environment_folders": self.show_environment_folders,
+            "filter_tree": self.filter_tree,
         }
         fields.update(changed)
         return Settings(**fields)  # type: ignore[arg-type]

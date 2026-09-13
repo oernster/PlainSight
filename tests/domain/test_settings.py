@@ -156,24 +156,24 @@ def test_every_other_copy_carries_the_text_size_over() -> None:
     assert settings.with_appearance(Appearance.LIGHT).font_size is FontSize.EXTRA_LARGE
 
 
-def test_environment_folders_are_hidden_by_default() -> None:
-    assert Settings().show_environment_folders is False
+def test_the_tree_filter_is_on_by_default() -> None:
+    assert Settings().filter_tree is True
 
 
-def test_showing_environment_folders_replaces_only_itself() -> None:
+def test_turning_the_tree_filter_off_replaces_only_itself() -> None:
     settings = Settings(documents_root="/skills", opened_folders=("prose",))
 
-    changed = settings.with_show_environment_folders(True)
+    changed = settings.with_filter_tree(False)
 
-    assert changed.show_environment_folders is True
+    assert changed.filter_tree is False
     assert changed.documents_root == "/skills"
     assert changed.opened_folders == ("prose",)
-    assert settings.show_environment_folders is False
+    assert settings.filter_tree is True
 
 
-def test_every_other_copy_carries_the_environment_folder_choice_over() -> None:
-    settings = Settings().with_show_environment_folders(True)
+def test_every_other_copy_carries_the_tree_filter_over() -> None:
+    settings = Settings().with_filter_tree(False)
 
-    assert settings.with_root("/skills").show_environment_folders is True
-    assert settings.with_font_size(FontSize.LARGE).show_environment_folders is True
-    assert settings.with_opened_folders(()).show_environment_folders is True
+    assert settings.with_root("/skills").filter_tree is False
+    assert settings.with_font_size(FontSize.LARGE).filter_tree is False
+    assert settings.with_opened_folders(()).filter_tree is False

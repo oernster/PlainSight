@@ -56,6 +56,17 @@ BUTTON_MARKS = (
 )
 MASTER_SUFFIX = "-master.png"
 
+# The tree filter's two pictures keep the names their owner gave them, so each
+# master is read where it lies rather than renamed to the suffix above. The
+# filter is square and takes the button path; the cross is wider than it is
+# tall, so it takes the donate path and is cropped to itself. Each derived file
+# has a name of its own, so neither can be written over its master. Nuitka
+# ships every asset lacking the suffix, so the cross's master ships as well.
+FILTER_MASTER = PROJECT_ROOT / "venv-node-git-filter.png"
+FILTER_NAME = "tree-filter.png"
+NEGATIVE_MASTER = ASSETS_DIR / "negative.png"
+NEGATIVE_NAME = "negative-mark.png"
+
 RESAMPLE = Image.Resampling.LANCZOS
 NO_ALPHA = 0
 
@@ -122,6 +133,34 @@ def write_button_marks() -> list[pathlib.Path]:
     return written
 
 
+def _derived_path(master: pathlib.Path, name: str) -> pathlib.Path:
+    """Where a derived picture goes, refusing any path that is its master."""
+    path = ASSETS_DIR / name
+    if path.resolve() == master.resolve():
+        raise SystemExit(f"{name} would overwrite its own master")
+    return path
+
+
+def write_filter_marks() -> list[pathlib.Path]:
+    """The tree filter picture and the cross laid over it, at the drawn height.
+
+    Neither master is moved, renamed or written to; each is only opened.
+    """
+    written: list[pathlib.Path] = []
+    if FILTER_MASTER.is_file():
+        path = _derived_path(FILTER_MASTER, FILTER_NAME)
+        load_master(FILTER_MASTER).resize(
+            (DONATE_HEIGHT_PX, DONATE_HEIGHT_PX), RESAMPLE
+        ).save(path)
+        written.append(path)
+    if NEGATIVE_MASTER.is_file():
+        path = _derived_path(NEGATIVE_MASTER, NEGATIVE_NAME)
+        cross = crop_to_artwork(Image.open(NEGATIVE_MASTER).convert("RGBA"))
+        scale_to_height(cross, DONATE_HEIGHT_PX).save(path)
+        written.append(path)
+    return written
+
+
 def write_donate_mark() -> pathlib.Path | None:
     """The donate artwork, cropped to itself and scaled by height."""
     if not DONATE_MASTER.is_file():
@@ -150,6 +189,7 @@ def main() -> int:
     ASSETS_DIR.mkdir(exist_ok=True)
     written = write_icon_set(master)
     written.extend(write_button_marks())
+    written.extend(write_filter_marks())
     donate = write_donate_mark()
     if donate is not None:
         written.append(donate)

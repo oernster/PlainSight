@@ -18,13 +18,12 @@ if TYPE_CHECKING:  # pragma: no cover
 class DocumentRepository(Protocol):
     """Reads a directory tree; also one file on its own, listing no directory."""
 
-    def read_folder(
-        self, root: str, include_environment_folders: bool = False
-    ) -> Folder | None:
+    def read_folder(self, root: str, filter_tree: bool = True) -> Folder | None:
         """``root`` as a tree; None when it is not a folder or holds nothing.
 
-        A folder named in ``ENVIRONMENT_FOLDER_NAMES`` is passed over unless
-        ``include_environment_folders`` asks for it.
+        While ``filter_tree`` is on, a folder named in
+        ``ENVIRONMENT_FOLDER_NAMES`` is passed over and a document holding no
+        text is left out; a folder left with nothing goes with them.
         """
         ...
 

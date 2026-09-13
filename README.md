@@ -84,8 +84,12 @@ prompt. Nothing is fetched or sent without that click.
   with a count of what it holds so a shut branch says whether it is worth
   opening.
 - Hides `venv` and `node_modules` folders by default, since what they hold is
-  somebody else's code; show them from the folder tree's right-click menu,
-  which remembers the choice.
+  somebody else's code. Empty documents are hidden with them: a file holding no
+  text, a web page that is nothing but scripts and markup, a Word document with
+  no words in it. A folder left with nothing to read goes too. One button at
+  the right end of the bottom tray shows them all again and remembers the
+  choice. A PDF is never hidden this way, since knowing would mean extracting
+  it.
 - Reads nothing until you point it at a folder. The chooser opens on your home
   directory. Point it at a Claude skills folder and the plugins tree beside it
   comes too, as a second root; any other folder is read on its own, with

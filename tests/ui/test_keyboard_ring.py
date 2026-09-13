@@ -47,7 +47,7 @@ def press(widget: QWidget, key: Qt.Key) -> None:
     )
 
 
-def test_the_ring_is_the_twelve_stops_of_the_design_in_order(
+def test_the_ring_is_the_thirteen_stops_of_the_design_in_order(
     window: MainWindow,
 ) -> None:
     """The two openers lead, since everything after acts on what they found."""
@@ -65,6 +65,8 @@ def test_the_ring_is_the_twelve_stops_of_the_design_in_order(
     assert stops[9] is window.bottom_tray.donate_button
     assert stops[10] is window.bottom_tray.ui_licence_button
     assert stops[11] is window.bottom_tray.model_licence_button
+    assert stops[12] is window.bottom_tray.filter_button
+    assert len(stops) == 13
 
 
 def test_each_tray_declares_its_own_order_left_to_right_as_drawn(

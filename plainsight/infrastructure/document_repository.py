@@ -2,10 +2,11 @@
 
 The rules are plain enough to state in a sentence: every file whose suffix
 names a kind this application reads is a document; every directory holding
-one at any depth is a folder; hidden and cache directories are passed over, as
-are environment folders unless the reader asked to see them. A folder leading
-to no document is not reported at all, so every branch the reader can open
-leads somewhere.
+one at any depth is a folder; hidden and cache directories are passed over.
+While the tree filter is on, environment folders are passed over too and a
+document its reader says holds no text is left out. A folder leading to no
+document is not reported at all, so every branch the reader can open leads
+somewhere.
 
 Nothing here is specific to any one tool. A Claude skills folder reads as the
 folders of skills it is, each holding its ``SKILL.md`` and whatever travels
@@ -37,18 +38,17 @@ class FileSystemDocumentRepository:
     def __init__(self, readers: Mapping[DocumentKind, DocumentReader]) -> None:
         self._readers = dict(readers)
 
-    def read_folder(
-        self, root: str, include_environment_folders: bool = False
-    ) -> Folder | None:
+    def read_folder(self, root: str, filter_tree: bool = True) -> Folder | None:
         """``root`` as a tree; None when it is not a folder or holds nothing.
 
-        An environment folder is passed over unless it is asked for, so a
-        folder whose only documents sit inside one is not reported either.
+        While the filter is on, an environment folder is passed over and an
+        empty document left out, so a folder whose only documents were those
+        is not reported either.
         """
         base = Path(root)
         if not base.is_dir():
             return None
-        return self._folder(base, base.name or str(base), include_environment_folders)
+        return self._folder(base, base.name or str(base), filter_tree)
 
     def read_document(self, path: str) -> Document | None:
         """One file, listing no directory; None when it is not one we read.
@@ -76,23 +76,24 @@ class FileSystemDocumentRepository:
             return DocumentBody(failure=UNKNOWN_KIND)
         return self._readers[kind].read_body(path)
 
-    def _folder(
-        self, directory: Path, name: str, include_environment_folders: bool
-    ) -> Folder | None:
+    def _folder(self, directory: Path, name: str, filter_tree: bool) -> Folder | None:
         """This directory as a folder; None when nothing beneath it is read."""
         folders: list[Folder] = []
         documents: list[Document] = []
         for entry in _entries(directory):
             if entry.is_dir():
-                if _is_ignored(entry.name, include_environment_folders):
+                if _is_ignored(entry.name, filter_tree):
                     continue
-                child = self._folder(entry, entry.name, include_environment_folders)
+                child = self._folder(entry, entry.name, filter_tree)
                 if child is not None:
                     folders.append(child)
                 continue
             kind = kind_of(entry.name)
-            if kind is not None:
-                documents.append(self._document(entry, kind))
+            if kind is None:
+                continue
+            document = self._document(entry, kind)
+            if not (filter_tree and document.holds_no_text):
+                documents.append(document)
         if not folders and not documents:
             return None
         return Folder.of(name, str(directory), folders, documents)
@@ -114,6 +115,7 @@ class FileSystemDocumentRepository:
             description=summary.description,
             failure=summary.failure,
             declared_fields=summary.declared_fields,
+            holds_no_text=summary.holds_no_text,
         )
 
 
@@ -150,12 +152,12 @@ def _entries(directory: Path) -> list[Path]:
         return []
 
 
-def _is_ignored(name: str, include_environment_folders: bool) -> bool:
+def _is_ignored(name: str, filter_tree: bool) -> bool:
     """Whether a directory of this name is passed over rather than scanned.
 
-    Hidden and cache directories always are, whatever was asked. An
-    environment folder is passed over only while nobody asked to see it.
+    Hidden and cache directories always are, whatever the filter says. An
+    environment folder is passed over only while the filter is on.
     """
     if name.startswith(HIDDEN_PREFIX) or name in IGNORED_DIRECTORY_NAMES:
         return True
-    return not include_environment_folders and name in ENVIRONMENT_FOLDER_NAMES
+    return filter_tree and name in ENVIRONMENT_FOLDER_NAMES

@@ -145,12 +145,17 @@ class DocumentSummary:
     exists to hold: a kind whose text must be extracted rather than decoded
     would otherwise pay that extraction for every document in a tree in order
     to show one of them.
+
+    ``holds_no_text`` says the reader knows, from what listing already cost it,
+    that the document would show a reader no text at all. A reader that could
+    only know by extracting says nothing, so it stays False.
     """
 
     declared_name: str = ""
     description: str = ""
     declared_fields: tuple[tuple[str, str], ...] = field(default=())
     failure: str = ""
+    holds_no_text: bool = False
 
 
 @dataclass(frozen=True, slots=True)
@@ -195,6 +200,10 @@ class Document:
 
     What goes in it is infrastructure's business. The domain reads nothing
     from disk, so it holds the answer without knowing how it was arrived at.
+
+    ``holds_no_text`` marks a document that would show no text: a blank file,
+    a page of scripts and markup alone. It is not a failure, since such a page
+    still opens as the blank page it is; it is what the tree filter leaves out.
     """
 
     name: str
@@ -205,6 +214,7 @@ class Document:
     description: str = ""
     failure: str = ""
     declared_fields: tuple[tuple[str, str], ...] = field(default=())
+    holds_no_text: bool = False
 
     def __post_init__(self) -> None:
         if not self.name.strip():
