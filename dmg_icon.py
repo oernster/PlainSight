@@ -1,4 +1,8 @@
-"""Turning the master PNG into an icns, and putting it on the image itself."""
+"""Putting the application's icon on the disk image file itself.
+
+It generates no icon: generate_icons.py writes assets/plainsight.icns from the
+master artwork, which is the one place any icon in this project comes from.
+"""
 
 from __future__ import annotations
 
@@ -6,10 +10,8 @@ import pathlib
 import struct
 import subprocess
 
-ICNS_SIZE = 1024
-
 # Finder reads a file's own icon from an 'icns' resource at this well-known id
-# in the resource fork, and only looks when the custom-icon flag is set in the
+# in the resource fork; it only looks when the custom-icon flag is set in the
 # FinderInfo attribute. Both halves are needed; either alone shows nothing.
 CUSTOM_ICON_RESOURCE_ID = -16455
 RESOURCE_TYPE = b"icns"
@@ -31,17 +33,6 @@ TYPE_COUNT_SIZE = 2
 NO_RESOURCE_NAME = -1
 FIRST_ITEM = 0
 DATA_OFFSET_SIZE = 3
-
-
-def png_to_icns(source: pathlib.Path, destination: pathlib.Path) -> pathlib.Path:
-    """Write an icns from a large square PNG, with no iconutil needed."""
-    from PIL import Image
-
-    image = Image.open(source).convert("RGBA")
-    image.resize((ICNS_SIZE, ICNS_SIZE), Image.Resampling.LANCZOS).save(
-        destination, format="ICNS"
-    )
-    return destination
 
 
 def set_file_icon(target: pathlib.Path, icns: pathlib.Path) -> None:
