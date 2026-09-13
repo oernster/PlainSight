@@ -17,6 +17,13 @@ where this began, to bring the plugins tree beside it too, as a second root.
 Nothing is changed by looking. It never writes to a document; editing is handed
 to the editor you choose.
 
+> **Commercial licences available.** PlainSight is free and open source under
+> GPL-3.0, with its interface layer under LGPL-3.0. If those terms do not suit
+> what you are building, such as a closed-source product, a commercial licence
+> can be bought from me separately. It covers my own code; PySide6 keeps its
+> own LGPL-3.0 licence. See
+> [commercial licensing](https://ernster.dev/commercial-licensing.html).
+
 ## Who it is for
 
 Anyone with a folder of documents they would rather read than grep: Markdown,
@@ -201,6 +208,8 @@ address to your desktop for your browser to open; the application fetches
 nothing itself there, so the button adds nothing to what is said above about
 the network.
 
+<a href="https://www.paypal.com/ncp/payment/BCZF8TZTUGTEA"><img src="assets/donate.png" alt="Donate to PlainSight" width="120"></a>
+
 ## Licence
 
 The user interface is under LGPL-3.0 and the model is under GPL-3.0. The model
@@ -208,6 +217,10 @@ is the domain, the application and the infrastructure, along with the entry
 point, the setup program and the build scripts. Both texts are in the
 repository and both are reachable from the buttons in the bottom tray. See
 `LICENSE` for the map.
+
+A commercial licence for my own code is also available, separately from the
+open-source licences: see
+[commercial licensing](https://ernster.dev/commercial-licensing.html).
 
 ## Status
 
