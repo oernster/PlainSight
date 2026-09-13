@@ -69,6 +69,8 @@
     <li>The tree mirrors your folders exactly, to whatever depth they go, with the file's own name on each document so you can find it again anywhere else.</li>
     <li>Every folder opens and closes on its own arrow; Enter or Space works it from the keyboard.</li>
     <li>Each folder carries a count of what it holds, so a shut branch tells you whether it is worth opening.</li>
+    <li>Folders named <code>venv</code> and <code>node_modules</code> are hidden by default, since what they hold is somebody else's code. So are documents with nothing to read: a blank text file, a Markdown file declaring fields with no body beneath them, a web page that is nothing but scripts and markup, a Word document with no words in it. A folder left with nothing to read goes with them.</li>
+    <li>One button at the right end of the bottom tray shows them all again. Its picture shows the filter as it stands, crossed out while everything is shown; the choice is remembered. A PDF is never hidden this way, since knowing would mean extracting it; a file opened on its own is never filtered.</li>
     <li>Folders you leave open are remembered, so a run opens as the last one closed.</li>
     <li>Everything opens shut and nothing is selected until you select it. A reader who has chosen nothing is not shown something chosen for them.</li>
   </ul>
@@ -140,7 +142,7 @@
     <div class="footer-bottom">
       <p>A local-first reader for folders of Markdown, text, HTML, Word and PDF files. It reads nothing until you choose a folder; the chooser opens on your home directory. Read only, open source, no cloud. Not affiliated with Anthropic and not endorsed by them.</p>
       <div class="chips">
-        <span class="chip">Version <!--VERSION-->2.1.0<!--/VERSION--></span>
+        <span class="chip">Version <!--VERSION-->2.2.0<!--/VERSION--></span>
         <span class="chip">Python</span>
         <span class="chip">PySide6</span>
         <span class="chip">GPL-3.0</span>

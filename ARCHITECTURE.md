@@ -285,6 +285,12 @@ raise a prompt.
   not promise: the application version is free to move without the settings a
   user has accumulated needing anything done to them; the format may be revised
   on its own number when it has to be.
+- `html_text`: whether a page shows any text once its scripts, styles, title
+  and head are set aside, read with the standard library's own parser so badly
+  written markup is still judged. The tree filter asks it of every HTML
+  document at listing.
+- `desktop`: the two things handed to the desktop, an editor started detached
+  and an address handed to whatever opens links.
 - `platform`: the home directory and the path probe.
 - `renderer`: rendering through the `markdown` package for a kind that is laid
   out; into an escaped preformatted block for one kept as typed; untouched for
@@ -367,9 +373,10 @@ Two trays around a split body, exactly as design plan part 2 describes.
   arrow indicator and every other control in that tray is a picture and nothing
   else.
   The bottom tray ends, after a stretch, with the tree filter button, the one
-  control for the filter. It wears what a press would do in the same way: the
-  filter picture alone offers to hide; the same picture with the red cross laid
-  over it offers to show again. The cross is composed at runtime with
+  control for the filter. Its picture shows the filter as it stands while its
+  tooltip offers the press: the filter picture alone while the filter hides;
+  the same picture with the red cross laid over it while everything is shown.
+  The cross is composed at runtime with
   `QPainter` rather than stored as a third picture, so the pair has one source
   each and cannot drift. A reader who has opened a single file keeps it on
   screen across a press.

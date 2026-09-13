@@ -151,9 +151,11 @@ def _foot(assets: AssetLocator) -> str:
         "held back behind it.</p>"
         f"<p>At the right end, {_img(assets, TREE_FILTER_ICON)}hides "
         "<code>venv</code>, <code>node_modules</code> and empty documents "
-        "from the tree. They start hidden, so the picture starts wearing "
-        f"{_img(assets, NEGATIVE_ICON)}over it; a press shows them again and "
-        "takes the cross away.</p>"
+        "from the tree. Unlike the two cycling buttons up top, its picture "
+        "shows the filter as it stands while its tooltip says what a press "
+        "would do. They start hidden, so the picture starts plain; a press "
+        f"shows them again and lays {_img(assets, NEGATIVE_ICON)}over it. The "
+        "choice is remembered between runs.</p>"
     )
 
 
@@ -176,11 +178,13 @@ def _choosing() -> str:
         "all is not listed. The ones you leave open are remembered.</p>"
         "<p>Folders named <code>venv</code> and <code>node_modules</code> are "
         "hidden by default, since what they hold is somebody else's code. So "
-        "are empty documents: a file holding no text, a web page that is "
+        "are empty documents: a file holding no text, a Markdown file "
+        "declaring fields with no body beneath them, a web page that is "
         "nothing but scripts and markup, a Word document with no words in it. "
         "A folder left with nothing to read goes with them. The filter button "
         "at the right end of the foot shows them all again. A PDF is never "
-        "hidden this way, since knowing would mean reading every page.</p>"
+        "hidden this way, since knowing would mean reading every page; nor "
+        "is a document you open on its own.</p>"
     )
 
 

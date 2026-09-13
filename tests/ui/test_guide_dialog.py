@@ -94,7 +94,15 @@ def test_it_says_what_each_kind_of_document_becomes(html: str) -> None:
 
 def test_it_says_what_the_tree_filter_hides_and_names_no_menu(html: str) -> None:
     """A folder or a file missing from the tree looks like a fault unless said."""
-    for words in ("venv", "node_modules", "empty documents", "hidden"):
+    for words in (
+        "venv",
+        "node_modules",
+        "empty documents",
+        "hidden",
+        "declaring fields with no body",
+        "choice is remembered between runs",
+        "a document you open on its own",
+    ):
         assert words in html
     assert "right-click" not in html
     assert "Shift+F10" not in html

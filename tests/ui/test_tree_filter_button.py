@@ -1,9 +1,10 @@
 """The tree filter button: the right end of the bottom tray, one control only.
 
-It wears the state a press would move TO, as the appearance toggle does. The
-filter picture alone offers to hide ``venv``, ``node_modules`` and empty
-documents; the same picture under a red cross offers to show them again. The
-cross is laid over the picture at runtime, so there is no composite artwork.
+The picture shows the filter as it stands: the filter picture alone while
+``venv``, ``node_modules`` and empty documents are hidden; the same picture
+under a red cross while they are shown. The tooltip offers what a press would
+do. The cross is laid over the picture at runtime, so there is no composite
+artwork.
 """
 
 from __future__ import annotations
@@ -21,6 +22,7 @@ from plainsight.infrastructure.resources import BundledAssets
 from plainsight.ui import main_window
 from plainsight.ui.bottom_tray import (
     HIDE_TOOLTIP,
+    NEGATIVE_ICON,
     SHOW_TOOLTIP,
     TREE_FILTER_ICON,
     filter_picture,
@@ -95,25 +97,41 @@ def test_while_the_filter_is_off_it_offers_to_hide_them(window: MainWindow) -> N
     assert button.accessibleName() == HIDE_TOOLTIP
 
 
-def test_the_off_face_is_the_filter_picture_alone(application: QApplication) -> None:
+def comparable(image: QImage) -> QImage:
+    """One pixel format, so two routes to the same picture compare equal."""
+    return image.convertToFormat(QImage.Format.Format_ARGB32)
+
+
+def test_the_on_face_is_the_filter_picture_alone(application: QApplication) -> None:
     assets = BundledAssets()
 
-    face = filter_picture(assets, False)
+    face = filter_picture(assets, True)
 
     assert face.toImage() == QPixmap(assets.find(TREE_FILTER_ICON)).toImage()
 
 
-def test_the_on_face_is_that_picture_with_the_cross_laid_over_it(
+def test_the_off_face_is_that_picture_with_the_cross_laid_over_it(
     application: QApplication,
 ) -> None:
     assets = BundledAssets()
+    plain = QPixmap(assets.find(TREE_FILTER_ICON))
+    crossed = overlaid(plain, QPixmap(assets.find(NEGATIVE_ICON)))
 
-    on = filter_picture(assets, True).toImage()
     off = filter_picture(assets, False).toImage()
 
-    assert on.size() == off.size()
-    assert on != off
-    assert on.hasAlphaChannel()
+    assert off == crossed.toImage()
+    assert off != plain.toImage()
+    assert off.hasAlphaChannel()
+
+
+def test_the_button_starts_wearing_the_filter_picture_alone(
+    window: MainWindow,
+) -> None:
+    """The filter starts on, so the cross must not be on the button at launch."""
+    plain = QPixmap(BundledAssets().find(TREE_FILTER_ICON))
+    worn = window.bottom_tray.filter_button.icon().pixmap(plain.size())
+
+    assert comparable(worn.toImage()) == comparable(plain.toImage())
 
 
 def test_laying_one_picture_over_another_keeps_what_is_clear_in_both(

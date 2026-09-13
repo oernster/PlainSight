@@ -61,8 +61,8 @@ class BottomTray(QWidget):
             on_model_licence,
             TRAY_SCALE,
         )
-        # It wears what a press would move TO, as the appearance toggle does.
-        # The filter starts on, so the button starts offering to show again.
+        # Its picture shows the filter as it stands; its tooltip offers a press.
+        # The filter starts on, so the picture starts plain.
         self.filter_button = icon_button(
             self, None, SHOW_TOOLTIP, on_filter, TRAY_SCALE
         )
@@ -89,10 +89,11 @@ class BottomTray(QWidget):
         )
 
     def face_filter(self, filter_on: bool) -> None:
-        """Wear what a press would do: show again while on; hide while off.
+        """Show the filter as it stands; offer in words what a press would do.
 
-        While the filter is on, the picture wears the cross, since a press
-        takes the filter away. While it is off, the picture stands alone.
+        While the filter is on, the picture stands alone while the tooltip
+        offers to show again. While it is off, the picture wears the cross
+        while the tooltip offers to hide.
         """
         picture = filter_picture(self._assets, filter_on)
         if picture is not None:
@@ -103,7 +104,7 @@ class BottomTray(QWidget):
 
 
 def filter_picture(assets: AssetLocator, filter_on: bool) -> QPixmap | None:
-    """The filter picture, under the cross while the filter is on.
+    """The filter picture, under the cross while the filter is off.
 
     None when the picture was not bundled; the button keeps its words then.
     A missing cross costs only the cross.
@@ -112,7 +113,7 @@ def filter_picture(assets: AssetLocator, filter_on: bool) -> QPixmap | None:
     if found is None:
         return None
     picture = QPixmap(found)
-    cross = assets.find(NEGATIVE_ICON) if filter_on else None
+    cross = None if filter_on else assets.find(NEGATIVE_ICON)
     return picture if cross is None else overlaid(picture, QPixmap(cross))
 
 

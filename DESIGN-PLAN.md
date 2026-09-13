@@ -52,6 +52,8 @@ reader can open leads somewhere.
 `__pycache__`. Both are present in the author's tree (`.ruff_cache`,
 `__pycache__`). A directory that cannot be listed at all is passed over rather
 than raised on: one unreadable folder must not cost the reader the whole tree.
+Environment folders and empty documents are passed over as well, though only
+while the tree filter of section 17 is on.
 
 1.5 A document's row carries **the file's own name**, so a reader who finds
 something here can find the same file again in a dialogue or a shell. Where a
@@ -240,6 +242,7 @@ everywhere.
 10. donate
 11. UI licence
 12. model licence
+13. tree filter
 
 then wrapping back to the browse button.
 
@@ -380,6 +383,36 @@ order and no real activation. Both are tested at the mechanism instead: that the
 grant reaches the process actually started, then that the composition root
 presents rather than shows.
 
+## 17. The tree filter
+
+17.1 While the filter is on, folders named exactly `venv` or `node_modules` are
+passed over at any depth, since what they hold is somebody else's code. A name
+merely containing one of them is read. The two names live in the domain as
+`ENVIRONMENT_FOLDER_NAMES`.
+
+17.2 Documents holding no text are left out with them, judged only from what the
+listing already cost: a text kind whose body is blank, HTML showing no text once
+scripts, styles, the title and the head are set aside, a Word document with no
+text node that is more than whitespace. A PDF is never judged, since only
+extracting its pages could tell. A document that cannot be read is never left
+out, since 12.2 keeps it listed.
+
+17.3 A folder left with nothing to read is not listed, exactly as 1.3 already
+says of any branch leading to no document.
+
+17.4 The filter is on by default and remembered between runs. One file opened on
+its own (2.6) is never filtered, since no folder is walked to reach it. Hidden and
+cache directories stay passed over whatever the filter says.
+
+17.5 One control turns it off and on: a button at the right end of the bottom
+tray, after a stretch. Its picture shows the filter as it stands, the filter
+picture alone while it is on and the same picture under a red cross while it is
+off. Its tooltip offers what a press would do. The cross is laid over the
+picture at runtime rather than stored as a third picture.
+
+17.6 A press keeps the folders the reader left open and keeps a single opened
+file on screen.
+
 ---
 
 # Part 2: design
@@ -401,21 +434,25 @@ Frozen dataclasses with `slots=True`, `tuple[...]` over `list`.
 - `Presentation`: the three ways a body becomes what the surface shows: laid out
   for the page, kept as typed or already the HTML the surface renders.
 - `Document`: file name, path, kind, declared name, description, the failure it
-  carries when the file could not be read and a `fingerprint` of the file.
+  carries when the file could not be read, whether it holds no text and a
+  `fingerprint` of the file.
   Validates in `__post_init__`. It holds no body: the text is fetched when a
   document is opened; the fingerprint is what makes a document still compare
   unequal to the same file edited since.
 - `DocumentSummary`: what a listing knows about a document without reading all
-  of it. Deliberately carries no text.
+  of it. Deliberately carries no text; it does carry whether the reader already
+  knows there is none, which is what the tree filter of section 17 leaves out.
 - `DocumentBody`: a document's text, else the reason there is none. The reason
   travels with the absence rather than being worked out from it, since a locked
   file and a missing one want different words in front of a reader.
 - `Folder`: a directory's subfolders and documents, each ordered case
   insensitively with folders first, plus the recursive `document_count`.
 - `Library`: the roots being read, with `by_path()` and the walk in drawn order.
+  Beside it, `ENVIRONMENT_FOLDER_NAMES` names the folders the tree filter passes
+  over.
 - `Settings`: what is remembered between runs, holding `EditorChoice` (path plus
-  display name, validating that the path is non-empty), `Appearance`, `FontSize`
-  and the skipped update tag.
+  display name, validating that the path is non-empty), `Appearance`, `FontSize`,
+  the skipped update tag and whether the tree is filtered.
 - `passage.soften`: breaking a wall of text at divisions its author already
   wrote. Pure string work, adding and removing nothing.
 
@@ -423,7 +460,7 @@ Frozen dataclasses with `slots=True`, `tuple[...]` over `list`.
 
 Ports, all Protocols:
 
-- `DocumentRepository`: `read_folder(root) -> Folder | None`,
+- `DocumentRepository`: `read_folder(root, filter_tree=True) -> Folder | None`,
   `read_document(path) -> Document | None`, `read_body(path) -> DocumentBody`
 - `DocumentReader`: `summarise(path) -> DocumentSummary`,
   `read_body(path) -> DocumentBody`. One per kind, chosen by kind rather than
@@ -474,7 +511,7 @@ alike.
 ```
 top tray:    [folder] [choose editor] [view in editor] | [size] .. [light/dark] [help/about]
 body:        library tree (left)          |  rendered document (right)
-bottom tray: [donate] [UI licence] [model licence] ..............
+bottom tray: [donate] [UI licence] [model licence] .............. [tree filter]
 ```
 
 One `AutoScroller` class carrying the canon constants. One `KeyboardNavigator`
@@ -491,7 +528,8 @@ dialog base.
 The master is `plainsight.png` at the repository root, square RGBA at 1254
 pixels. `generate_icons.py` derives the whole set into `assets/`: the sized PNGs,
 the canonical 256, a multi-size Windows `.ico`, a macOS `.icns`, the nine tray
-marks and the donate mark. Nothing is ever upscaled: a master smaller than a
+marks, the tree filter picture with its cross and the donate mark. The two tree
+filter masters keep the names their owner gave them. Nothing is ever upscaled: a master smaller than a
 wanted size is reported rather than stretched. The donate mark does not go
 through the squaring path the icon takes; it is cropped to its artwork and
 scaled by height alone.
@@ -516,7 +554,7 @@ plainsight/
                    passage.py
   application/     ports.py  services.py  defaults.py  update.py
   infrastructure/  document_repository.py  document_reader.py  word_reader.py
-                   pdf_reader.py  pdf_structure.py  word_html.py
+                   pdf_reader.py  pdf_structure.py  word_html.py  html_text.py
                    settings_store.py  desktop.py
                    renderer.py  resources.py  platform.py
                    update_source.py
