@@ -29,6 +29,7 @@ Env vars:
 
 from __future__ import annotations
 
+import fcntl
 import os
 import plistlib
 import re
@@ -38,6 +39,7 @@ import sys
 import tempfile
 from importlib import metadata
 from pathlib import Path
+from typing import IO
 
 import stamp_version
 from build_utils import require, require_macos, run, section
@@ -745,10 +747,46 @@ def verify_dmg() -> None:
 # -- Main ---------------------------------------------------------------------
 
 
+def acquire_build_lock() -> IO[str]:
+    """Refuse to start while another builddmg.py is running in this checkout.
+
+    Two runs share dist/: the second deletes it in clean() and the first renames
+    main.app out from under the other's linker. Measured on 2026-09-13: the run
+    that lost failed with "ld: open() failed, errno=2 ... dist/main.app/Contents/
+    MacOS/main" while a solo run of the same commit built and notarized cleanly.
+
+    The lock is an flock on this script itself, so there is no lock file to
+    leave behind: the kernel releases it when the process exits, however it
+    exits, which means a crashed build can never block the next one.
+    """
+    # Not a context manager: the handle IS the lock, so it has to outlive this
+    # function and stay open for the whole build.
+    handle = open(__file__, encoding="utf-8")  # noqa: SIM115
+    try:
+        fcntl.flock(handle, fcntl.LOCK_EX | fcntl.LOCK_NB)
+    except BlockingIOError:
+        handle.close()
+        sys.exit(
+            "ERROR: another builddmg.py is already running in this checkout.\n"
+            "  Two builds share dist/ and break each other at the link step.\n"
+            "  Wait for it to finish; then run this again."
+        )
+    return handle
+
+
 def main() -> int:
     print(f"\nPLAINSIGHT DMG BUILDER  v{APP_VERSION}")
     print(f"Signing identity: {DEVELOPER_ID}")
 
+    lock = acquire_build_lock()
+    try:
+        return build()
+    finally:
+        lock.close()
+
+
+def build() -> int:
+    """Every step from the pre-build checks to a verified image."""
     check_platform()
     check_runtime_dependencies()
     check_bundled_assets()

@@ -226,6 +226,8 @@ __marimo__/
 /main.build/
 /main.dist/
 /main.onefile-build/
+# Nuitka writes this beside the entry script whenever a compilation fails.
+/nuitka-crash-report.xml
 /dist-dmg-stage/
 /installer/payload/
 /*.icns
