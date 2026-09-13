@@ -128,7 +128,7 @@ def test_pressing_donate_asks_the_desktop_for_that_one_address(
     """Asserted literally, so a typo fails here rather than misdirecting money."""
     window.bottom_tray.donate_button.click()
 
-    assert opener.opened == ["https://www.paypal.com/ncp/payment/BCZF8TZTUGTEA"]
+    assert opener.opened == ["https://www.paypal.com/ncp/payment/3Q37J8BK54PME"]
 
 
 def test_the_donation_address_is_handed_over_untouched(

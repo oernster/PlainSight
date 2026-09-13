@@ -12,6 +12,6 @@ APP_COPYRIGHT = "© Oliver Ernster"
 # Where the donate button sends a browser. It is handed to the desktop rather
 # than fetched, so nothing is opened from here. The one address the application
 # does fetch for itself lives beside the update check that asks it.
-DONATE_URL = "https://www.paypal.com/ncp/payment/BCZF8TZTUGTEA"
+DONATE_URL = "https://www.paypal.com/ncp/payment/3Q37J8BK54PME"
 
 __version__ = read_version()

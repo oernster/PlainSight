@@ -208,7 +208,7 @@ address to your desktop for your browser to open; the application fetches
 nothing itself there, so the button adds nothing to what is said above about
 the network.
 
-<a href="https://www.paypal.com/ncp/payment/BCZF8TZTUGTEA"><img src="assets/donate.png" alt="Donate to PlainSight" width="120"></a>
+<a href="https://www.paypal.com/ncp/payment/3Q37J8BK54PME"><img src="assets/donate.png" alt="Donate to PlainSight" width="120"></a>
 
 ## Licence
 
