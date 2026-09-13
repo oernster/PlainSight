@@ -61,7 +61,14 @@ CONSOLE_MODE_DEBUG = "attach"
 DEBUG_ENVIRONMENT_FLAG = "PLAINSIGHT_BUILD_DEBUG"
 
 # markdown loads its extensions by name at runtime, so following the imports it
-# is written with does not reach them; the package goes in whole.
+# is written with does not reach them; its extensions subpackage goes in whole.
+# The rest of markdown arrives by following imports. Taking the whole package
+# instead also compiled markdown.test_tools, a helper for testing markdown
+# itself that nothing imports; its unittest import raised an anti-bloat
+# warning. Measured on Nuitka 4.2.1 with a probe naming the three extensions
+# the renderer uses: this include builds with no warning and the bundle renders
+# a table and fenced code, while excluding test_tools alone only swapped the
+# warning for one refusing the include.
 #
 # docx and pypdf go in whole for the same reason: both reach parts of
 # themselves by name rather than by import, docx through its content type map
@@ -69,7 +76,7 @@ DEBUG_ENVIRONMENT_FLAG = "PLAINSIGHT_BUILD_DEBUG"
 # source rather than assumed: docx.api.Document loads the bundled default
 # template only when it is called with no path; this application always
 # calls it with one, so no package data has to travel with it.
-INCLUDED_PACKAGES = ("markdown", "docx", "pypdf")
+INCLUDED_PACKAGES = ("markdown.extensions", "docx", "pypdf")
 
 # Measured under PyInstaller and carried over deliberately: collecting Qt whole
 # produced a 726MB bundle by taking WebEngine, 3D and Quick with it. Nuitka
