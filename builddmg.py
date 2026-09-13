@@ -473,23 +473,44 @@ def relocate_bundle_resources(app_path: Path) -> None:
 
     The symlink keeps the runtime lookups working: resources.py and dialogs.py
     look beside the executable, which is still exactly where they find them.
+
+    The named items are not the whole of it. Packages carry data of their own
+    beside their compiled modules: python-docx ships XML templates under
+    docx/templates, and the first bundle signed with only the named items moved
+    failed on docx/templates/default-footer.xml. Stellody carries no such
+    package, which is why its named list is enough there and not here. So every
+    remaining file under Contents/MacOS that is not Mach-O goes the same way.
     """
     section("Relocate bundle resources")
     payload = app_path / BUNDLE_PAYLOAD_DIR
-    resources = app_path / BUNDLE_RESOURCES_DIR
     names = relocated_names()
     for name in names:
-        placed = payload / name
-        if placed.is_symlink():
-            continue
-        relocated = resources / name
-        relocated.parent.mkdir(parents=True, exist_ok=True)
-        placed.rename(relocated)
-        # One ".." to climb out of Contents/MacOS, plus one for each directory
-        # the name itself descends into.
-        climb = PARENT_DIR * (name.count("/") + 1)
-        placed.symlink_to(Path(climb) / BUNDLE_RESOURCES_NAME / name)
-    print(f"  {len(names)} item(s) moved to {BUNDLE_RESOURCES_DIR}, symlinked back.")
+        _relocate(payload, app_path / BUNDLE_RESOURCES_DIR, name)
+    package_data = [
+        path.relative_to(payload).as_posix()
+        for path in payload.rglob("*")
+        if not path.is_symlink() and path.is_file() and not _is_mach_o(path)
+    ]
+    for name in package_data:
+        _relocate(payload, app_path / BUNDLE_RESOURCES_DIR, name)
+    print(
+        f"  {len(names)} named item(s) and {len(package_data)} package data "
+        f"file(s) moved to {BUNDLE_RESOURCES_DIR}, symlinked back."
+    )
+
+
+def _relocate(payload: Path, resources: Path, name: str) -> None:
+    """Move one item from the payload into Resources, leaving a symlink."""
+    placed = payload / name
+    if placed.is_symlink():
+        return
+    relocated = resources / name
+    relocated.parent.mkdir(parents=True, exist_ok=True)
+    placed.rename(relocated)
+    # One ".." to climb out of Contents/MacOS, plus one for each directory the
+    # name itself descends into.
+    climb = PARENT_DIR * (name.count("/") + 1)
+    placed.symlink_to(Path(climb) / BUNDLE_RESOURCES_NAME / name)
 
 
 def strip_build_artifacts(app_path: Path) -> None:
@@ -517,14 +538,18 @@ def _mach_o_files(app_path: Path) -> list[Path]:
     file whose name merely ends that way is not code and must not be signed.
     Symlinks are skipped, since signing one signs its target twice.
     """
-    found: list[Path] = []
-    for path in app_path.rglob("*"):
-        if path.is_symlink() or not path.is_file():
-            continue
-        with path.open("rb") as handle:
-            if handle.read(MACH_O_MAGIC_LENGTH) in MACH_O_MAGICS:
-                found.append(path)
+    found = [
+        path
+        for path in app_path.rglob("*")
+        if not path.is_symlink() and path.is_file() and _is_mach_o(path)
+    ]
     return sorted(found, key=lambda item: len(item.parts), reverse=True)
+
+
+def _is_mach_o(path: Path) -> bool:
+    """Whether the file's own first bytes say it is Mach-O code."""
+    with path.open("rb") as handle:
+        return handle.read(MACH_O_MAGIC_LENGTH) in MACH_O_MAGICS
 
 
 def _main_executable(app_path: Path) -> Path:
