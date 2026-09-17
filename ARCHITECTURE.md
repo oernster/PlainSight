@@ -43,6 +43,8 @@ wish.
 | Opening one file lists no directory | `tests/application/test_open_file.py::test_the_folder_row_is_named_from_the_path_rather_than_listed` |
 | Every declared dependency is credited in About | `tests/structural/test_credits.py::test_every_declared_dependency_is_credited` |
 | Every kind this application reads has a reader | `tests/structural/test_readers.py::test_every_kind_has_a_reader` |
+| Every kind carries a name a reader is shown | `tests/domain/test_document.py::test_every_kind_carries_a_name_for_a_reader` |
+| No two kinds share that name | `tests/domain/test_document.py::test_no_two_kinds_share_a_name` |
 
 Every one of these has been proved to bite by planting a violation and reading
 the exit code.
@@ -77,8 +79,10 @@ external opener asks the desktop to open an address and touches no file.
   the file could not be read. A document with a failure is still listed, because
   the user neither caused it nor can fix it from the viewer. `DocumentKind` is
   the single home for which file suffixes are read at all; it also settles
-  whether a kind declares frontmatter and how its text reaches the reading
-  surface. Discovery, rendering and softening each ask it rather than holding a
+  whether a kind declares frontmatter, how its text reaches the reading surface
+  and what the kind is called where a reader is told what they have open. That
+  last one is beside the kinds rather than in the window, so the one place that
+  adds a kind is the one place that names it. Discovery, rendering and softening each ask it rather than holding a
   list of their own, so adding a kind is adding a member and nothing else. A
   kind may answer to more than one suffix, since `.htm` and `.html` name the
   same thing everywhere outside this application.
@@ -89,6 +93,11 @@ external opener asks the desktop to open an address and touches no file.
 - `library`: the tree. A `Folder` holds its subfolders and its documents, each
   ordered case insensitively with folders first; a `Library` holds the roots.
   The single ordering rule lives here.
+- `extent`: how much text a document holds, counted as characters and as lines.
+  A closing line ending shuts the line before it rather than opening another, so
+  a file of three lines reads as three either way. It counts the text rather
+  than the file, since softening and rendering both change the markup and
+  neither changes the document.
 - `settings`: what is remembered between runs, plus the editor choice and its
   validation.
 
@@ -380,6 +389,18 @@ Two trays around a split body, exactly as design plan part 2 describes.
   `QPainter` rather than stored as a third picture, so the pair has one source
   each and cannot drift. A reader who has opened a single file keeps it on
   screen across a press.
+- `status_readouts`: what the status bar says about the document being read, at
+  either end. Two statements rather than one, because they are known at
+  different moments and from different things: the kind comes from the file
+  name, so a document that could not be read still has one, while the count
+  needs the text, so such a document has none. The kind takes the ordinary left
+  end, which the status bar hands to whatever it is saying at the time, so a
+  message covers it and it returns; the count is permanent at the right, where
+  nothing transient reaches it. The pane holds the count beside the document it
+  drew, so the re-read of the library on every activation leaves it standing.
+  `QStatusBar::item` carries a `border: none` rule in the theme, since the style
+  otherwise draws a divider at an ordinary item's far edge: measured landing
+  against the last letter of the kind, where it read as a text cursor.
 - `update_check`: the controller that runs a check off the interface thread and
   reports what it found. Its result crosses back on a signal connected to a
   bound method of an object living on the interface thread, which is the whole

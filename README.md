@@ -112,6 +112,13 @@ prompt. Nothing is fetched or sent without that click.
   rather than longer lines; text that arrived with its own layout, a licence
   for instance, is left exactly as it came.
 - Reads itself down the page gently; hands control back the moment you scroll.
+- Says what you have open along the foot of the window: the kind of document at
+  the left, then its characters and its lines at the right, the way an editor's
+  status bar says it. The count is of the text you are reading rather than of
+  the bytes of the file, so a Markdown document is counted beneath the fields it
+  declares while a PDF or a Word document is counted as what was read out of it.
+  A document that could not be read still names its kind, which comes from the
+  file name, while carrying no count, which would need the text.
 - Light and dark, switched from the tray and remembered between runs.
 - Three text sizes, stepped by one button in the tray and remembered too.
 - Keeps your place when either changes: you stay on the words you were reading
@@ -227,8 +234,7 @@ open-source licences: see
 Every layer is built and gated. All three delivery paths exist: the Windows
 setup program, the flatpak bundle and the macOS disk image.
 
-Windows is the one that has been packaged recently; the setup program in
-`dist-installer/` was built from the current tree. Neither of the other two has
+Windows is the one that is built regularly. Neither of the other two paths has
 been run since Word and PDF reading landed. The Linux path is known to have
 broken then and has been fixed but not yet run on Linux: python-docx brings in
 lxml, which publishes no wheel for the one platform tag the script asked for,

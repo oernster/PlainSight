@@ -413,6 +413,34 @@ picture at runtime rather than stored as a third picture.
 17.6 A press keeps the folders the reader left open and keeps a single opened
 file on screen.
 
+## 18. The status bar
+
+18.1 The foot of the window says **what is open and how much of it there is**,
+the way an editor's status bar does: the kind of document at the left, then its
+characters and its lines at the right. Both appear when a document is chosen and
+clear when nothing is being read.
+
+18.2 **The kind comes from the file name**, so a document that could not be read
+still names itself. Each kind carries its own name beside the kinds themselves,
+so the one place that adds a kind is the one place that names it; a kind added
+without a name fails a test rather than reaching a reader as a blank.
+
+18.3 **The count is of the text being read**, not of the bytes of the file. A
+Markdown document is counted beneath the fields it declares, since those are
+shown as a header rather than read as part of the document; a PDF or a Word
+document has no file text at all and is counted as what was read out of it.
+Softening (4.3) and rendering both change the markup and neither changes the
+count.
+
+18.4 A document that could not be read carries no count. Nothing rather than
+nought, since a document holding no text is a thing a file can be and says a
+different thing.
+
+18.5 The kind takes the ordinary left end of the strip, so a message the window
+has to give (7.4 among them) covers it until it has been read and the kind
+returns after it. The count is permanent at the right, where nothing transient
+reaches it.
+
 ---
 
 # Part 2: design
@@ -428,9 +456,9 @@ Frozen dataclasses with `slots=True`, `tuple[...]` over `list`.
 - `ParsedDocument`: the parse result of a document's text, holding `frontmatter`
   and `body`. Splitting the two is pure string work, so it lives here.
 - `DocumentKind`: which file suffixes are read at all, whether a kind declares
-  frontmatter and how its text reaches the reading surface. One home for all
-  three. A kind may answer to more than one suffix, since `.htm` and `.html`
-  name the same thing.
+  frontmatter, how its text reaches the reading surface and what the kind is
+  called in front of a reader (18.2). One home for all four. A kind may answer
+  to more than one suffix, since `.htm` and `.html` name the same thing.
 - `Presentation`: the three ways a body becomes what the surface shows: laid out
   for the page, kept as typed or already the HTML the surface renders.
 - `Document`: file name, path, kind, declared name, description, the failure it
@@ -453,6 +481,9 @@ Frozen dataclasses with `slots=True`, `tuple[...]` over `list`.
 - `Settings`: what is remembered between runs, holding `EditorChoice` (path plus
   display name, validating that the path is non-empty), `Appearance`, `FontSize`,
   the skipped update tag and whether the tree is filtered.
+- `Extent`: how much text a document holds, as characters and as lines, for the
+  count of 18.1. A closing line ending shuts the line before it rather than
+  opening another.
 - `passage.soften`: breaking a wall of text at divisions its author already
   wrote. Pure string work, adding and removing nothing.
 
@@ -512,6 +543,7 @@ alike.
 top tray:    [folder] [choose editor] [view in editor] | [size] .. [light/dark] [help/about]
 body:        library tree (left)          |  rendered document (right)
 bottom tray: [donate] [UI licence] [model licence] .............. [tree filter]
+status bar:  kind of document ................... length and lines of its text
 ```
 
 One `AutoScroller` class carrying the canon constants. One `KeyboardNavigator`
@@ -551,7 +583,7 @@ plainsight/
   __main__.py      the composition root
   version.py
   domain/          document.py  library.py  parsing.py  settings.py
-                   passage.py
+                   passage.py  extent.py
   application/     ports.py  services.py  defaults.py  update.py
   infrastructure/  document_repository.py  document_reader.py  word_reader.py
                    pdf_reader.py  pdf_structure.py  word_html.py  html_text.py
@@ -561,6 +593,7 @@ plainsight/
   ui/              main_window.py  top_tray.py  bottom_tray.py  library_tree.py
                    document_view.py  reading_pane.py  auto_scroller.py
                    keyboard_nav.py  theme.py  widgets.py  update_check.py
+                   status_readouts.py
                    about_dialog.py  guide_dialog.py  licence_dialog.py
                    dialogs.py
                    reading_choice.py
