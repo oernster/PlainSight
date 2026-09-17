@@ -78,6 +78,15 @@ class DocumentKind(Enum):
         return Presentation.AS_TYPED
 
     @property
+    def display_name(self) -> str:
+        """What this kind is called in front of a reader.
+
+        The file name says the suffix; this says what the suffix means, which
+        is what a reader who has just been handed a document wants.
+        """
+        return KIND_NAMES[self]
+
+    @property
     def declares_fields(self) -> bool:
         """Whether a document of this kind can carry a frontmatter block.
 
@@ -105,6 +114,18 @@ class DocumentKind(Enum):
 # The kinds that reach the surface as HTML: one that was HTML on disk and one
 # whose reader turns it into HTML rather than into anything narrower.
 ALREADY_HTML_KINDS = frozenset({DocumentKind.HTML, DocumentKind.WORD})
+
+# What each kind is called where a reader is told what they have open. Beside
+# the kinds rather than in the window, so the one place that adds a kind is the
+# one place that names it; a kind with no name here fails a test rather than
+# reaching a reader as a blank.
+KIND_NAMES = {
+    DocumentKind.MARKDOWN: "Markdown document",
+    DocumentKind.PLAIN_TEXT: "Plain text file",
+    DocumentKind.HTML: "HTML page",
+    DocumentKind.WORD: "Word document",
+    DocumentKind.PDF: "PDF document",
+}
 
 
 def readable_suffixes() -> tuple[str, ...]:

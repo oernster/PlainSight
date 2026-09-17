@@ -24,10 +24,10 @@ from ..domain.settings import Appearance, EditorChoice, FontSize
 from . import dialogs
 from .bottom_tray import BottomTray
 from .document_view import DocumentView
-from .extent_readout import ExtentReadout
 from .keyboard_nav import KeyboardNavigator, NeutralStart
 from .library_tree import LibraryTree
 from .reading_choice import ReadingChoice
+from .status_readouts import ExtentReadout, KindReadout
 from .theme import Palette, palette_for, stylesheet
 from .top_tray import TopTray
 from .update_check import install_update_check
@@ -93,8 +93,11 @@ class MainWindow(QMainWindow):
         self._reading = ReadingChoice(self)
         self.setCentralWidget(self._body())
         self.statusBar().setSizeGripEnabled(False)
-        # Permanent, so the transient things the status bar says pass across
-        # the left of the strip without displacing the count at its right.
+        # The kind takes the ordinary left end, where a transient message
+        # covers it and it returns; the count is permanent at the right, where
+        # nothing transient reaches it.
+        self.kind_readout = KindReadout(self)
+        self.statusBar().addWidget(self.kind_readout)
         self.extent_readout = ExtentReadout(self)
         self.statusBar().addPermanentWidget(self.extent_readout)
         self.navigator = KeyboardNavigator(self, self.ring_stops)
@@ -252,6 +255,7 @@ class MainWindow(QMainWindow):
             self.document_view.show_document(
                 document, partial(self._service.body_of, document)
             )
+        self.kind_readout.show_kind(None if document is None else document.kind)
         self.extent_readout.show_extent(self.document_view.extent)
         self.sync_editor_button()
 

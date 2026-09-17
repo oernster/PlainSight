@@ -183,3 +183,15 @@ def test_an_oversized_field_is_given_a_section_of_its_own() -> None:
 
     assert document.header_fields == ()
     assert document.long_fields == (("model", long),)
+
+
+def test_every_kind_carries_a_name_for_a_reader() -> None:
+    """A kind added without one would reach the status bar as a blank."""
+    assert all(kind.display_name.strip() for kind in DocumentKind)
+
+
+def test_no_two_kinds_share_a_name() -> None:
+    """Two kinds under one name would tell a reader nothing about which."""
+    names = [kind.display_name for kind in DocumentKind]
+
+    assert len(set(names)) == len(names)

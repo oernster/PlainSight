@@ -1,4 +1,4 @@
-"""The count at the right of the status bar: what it says and when it says it."""
+"""The two standing readouts: what each says; when each says nothing."""
 
 from __future__ import annotations
 
@@ -8,10 +8,11 @@ from plainsight.domain.document import Document, DocumentBody, DocumentKind
 from plainsight.domain.extent import Extent
 from plainsight.infrastructure.renderer import DocumentHtmlRenderer
 from plainsight.ui.document_view import DocumentView
-from plainsight.ui.extent_readout import ExtentReadout
 from plainsight.ui.main_window import MainWindow
-from plainsight.ui.theme import DARK
+from plainsight.ui.status_readouts import ExtentReadout, KindReadout
+from plainsight.ui.theme import DARK, LIGHT, stylesheet
 
+NO_DIVIDER = "QStatusBar::item {\n    border: none;\n}"
 A_LONG_DOCUMENT = Extent(characters=24087, lines=438)
 UNREADABLE = "This file is locked"
 
@@ -160,3 +161,80 @@ def test_a_standing_message_clears_whatever_was_counted(application) -> None:
     view.show_nothing()
 
     assert view.extent is None
+
+
+def test_the_kind_readout_names_the_kind(application) -> None:
+    readout = KindReadout()
+
+    readout.show_kind(DocumentKind.MARKDOWN)
+
+    assert readout.text() == "Markdown document"
+
+
+def test_the_kind_readout_says_nothing_while_no_document_is_open(
+    application,
+) -> None:
+    readout = KindReadout()
+    readout.show_kind(DocumentKind.PDF)
+
+    readout.show_kind(None)
+
+    assert readout.text() == ""
+
+
+def test_a_chosen_document_is_named_in_the_status_bar(window: MainWindow) -> None:
+    select(window, 0)
+
+    assert window.kind_readout.text() == "Markdown document"
+
+
+def test_nothing_is_named_until_a_document_is_chosen(window: MainWindow) -> None:
+    assert window.kind_readout.text() == ""
+
+
+def test_a_document_that_could_not_be_read_is_still_named(window: MainWindow) -> None:
+    """The kind comes from the file name, so no reading is needed to know it."""
+    window.show_document(a_document(failure=UNREADABLE, kind=DocumentKind.PDF))
+
+    assert window.kind_readout.text() == "PDF document"
+    assert window.extent_readout.text() == ""
+
+
+def test_every_kind_is_named_where_a_reader_would_meet_it(application) -> None:
+    """A kind added without a name would reach the status bar as a blank."""
+    readout = KindReadout()
+
+    for kind in DocumentKind:
+        readout.show_kind(kind)
+        assert readout.text().strip() != ""
+
+
+def test_a_message_takes_the_left_end_and_the_kind_returns_after_it(
+    window: MainWindow,
+) -> None:
+    """The message is the more urgent of the two, so it gets the room.
+
+    Measured rather than assumed: the status bar hides an ordinary widget for
+    as long as it is saying something, which is why the kind sits there and the
+    count does not.
+    """
+    select(window, 0)
+
+    window.report_status("Could not start the editor")
+
+    assert not window.kind_readout.isVisible()
+    assert window.kind_readout.text() == "Markdown document"
+    assert window.extent_readout.isVisible()
+
+
+def test_neither_appearance_draws_a_divider_after_the_kind() -> None:
+    """Measured: the style drew one hard against the last letter.
+
+    It read as a text cursor parked in the status bar. The rule that takes
+    it away is asserted here so an edit to the stylesheet cannot quietly
+    bring it back.
+    """
+    wanted = NO_DIVIDER
+
+    for palette in (DARK, LIGHT):
+        assert wanted in stylesheet(palette)

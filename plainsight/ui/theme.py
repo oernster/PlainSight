@@ -123,6 +123,9 @@ QStatusBar {{
     background: {palette.panel};
     color: {palette.muted};
 }}
+QStatusBar::item {{
+    border: none;
+}}
 QPushButton {{
     background: {palette.control};
     color: {palette.text};
