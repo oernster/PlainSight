@@ -16,6 +16,7 @@ from PySide6.QtWidgets import QWidget
 
 from ..application.ports import DocumentRenderer
 from ..domain.document import Document, DocumentBody
+from ..domain.extent import Extent
 from ..domain.passage import soften
 from .reading_pane import ReadingPane
 from .theme import Palette, document_style
@@ -81,6 +82,7 @@ class DocumentView(ReadingPane):
         self._palette = palette
         self._showing: Document | None = None
         self._place: Place | None = None
+        self._extent: Extent | None = None
         # The document is held here as well as handed to the widget: Qt does
         # not take ownership of one it is given, so a document kept only by the
         # widget is collected out from under it.
@@ -93,6 +95,17 @@ class DocumentView(ReadingPane):
         self._give_up.setInterval(SETTLES_WITHIN_MS)
         self._give_up.timeout.connect(self._stop_watching)
         self.show_nothing()
+
+    @property
+    def extent(self) -> Extent | None:
+        """How much text the document on screen holds; None when there is none.
+
+        Kept here rather than asked for again, because the body is read off
+        disk only where a redraw actually needs it. A document left alone is
+        still the document being read, so its count has to survive the re-reads
+        of the library that change nothing.
+        """
+        return self._extent
 
     def wear(self, palette: Palette) -> None:
         """Take the colours of this palette; the caller re-renders after.
@@ -218,12 +231,20 @@ class DocumentView(ReadingPane):
         if document == self._showing:
             return
         self._showing = document
-        self._set(
-            _header(document) + self._body(document, read_body) + _long_fields(document)
-        )
+        body, extent = self._body(document, read_body)
+        self._set(_header(document) + body + _long_fields(document))
+        # After the draw, which clears whatever the last document counted.
+        self._extent = extent
 
-    def _body(self, document: Document, read_body: BodySource) -> str:
-        """The document, given somewhere for the eye to rest on the way down.
+    def _body(
+        self, document: Document, read_body: BodySource
+    ) -> tuple[str, Extent | None]:
+        """The document and its extent, else the reason there is neither.
+
+        The count is of the text the document holds, taken before it is
+        softened or rendered: presentation is not part of what a document is,
+        so it is not part of what is counted either. Nothing has an extent of
+        nought; it has no extent, which is what the status bar then says.
 
         The softening happens here rather than anywhere nearer the file: it is
         a decision about presenting the text; the text on disk is never touched
@@ -236,14 +257,14 @@ class DocumentView(ReadingPane):
         different words; where it did not, the general reason stands.
         """
         if not document.is_readable:
-            return f"<p><b>{escape(document.failure)}</b></p>"
+            return f"<p><b>{escape(document.failure)}</b></p>", None
         body = read_body()
         if body.failure:
-            return f"<p><b>{escape(body.failure)}</b></p>"
+            return f"<p><b>{escape(body.failure)}</b></p>", None
         if not body.text.strip():
-            return f"<p><b>{escape(GONE_SINCE_LISTED)}</b></p>"
+            return f"<p><b>{escape(GONE_SINCE_LISTED)}</b></p>", None
         text = soften(body.text) if document.kind.reflows else body.text
-        return self._renderer.render(text, document.kind)
+        return self._renderer.render(text, document.kind), Extent.of(body.text)
 
     def _set(self, html: str) -> None:
         """Show this content, at the start unless a place was kept for it.
@@ -256,6 +277,10 @@ class DocumentView(ReadingPane):
         """
         place = self._place
         self._place = None
+        # Whatever is being drawn, it is not the last document any more. A
+        # document redrawing puts its own count back the moment this returns;
+        # a standing message leaves it cleared, which is the truth.
+        self._extent = None
 
         # Only when the font has moved. The column is a count of characters and
         # so a fact about the font; re-measuring it on every redraw reflows
