@@ -25,6 +25,7 @@ from .infrastructure.resources import BundledAssets
 from .infrastructure.settings_store import JsonSettingsStore
 from .infrastructure.update_source import GitHubReleaseSource
 from .infrastructure.word_reader import WordDocumentReader
+from .ui import inactive_tooltips
 from .ui.main_window import MainWindow
 
 
@@ -69,6 +70,7 @@ def build_update_service() -> UpdateService:
 def main() -> int:
     """Start the application."""
     application = QApplication(sys.argv)
+    inactive_tooltips.install(application)
     window = MainWindow(
         build_service(),
         DocumentHtmlRenderer(),

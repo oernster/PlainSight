@@ -35,6 +35,7 @@ from installer.plan import InstallPlan
 from installer.route import Route, route_for
 from installer.steplog import StepLog
 from installer.wording import PRODUCT, verdict_line, verdict_title, wording_for
+from plainsight.ui import inactive_tooltips
 
 UNINSTALL_FLAG = "--uninstall"
 LICENCE_LABEL = "Licence"
@@ -276,6 +277,7 @@ def main(argv: list[str] | None = None) -> int:
     """Start the setup program."""
     arguments = sys.argv if argv is None else argv
     application = QApplication(list(arguments))
+    inactive_tooltips.install(application)
     window = SetupWindow(uninstalling=UNINSTALL_FLAG in arguments)
     window.show()
     return application.exec()
