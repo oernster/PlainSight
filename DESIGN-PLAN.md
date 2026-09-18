@@ -198,10 +198,16 @@ invisible while it is working. Anything a control says for itself is left to the
 control, since every button carries a tooltip: a help screen nobody finishes
 explains nothing. A missing asset costs its picture and never the guide.
 
+5.5 Tooltips show over the window whether or not it is the active one, so a
+reader hovering over PlainSight while working in another program is still
+told what a control does. Qt Widgets withholds them from an inactive window by
+default; an application event filter marks every top-level window as it is
+shown, dialogs included, in the application and in the setup program alike.
+
 ## 6. Choosing an editor
 
-6.1 A choose editor button in the top tray, immediately right of the browse
-button.
+6.1 A choose editor button in the top tray, immediately right of the open one
+document button of 2.6.
 
 6.2 It opens a file chooser for the editor executable. The choice persists between
 runs, recorded as a path plus a display name.
@@ -429,7 +435,7 @@ without a name fails a test rather than reaching a reader as a blank.
 Markdown document is counted beneath the fields it declares, since those are
 shown as a header rather than read as part of the document; a PDF or a Word
 document has no file text at all and is counted as what was read out of it.
-Softening (4.3) and rendering both change the markup and neither changes the
+Softening and rendering both change the markup and neither changes the
 count.
 
 18.4 A document that could not be read carries no count. Nothing rather than
@@ -540,7 +546,7 @@ alike.
 ## UI
 
 ```
-top tray:    [folder] [choose editor] [view in editor] | [size] .. [light/dark] [help/about]
+top tray:    [folder] [open file] [choose editor] [view in editor] | [size] .. [light/dark] [help/about]
 body:        library tree (left)          |  rendered document (right)
 bottom tray: [donate] [UI licence] [model licence] .............. [tree filter]
 status bar:  kind of document ................... length and lines of its text
@@ -593,7 +599,7 @@ plainsight/
   ui/              main_window.py  top_tray.py  bottom_tray.py  library_tree.py
                    document_view.py  reading_pane.py  auto_scroller.py
                    keyboard_nav.py  theme.py  widgets.py  update_check.py
-                   status_readouts.py
+                   status_readouts.py  inactive_tooltips.py
                    about_dialog.py  guide_dialog.py  licence_dialog.py
                    dialogs.py
                    reading_choice.py

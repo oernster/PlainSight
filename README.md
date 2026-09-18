@@ -125,6 +125,8 @@ prompt. Nothing is fetched or sent without that click.
   rather than being thrown back to the top.
 - Remembers which folders you left open, so a run opens as the last one closed.
 - Full keyboard navigation.
+- A tooltip on every control, shown when you hover over the window even while
+  another program has focus.
 - Opens the selected document in your chosen editor.
 - Tells you when a newer release is out, from the Help menu or on its own; skip
   a release and it is never mentioned again.

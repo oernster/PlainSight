@@ -345,6 +345,16 @@ Two trays around a split body, exactly as design plan part 2 describes.
 - `keyboard_nav`: one `KeyboardNavigator` installed as an application event
   filter, driving a ring recomputed live on every move. `NeutralStart` is the
   zero-size sink that absorbs the window's first focus.
+- `inactive_tooltips`: a second application event filter, installed by both
+  composition roots (the application's and the setup program's). Qt Widgets
+  shows no tooltip over a window that is not the active one unless that window
+  carries `WA_AlwaysShowToolTips`; measured on the real Windows platform, a tip
+  over an inactive window stayed hidden without the attribute and appeared with
+  it. The filter sets it on every top-level window as it is shown, dialogs and
+  message boxes included, so no window has to opt in and none can be missed.
+  `tests/ui/test_inactive_tooltips.py` pins that every window is marked and no
+  child widget is; the offscreen platform does not model activation, so the
+  visible effect itself was checked on Windows rather than in the suite.
 - `auto_scroller`: the reading cycle, one per surface, with the constants on the
   class rather than per dialog. A surface beneath a modal is frozen rather than
   suspended; `suspend` is itself gated on the surface being active, so a modal's
@@ -560,8 +570,10 @@ trays.
 ## The setup program
 
 `installer/` is a second application in the same repository, not a part of the
-first: nothing in `plainsight/` imports it and nothing in it imports the
-application. It follows the house setup model.
+first: nothing in `plainsight/` imports it. It reaches into the application in
+one place only, `plainsight.ui.inactive_tooltips`, so that its tooltips show
+over an inactive window by the same rule the application's do rather than by a
+second copy of it. It follows the house setup model.
 
 - `route` and `wording` are pure, so every state setup can be in is a test
   rather than a screenshot. One reading of the machine decides the screen, its
