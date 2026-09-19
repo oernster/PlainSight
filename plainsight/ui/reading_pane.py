@@ -70,12 +70,38 @@ class ReadingPane(QTextBrowser):
         capped instead of the window, so widening the window gives margins
         rather than longer lines. Text that arrived hard wrapped, a licence
         being the case, is left exactly as it came.
+
+        The cap is on where a line wraps, not on how much of the pane the page
+        may use. Capping the pane instead was measured penning a diagram wider
+        than the column into the same narrow strip, with empty margin either
+        side of it and a scrollbar to see the rest. What cannot wrap keeps
+        every pixel the window has; only the margins give way, from both sides
+        at once so the page stays centred.
         """
         if self.lineWrapMode() is QTextBrowser.LineWrapMode.NoWrap:
             return
-        slack = self.width() - self.readable_width()
+        # The cap or the room there is, whichever is less. Wrapping at a column
+        # wider than the pane would put a sideways scrollbar under ordinary
+        # prose, which is the one thing wrapping exists to prevent.
+        column = min(self.readable_width(), self.width() - self._chrome())
+        self.setLineWrapMode(QTextBrowser.LineWrapMode.FixedPixelWidth)
+        self.setLineWrapColumnOrWidth(column)
+        widest = max(column, round(self.document().idealWidth()))
+        slack = self.width() - widest - self._chrome()
         side = max(NO_MARGIN, slack // SIDES)
         self.setViewportMargins(side, NO_MARGIN, side, NO_MARGIN)
+
+    def _chrome(self) -> int:
+        """The width the pane itself takes, outside the margins and the text.
+
+        Read off the widget rather than written down: it is a scrollbar, a
+        frame and the padding this pane is styled with, each of which is the
+        style sheet's business and none of which is knowable here. Measured at
+        36 pixels, which is what a page was left short by when the margins
+        were worked out as though the pane took nothing at all.
+        """
+        margins = self.viewportMargins()
+        return self.width() - self.viewport().width() - margins.left() - margins.right()
 
     def readable_width(self) -> int:
         """The width this pane's own font needs for a line of that length.

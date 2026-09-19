@@ -292,10 +292,11 @@ class DocumentView(ReadingPane):
             self._measured_at = wanted
             self.apply_measure()
 
-        previous = self.document()
-        width = previous.textWidth() if previous is not None else NOT_MEASURED
-        if width <= NO_OVERFLOW:
-            width = self.viewport().width()
+        # Laid out at the width lines wrap on, which is the column rather than
+        # the pane: a block that cannot wrap runs past it into whatever room
+        # the window has. Taken from the pane so the page arrives at the width
+        # it will be shown at, which is what keeps a restored place exact.
+        width = self.lineWrapColumnOrWidth() or self.readable_width()
 
         document = QTextDocument(self)
         # Before the text, because the font decides how the text lays out.
@@ -315,6 +316,10 @@ class DocumentView(ReadingPane):
         document.setTextWidth(width)
         self._document = document
         self.setDocument(document)
+        # Again now the page exists: how far the margins may close depends on
+        # the widest thing this document holds, which nothing could know until
+        # it was laid out.
+        self.apply_measure()
 
         if place is None:
             self.scroller.restart()

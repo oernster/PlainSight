@@ -8,9 +8,11 @@ the open prose spacing inherited from the cell and Courier New chosen unasked.
 from __future__ import annotations
 
 from PySide6.QtGui import QTextDocument, QTextTable
+from PySide6.QtWidgets import QApplication
 
 from plainsight.domain.document import DocumentKind
 from plainsight.infrastructure.renderer import DocumentHtmlRenderer
+from plainsight.ui.reading_pane import MAX_LINE_CHARACTERS, ReadingPane
 from plainsight.ui.theme import (
     CODE_LINE_HEIGHT_PERCENT,
     DARK,
@@ -22,6 +24,17 @@ from plainsight.ui.theme import (
 DIAGRAM = "┌────┐\n│ UI │\n└────┘"
 FENCED = f"Before.\n\n```text\n{DIAGRAM}\n```\n\nAfter.\n"
 FIRST_FAMILY = MONOSPACE_FAMILIES.split(",")[0].strip().strip('"')
+# Wider than the column at any font this harness might pick, so what is
+# measured is the rule rather than a character count.
+WIDER_THAN_ANY_COLUMN = 6
+WIDE_DIAGRAM = (
+    "```text\n" + "─" * (MAX_LINE_CHARACTERS * WIDER_THAN_ANY_COLUMN) + "\n```\n"
+)
+NARROW_PX = 400
+WIDE_PX = 2400
+TALL_PX = 700
+NOTHING_HIDDEN = 0
+NO_MARGIN = 0
 
 
 def laid_out(palette, body: str = FENCED, kind=DocumentKind.MARKDOWN):
@@ -71,6 +84,49 @@ def test_a_box_asks_for_a_face_with_whole_line_drawing(application) -> None:
     families = document.find("│ UI │").charFormat().fontFamilies()
 
     assert families[0] == FIRST_FAMILY
+
+
+def a_pane(width: int) -> ReadingPane:
+    pane = ReadingPane()
+    pane.document().setDefaultStyleSheet(document_style(DARK))
+    pane.resize(width, TALL_PX)
+    pane.show()
+    QApplication.processEvents()
+    pane.setHtml(DocumentHtmlRenderer().render(WIDE_DIAGRAM, DocumentKind.MARKDOWN))
+    QApplication.processEvents()
+    pane.apply_measure()
+    QApplication.processEvents()
+    return pane
+
+
+def test_a_block_too_wide_to_wrap_takes_the_room_the_window_has(
+    application,
+) -> None:
+    """The margins are for prose. A diagram was penned into the column.
+
+    Read against the pane's own numbers rather than a character count, since
+    this harness reports font metrics that disagree with its own layout.
+    """
+    pane = a_pane(WIDE_PX)
+    margins = pane.viewportMargins()
+    room = pane.viewport().width() + margins.left() + margins.right()
+
+    assert pane.document().idealWidth() > pane.lineWrapColumnOrWidth()
+    assert pane.viewport().width() > pane.lineWrapColumnOrWidth()
+    assert pane.viewport().width() >= min(pane.document().idealWidth(), room)
+
+
+def test_the_prose_column_is_capped_all_the_same(application) -> None:
+    pane = a_pane(WIDE_PX)
+
+    assert pane.lineWrapColumnOrWidth() == pane.readable_width()
+
+
+def test_a_window_too_narrow_for_the_block_keeps_every_pixel(application) -> None:
+    pane = a_pane(NARROW_PX)
+
+    assert pane.viewportMargins().left() == NO_MARGIN
+    assert pane.horizontalScrollBar().maximum() > NOTHING_HIDDEN
 
 
 def test_plain_text_is_boxed_the_same_way(application) -> None:
