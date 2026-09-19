@@ -303,7 +303,14 @@ raise a prompt.
 - `platform`: the home directory and the path probe.
 - `renderer`: rendering through the `markdown` package for a kind that is laid
   out; into an escaped preformatted block for one kept as typed; untouched for
-  one that is already HTML. Passing plain text through a Markdown renderer would
+  one that is already HTML. Every preformatted block it produces, fenced or
+  whole-file, is wrapped in a table of one cell, because Qt paints such a
+  block's background line by line and only as far as each line reaches: a
+  diagram wider than the column arrived as a ragged staircase of dark strips
+  cut off at the column's edge. A cell is one rectangle as wide as its widest
+  line. The class it carries is named in the domain beside the kinds, since the
+  module that draws the block and the one that colours it must not disagree
+  about it. Passing plain text through a Markdown renderer would
   silently rewrite it: a line of hyphens becomes a heading rule and the author's
   own line breaks disappear. Passing HTML through a parser would lose whatever
   the parser did not understand, once on every pass, to produce the document it
@@ -331,7 +338,12 @@ Two trays around a split body, exactly as design plan part 2 describes.
   either, together with a text size. The three sizes derive from one base and
   one step rather than being written out separately, so they cannot drift
   apart; the rendered document declares no size of its own, so it takes this and
-  scales with everything else. The ring model has three states and no more: nothing at rest, green
+  scales with everything else. Code asks for a monospace face with whole
+  box-drawing strokes and holds its lines at their own height: Qt picks Courier
+  New unasked, whose vertical stroke stops short of the line, so every diagram
+  built from box characters drew its verticals as dashes, while the open prose
+  line spacing a table cell passes down would widen those gaps further. The
+  ring model has three states and no more: nothing at rest, green
   while hovered or focused and enabled, permanent red while disabled. The accent
   is never a ring. A ring belongs to a control, so neither the tree nor the
   reading pane paints one in any state: both are regions the pointer rests
@@ -454,7 +466,19 @@ Two trays around a split body, exactly as design plan part 2 describes.
   three drifting apart.
   It also holds the text column to a readable line length, so a wide window
   buys margins rather than longer lines; text that arrived hard wrapped, a
-  licence being the case, is left exactly as it came. The typography lives in
+  licence being the case, is left exactly as it came. The cap is on where a
+  line WRAPS rather than on how much of the pane a page may use. Capping the
+  pane instead, which it did by shrinking the viewport, was measured penning a
+  diagram wider than the column into that same narrow strip with empty margin
+  either side of it and a scrollbar to see the rest. What cannot wrap keeps
+  every pixel the window has, the margins closing from both sides at once so
+  the page stays centred. The wrap width is the column or the room there is,
+  whichever is less, since wrapping wider than the pane would put a sideways
+  scrollbar under the hard-wrapped licence text this pane also carries. What
+  the pane itself takes, a scrollbar, a frame and the styled padding, is read
+  off the widget rather than written down: 36 pixels here, which is what a page
+  was left short by while the margins were worked out as though it took
+  nothing. The typography lives in
   `document_style` beside the colours, because a document's own paragraphs can be
   enormous: the longest measured runs past four thousand characters unbroken.
   Nothing here may rewrite what an author wrote, so the levers are the ones a

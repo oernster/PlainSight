@@ -154,6 +154,14 @@ declares.
 3.6 Selecting a different document replaces the pane's content and returns the
 auto-scroll cycle to its start hold rather than continuing mid-descent.
 
+3.7 **A block of preformatted text is one box.** Fenced code and a whole plain
+text file alike are drawn as a single rectangle in a monospace face with whole
+box-drawing strokes, held at their own line height, so a diagram built from box
+characters joins up. The readable column of 3.4 caps where a line WRAPS rather
+than how much of the window a page may use, so a block too wide to wrap keeps
+every pixel there is and scrolls sideways only once the window is too narrow
+for it.
+
 ## 4. Auto-scroll (the `scroll` skill)
 
 4.1 Applied to the rendered document pane, the About dialog, the Guide, the UI
@@ -466,7 +474,9 @@ Frozen dataclasses with `slots=True`, `tuple[...]` over `list`.
   called in front of a reader (18.2). One home for all four. A kind may answer
   to more than one suffix, since `.htm` and `.html` name the same thing.
 - `Presentation`: the three ways a body becomes what the surface shows: laid out
-  for the page, kept as typed or already the HTML the surface renders.
+  for the page, kept as typed or already the HTML the surface renders. Beside
+  it, the name a preformatted block is marked with, so the module that draws
+  one of 3.7 and the module that colours it cannot disagree about it.
 - `Document`: file name, path, kind, declared name, description, the failure it
   carries when the file could not be read, whether it holds no text and a
   `fingerprint` of the file.

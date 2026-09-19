@@ -110,7 +110,13 @@ prompt. Nothing is fetched or sent without that click.
   frontmatter. Nothing is selected until you select it.
 - Holds reflowed text to a readable column, so a wide window buys margins
   rather than longer lines; text that arrived with its own layout, a licence
-  for instance, is left exactly as it came.
+  for instance, is left exactly as it came. The cap is on where a line wraps
+  rather than on how much of the window a page may use, so a code block or a
+  diagram too wide to wrap keeps every pixel there is and scrolls sideways
+  only once the window is genuinely too narrow for it.
+- Draws a block of code or a diagram as one box in a monospace face with whole
+  box-drawing strokes, so a diagram built from box characters joins up rather
+  than arriving as dashed lines in a ragged staircase of strips.
 - Reads itself down the page gently; hands control back the moment you scroll.
 - Says what you have open along the foot of the window: the kind of document at
   the left, then its characters and its lines at the right, the way an editor's
