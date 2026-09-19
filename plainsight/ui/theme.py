@@ -12,6 +12,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
+from ..domain.document import CODE_BLOCK_CLASS
 from ..domain.settings import DEFAULT_FONT_SIZE, Appearance, FontSize
 
 # The three text sizes, derived from one base and one step rather than written
@@ -32,6 +33,16 @@ LINE_HEIGHT_PERCENT = 155
 PARAGRAPH_GAP_PX = 10
 ITEM_GAP_PX = 6
 HEADING_GAP_PX = 20
+# Preformatted text is drawn at its font's own line height, so a box-drawing
+# stroke meets the one on the next line; the open spacing prose gets would cut
+# every vertical line into dashes.
+CODE_LINE_HEIGHT_PERCENT = 100
+# A monospace face with whole box-drawing strokes, first match wins. Courier
+# New, which Qt picks unasked, draws each vertical stroke short of the line.
+MONOSPACE_FAMILIES = (
+    '"Cascadia Mono", Consolas, Menlo, "DejaVu Sans Mono", "Liberation Mono", '
+    "monospace"
+)
 
 
 @dataclass(frozen=True, slots=True)
@@ -248,6 +259,12 @@ h1, h2, h3 {{
     margin-bottom: {ITEM_GAP_PX}px;
 }}
 a {{ color: {palette.ring}; }}
-code, pre {{ background: {palette.code_background}; }}
+code, pre {{
+    background: {palette.code_background};
+    font-family: {MONOSPACE_FAMILIES};
+}}
+pre {{ line-height: {CODE_LINE_HEIGHT_PERCENT}%; }}
+table.{CODE_BLOCK_CLASS} {{ background: {palette.code_background}; }}
+table.{CODE_BLOCK_CLASS} td {{ padding: {PARAGRAPH_GAP_PX}px; }}
 th {{ color: {palette.muted}; }}
 """

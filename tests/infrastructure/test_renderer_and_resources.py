@@ -10,7 +10,11 @@ from plainsight.infrastructure.platform import (
     HomePlatformPaths,
     settings_path,
 )
-from plainsight.infrastructure.renderer import DocumentHtmlRenderer
+from plainsight.infrastructure.renderer import (
+    CODE_BLOCK_CLOSE,
+    CODE_BLOCK_OPEN,
+    DocumentHtmlRenderer,
+)
 from plainsight.infrastructure.resources import (
     BundledAssets,
     find_asset,
@@ -27,6 +31,18 @@ def test_headings_and_code_fences_both_render() -> None:
     assert "<code" in html
 
 
+def test_every_fenced_block_is_boxed_whole_and_nothing_else_is() -> None:
+    """One cell per block, so a wide block is one rectangle rather than strips."""
+    html = DocumentHtmlRenderer().render(
+        "```\n┌──┐\n└──┘\n```\n\ntext\n\n```\nb\n```\n", DocumentKind.MARKDOWN
+    )
+
+    assert html.count(CODE_BLOCK_OPEN) == html.count("<pre>") == 2
+    assert html.count(CODE_BLOCK_CLOSE) == 2
+    assert "<p>text</p>" in html
+    assert CODE_BLOCK_OPEN + "<pre><code>┌──┐\n└──┘\n</code></pre>" in html
+
+
 def test_a_table_renders_as_a_table() -> None:
     html = DocumentHtmlRenderer().render(
         "| a | b |\n|---|---|\n| 1 | 2 |\n", DocumentKind.MARKDOWN
@@ -41,7 +57,11 @@ def test_plain_text_is_shown_exactly_as_it_was_typed() -> None:
 
     html = DocumentHtmlRenderer().render(text, DocumentKind.PLAIN_TEXT)
 
-    assert html == "<pre>Shopping\n--------\n* milk &amp; eggs\n</pre>"
+    assert html == (
+        CODE_BLOCK_OPEN
+        + "<pre>Shopping\n--------\n* milk &amp; eggs\n</pre>"
+        + CODE_BLOCK_CLOSE
+    )
     assert "<h2>" not in html
     assert "<li>" not in html
 

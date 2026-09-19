@@ -14,6 +14,9 @@ HEADER_FIELD_MAX_LINES = 3
 HEADER_FIELD_LIMIT = HEADER_FIELD_CHARS_PER_LINE * HEADER_FIELD_MAX_LINES
 SHOWN_ALREADY = frozenset({"name", "description"})
 SUFFIX_SEPARATOR = "."
+# The name a rendered block of preformatted text is marked with, so the one
+# that draws it and the one that styles it cannot disagree about it.
+CODE_BLOCK_CLASS = "code-block"
 
 
 class Presentation(Enum):

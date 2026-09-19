@@ -10,13 +10,21 @@ tables and the sane list handling that keeps a nested list nested.
 
 from __future__ import annotations
 
+import re
 from html import escape
 
 import markdown
 
-from ..domain.document import DocumentKind, Presentation
+from ..domain.document import CODE_BLOCK_CLASS, DocumentKind, Presentation
 
 EXTENSIONS = ("fenced_code", "tables", "sane_lists")
+# A preformatted block never nests another and its text arrives escaped, so the
+# first closing tag after an opening one is always its own.
+PREFORMATTED = re.compile(r"<pre>.*?</pre>", re.DOTALL)
+CODE_BLOCK_OPEN = (
+    f'<table class="{CODE_BLOCK_CLASS}" width="100%" cellspacing="0"><tr><td>'
+)
+CODE_BLOCK_CLOSE = "</td></tr></table>"
 
 
 class DocumentHtmlRenderer:
@@ -38,7 +46,20 @@ class DocumentHtmlRenderer:
         """
         presentation = kind.presentation
         if presentation is Presentation.LAID_OUT:
-            return markdown.markdown(body, extensions=list(EXTENSIONS))
+            html = markdown.markdown(body, extensions=list(EXTENSIONS))
+            return PREFORMATTED.sub(lambda block: _boxed(block.group()), html)
         if presentation is Presentation.ALREADY_HTML:
             return body
-        return f"<pre>{escape(body)}</pre>"
+        return _boxed(f"<pre>{escape(body)}</pre>")
+
+
+def _boxed(block: str) -> str:
+    """A preformatted block inside a table of one cell.
+
+    Qt paints a preformatted block's background line by line, each only as far
+    as that line reaches. A block wider than the column, a diagram being the
+    measured case, came out as a ragged staircase of dark strips cut off at the
+    column's edge. A single cell is one rectangle as wide as its widest line,
+    which scrolls sideways as a whole.
+    """
+    return CODE_BLOCK_OPEN + block + CODE_BLOCK_CLOSE
