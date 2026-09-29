@@ -364,7 +364,11 @@ untouched. A stop is honoured until writing starts and never after.
 - `release_collection_store`: each repository's folder, beneath its owner's so
   two owners' repositories of one name never meet. A first import is built in a
   hidden staging folder and renamed into place only when complete; a refresh
-  replaces each file whole and the record last. Every file name is checked to
+  replaces each file whole and the record last. A process killed mid-way
+  through a first import leaves its staging folder behind, so each write first
+  sweeps staging folders untouched for ten minutes from beside the owner's
+  collections: long past any live import, short of taking one a second running
+  copy is writing into. Every file name is checked to
   land inside the collection immediately before it is written, including one
   read back from a record somebody edited.
 - `collection_manifest`: the hidden record in a collection folder, the one home

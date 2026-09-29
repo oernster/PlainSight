@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import os
+import time
 from pathlib import Path
 
 import pytest
@@ -21,6 +22,7 @@ from plainsight.domain.repository_address import RepositoryAddress
 from plainsight.infrastructure import atomic_write, release_collection_store
 from plainsight.infrastructure.collection_manifest import MANIFEST_NAME, render
 from plainsight.infrastructure.release_collection_store import (
+    STALE_STAGING_SECONDS,
     UNREADABLE,
     FileSystemReleaseCollections,
 )
@@ -217,6 +219,43 @@ def test_the_same_repository_spelled_in_another_case_is_the_same_folder(
     shouted = RepositoryAddress("OERNSTER", "plainsight")
 
     assert Path(store.location(shouted)) == folder(store)
+
+
+def test_a_stale_staging_folder_is_swept_and_nothing_else_is(
+    tmp_path: Path,
+) -> None:
+    now = time.time()
+    owner = tmp_path / "imports" / "oernster"
+    stale = owner / ".staging-dead"
+    fresh = owner / ".staging-busy"
+    for directory in (stale, fresh, owner / "Other", owner / ".hidden-notes"):
+        directory.mkdir(parents=True)
+        (directory / "note.md").write_text("x", encoding="utf-8")
+    staging_file = owner / ".staging-file"
+    staging_file.write_text("x", encoding="utf-8")
+    long_ago = now - STALE_STAGING_SECONDS - 1
+    for path in (stale, owner / "Other", owner / ".hidden-notes", staging_file):
+        os.utime(path, (long_ago, long_ago))
+    store = FileSystemReleaseCollections(tmp_path / "imports", clock=lambda: now)
+
+    store.commit(ADDRESS, plan_for(store, ONE))
+
+    remaining = sorted(path.name for path in owner.iterdir())
+    assert remaining == [
+        ".hidden-notes",
+        ".staging-busy",
+        ".staging-file",
+        "Other",
+        "PlainSight",
+    ]
+
+
+def test_a_sweep_over_an_owner_folder_not_yet_there_does_nothing(
+    store: FileSystemReleaseCollections,
+) -> None:
+    store.commit(ADDRESS, plan_for(store, ONE))
+
+    assert (folder(store) / "2026-01-01_v1.md").is_file()
 
 
 def test_digests_answer_absent_readable_and_unreadable_files(

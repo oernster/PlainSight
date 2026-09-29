@@ -22,6 +22,8 @@ from __future__ import annotations
 import os
 import shutil
 import tempfile
+import time
+from collections.abc import Callable
 from pathlib import Path
 
 from ..application.release_import import CollectionWriteFailed
@@ -37,6 +39,11 @@ from .atomic_write import write_atomically
 from .collection_manifest import MANIFEST_NAME, parse, render
 
 STAGING_PREFIX = ".staging-"
+# A staging folder lives only while a first import writes its files, which is
+# well under a second. One untouched for this long belongs to an import that
+# died before it could clean up. The margin keeps the sweep from reaching one
+# that another running copy of the application is writing into right now.
+STALE_STAGING_SECONDS = 10 * 60
 # Stands for a file that is there and cannot be read. It is no digest, so it
 # matches nothing and the file is treated as the reader's own and left alone.
 UNREADABLE = "unreadable"
@@ -46,8 +53,10 @@ CLIMBS_OUT = "Refused a file name that would land outside the collection: {!r}"
 class FileSystemReleaseCollections:
     """Collections held on this machine beneath one root directory."""
 
-    def __init__(self, root: Path) -> None:
+    def __init__(self, root: Path, clock: Callable[[], float] | None = None) -> None:
         self._root = root
+        # Injected so a test can age a staging folder without waiting.
+        self._clock = time.time if clock is None else clock
 
     def location(self, address: RepositoryAddress) -> str:
         """The folder this repository's releases live in, there or not."""
@@ -86,6 +95,7 @@ class FileSystemReleaseCollections:
     def commit(self, address: RepositoryAddress, plan: RefreshPlan) -> None:
         """Carry out the plan whole; raises ``CollectionWriteFailed`` otherwise."""
         directory = self._directory(address)
+        _sweep_stale_staging(directory.parent, self._clock())
         try:
             if directory.is_dir():
                 _refresh(directory, plan)
@@ -117,6 +127,30 @@ def _create(directory: Path, plan: RefreshPlan) -> None:
     except BaseException:
         shutil.rmtree(staging, ignore_errors=True)
         raise
+
+
+def _sweep_stale_staging(owner: Path, now: float) -> None:
+    """Remove staging folders a dead import left beside this owner's collections.
+
+    Only a directory directly in the owner's folder, named with the staging
+    prefix and untouched for ``STALE_STAGING_SECONDS``, is removed. A link is
+    never followed, whatever it is called. Anything that cannot be looked at or
+    removed is left where it is: a sweep that fails costs a hidden folder,
+    never the import it runs ahead of.
+    """
+    try:
+        entries = list(owner.iterdir())
+    except OSError:
+        return
+    for entry in entries:
+        if not entry.name.startswith(STAGING_PREFIX) or entry.is_symlink():
+            continue
+        try:
+            stale = now - entry.stat().st_mtime > STALE_STAGING_SECONDS
+        except OSError:
+            continue
+        if stale and entry.is_dir():
+            shutil.rmtree(entry, ignore_errors=True)
 
 
 def _refresh(directory: Path, plan: RefreshPlan) -> None:

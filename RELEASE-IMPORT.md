@@ -36,6 +36,8 @@ of a local file because its release was withdrawn.
 | D4 | Opening a collection is choosing it as the folder being read, which is remembered. | It is the existing "open a directory" path; no second mode. |
 | D5 | Cancel is honoured until writing begins, never during it. | Nothing on disk changes before the plan is committed, so stopping earlier is always safe. |
 | D6 | A still-published release whose local file was deleted is written again. | A refresh re-synchronises from GitHub; writing a missing file destroys nothing. |
+| D7 | Collections stay under `~/.plainsight` and go with it on uninstall; the README and the uninstall screen say so. | Oliver, 2026-09-29. |
+| D8 | Each import sweeps staging folders untouched for ten minutes from beside its owner's collections. | Oliver, 2026-09-29: a first import killed mid-write left one behind for good. Ten minutes rather than none, so a second running copy's live staging folder is never taken. |
 
 ## 4. Functional requirements
 
@@ -94,6 +96,8 @@ of a local file because its release was withdrawn.
   Verified by `tests/infrastructure/test_release_collection_store.py::test_a_failed_first_import_leaves_no_collection`
 - **FR-19** If a refresh fails, then every file in the collection shall be either its previous or its new content in full.
   Verified by `tests/infrastructure/test_release_collection_store.py::test_a_failed_refresh_leaves_the_collection_readable`
+- **FR-24** When a collection is written, the collection store shall remove every staging folder beside it untouched for more than ten minutes; it shall remove nothing else.
+  Verified by `tests/infrastructure/test_release_collection_store.py::test_a_stale_staging_folder_is_swept_and_nothing_else_is`
 - **FR-20** The collection store shall refuse any file name that would land outside the collection, including one read from a tampered manifest.
   Verified by `tests/infrastructure/test_release_collection_store.py::test_a_name_that_climbs_out_is_refused`
 
@@ -123,7 +127,4 @@ of a local file because its release was withdrawn.
 
 ## 6. Open questions
 
-| # | Question | Owner |
-|---|---|---|
-| Q1 | Uninstalling removes `~/.plainsight`, so imported collections (and any edits made to them) go with it; the README and the uninstall screen now say so. Keep this, else move collections under Documents? | Oliver |
-| Q2 | A first import killed mid-write (power loss, not an exception) leaves a hidden `.staging-*` folder beside the collection. Nothing reads it; nothing removes it either. Sweep old ones on the next import? | Oliver |
+None open. Q1 (where collections live) became D7; Q2 (staging left by a dead import) became D8 and FR-24.
