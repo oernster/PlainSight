@@ -39,6 +39,7 @@ from .top_tray import (
     DARK_MODE_ICON,
     FOLDER_ICON,
     HELP_ICON,
+    IMPORT_RELEASES_ICON,
     LAUNCH_EDITOR_ICON,
     LIGHT_MODE_ICON,
     OPEN_FILE_ICON,
@@ -123,7 +124,9 @@ def _top_tray(assets: AssetLocator) -> str:
     return (
         "<h3>The tray along the top</h3>"
         f"<p>{_img(assets, FOLDER_ICON)}choose the folder your documents live in"
-        f"{DOT}{_img(assets, OPEN_FILE_ICON)}open one document on its own</p>"
+        f"{DOT}{_img(assets, OPEN_FILE_ICON)}open one document on its own"
+        f"{DOT}{_img(assets, IMPORT_RELEASES_ICON)}import a GitHub repository's "
+        "release notes</p>"
         f"<p>{_img(assets, CHOOSE_EDITOR_ICON)}choose the editor"
         f"{DOT}{_img(assets, LAUNCH_EDITOR_ICON)}open the selected document in it</p>"
         f"<p>{_img(assets, MEDIUM_FONT_ICON)}step the text size"
@@ -136,6 +139,12 @@ def _top_tray(assets: AssetLocator) -> str:
         "button wears the size it would give you next.</p>"
         "<p>The editor button stays dim, wearing a red ring, until a document "
         "is selected. There is nothing for it to open before that.</p>"
+        "<p>The release notes import takes a repository's address pasted "
+        "straight from the browser. It writes each published release as a "
+        "Markdown file in a folder of its own, newest first, then opens that "
+        "folder on the newest release. Importing the same repository again "
+        "brings the folder up to date; a file you have edited is kept as you "
+        "left it, as is one whose release has since left GitHub.</p>"
     )
 
 

@@ -8,8 +8,6 @@ half-written file the next run cannot read.
 from __future__ import annotations
 
 import json
-import os
-import tempfile
 from pathlib import Path
 
 from ..domain.settings import (
@@ -19,8 +17,10 @@ from ..domain.settings import (
     InvalidEditorChoice,
     Settings,
 )
+from .atomic_write import write_atomically
 
 FORMAT_VERSION = 1
+ENCODING = "utf-8"
 VERSION_KEY = "version"
 ROOT_KEY = "documents_root"
 EDITOR_KEY = "editor"
@@ -77,18 +77,7 @@ class JsonSettingsStore:
             ),
         }
         self._path.parent.mkdir(parents=True, exist_ok=True)
-        self._write_atomically(json.dumps(payload, indent=2))
-
-    def _write_atomically(self, text: str) -> None:
-        """Write beside the target, then move it into place in one step."""
-        handle, temporary = tempfile.mkstemp(dir=str(self._path.parent))
-        try:
-            with os.fdopen(handle, "w", encoding="utf-8") as stream:
-                stream.write(text)
-            os.replace(temporary, self._path)
-        except OSError:
-            os.unlink(temporary)
-            raise
+        write_atomically(self._path, json.dumps(payload, indent=2).encode(ENCODING))
 
 
 def _text(value: object) -> str:

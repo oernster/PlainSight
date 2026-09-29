@@ -1,8 +1,9 @@
-"""Read only, as an invariant: nothing writes to a document.
+"""Read only, as an invariant: nothing writes to a document the reader chose.
 
-Editing is the external editor's job, so the only writing the
-application does is to its own settings file. This test names the one module
-allowed to write at all and asserts nothing else calls a writing operation.
+Editing is the external editor's job, so the application writes only its own
+files: the settings file and the release notes it imports, each beneath its own
+directory. This test names the modules allowed to write at all and asserts
+nothing else calls a writing operation.
 """
 
 from __future__ import annotations
@@ -31,8 +32,16 @@ WRITING_CALLS = frozenset(
 # an address and touches no file at all.
 WRITING_BUILTINS = frozenset({"open"})
 
-# The one module that writes anything; it writes only the settings file.
-PERMITTED_WRITERS = frozenset({f"{PACKAGE_NAME}.infrastructure.settings_store"})
+# The modules that write anything. The settings store writes the settings
+# file; the collection store writes imported release notes beneath their own
+# root; both write through the one atomic writer.
+PERMITTED_WRITERS = frozenset(
+    {
+        f"{PACKAGE_NAME}.infrastructure.settings_store",
+        f"{PACKAGE_NAME}.infrastructure.release_collection_store",
+        f"{PACKAGE_NAME}.infrastructure.atomic_write",
+    }
+)
 
 
 def module_name(path: object) -> str:
@@ -57,7 +66,7 @@ def writing_calls(tree: ast.Module) -> set[str]:
     return found
 
 
-def test_only_the_settings_store_writes_anything() -> None:
+def test_only_the_named_writers_write_anything() -> None:
     offences: list[str] = []
     for path in package_files():
         name = module_name(path)

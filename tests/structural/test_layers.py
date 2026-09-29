@@ -62,6 +62,7 @@ def test_the_application_layer_imports_no_third_party_package() -> None:
         "dataclasses",
         "abc",
         "enum",
+        "collections",
     }
     offences: list[str] = []
     for path in source_files("application"):

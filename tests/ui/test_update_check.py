@@ -208,6 +208,7 @@ def test_each_menu_item_calls_its_own_handler(application: QApplication) -> None
         BundledAssets(),
         on_choose_folder=lambda: pressed.append("folder"),
         on_open_file=lambda: pressed.append("file"),
+        on_import_releases=lambda: pressed.append("import"),
         on_choose_editor=lambda: pressed.append("choose"),
         on_open_in_editor=lambda: pressed.append("open"),
         on_cycle_font_size=lambda: pressed.append("font"),

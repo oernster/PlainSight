@@ -26,6 +26,8 @@ IMPLEMENTATIONS = frozenset(
         "DocumentHtmlRenderer",
         "BundledAssets",
         "GitHubReleaseSource",
+        "GitHubReleaseHistory",
+        "FileSystemReleaseCollections",
     }
 )
 

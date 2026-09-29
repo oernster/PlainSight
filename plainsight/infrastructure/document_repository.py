@@ -26,6 +26,7 @@ from pathlib import Path
 from ..application.ports import DocumentReader
 from ..domain.document import Document, DocumentBody, DocumentKind, kind_of
 from ..domain.library import ENVIRONMENT_FOLDER_NAMES, Folder
+from .collection_manifest import MANIFEST_NAME, declared_order
 
 HIDDEN_PREFIX = "."
 IGNORED_DIRECTORY_NAMES = frozenset({"__pycache__"})
@@ -80,7 +81,11 @@ class FileSystemDocumentRepository:
         """This directory as a folder; None when nothing beneath it is read."""
         folders: list[Folder] = []
         documents: list[Document] = []
+        order: tuple[str, ...] = ()
         for entry in _entries(directory):
+            if entry.name == MANIFEST_NAME:
+                order = _declared_order(entry)
+                continue
             if entry.is_dir():
                 if _is_ignored(entry.name, filter_tree):
                     continue
@@ -96,7 +101,7 @@ class FileSystemDocumentRepository:
                 documents.append(document)
         if not folders and not documents:
             return None
-        return Folder.of(name, str(directory), folders, documents)
+        return Folder.of(name, str(directory), folders, documents, order)
 
     def _document(self, path: Path, kind: DocumentKind) -> Document:
         """One document as it was listed, its reader saying what it declares.
@@ -137,6 +142,18 @@ def _fingerprint(path: Path) -> str:
     except OSError:
         return ""
     return f"{status.st_size}:{status.st_mtime_ns}"
+
+
+def _declared_order(record: Path) -> tuple[str, ...]:
+    """The document order a folder's record declares; none if it cannot be read.
+
+    A record that cannot be read costs its order and nothing else: the folder
+    is still listed, by name, exactly as a folder with no record is.
+    """
+    try:
+        return declared_order(record.read_text(encoding="utf-8"))
+    except (OSError, UnicodeDecodeError):
+        return ()
 
 
 def _entries(directory: Path) -> list[Path]:

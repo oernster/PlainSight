@@ -11,6 +11,7 @@ from pathlib import Path
 
 APPLICATION_DIRECTORY = "PlainSight"
 SETTINGS_FILE_NAME = "settings.json"
+IMPORTED_RELEASES_DIRECTORY = "github-releases"
 PROGRAM_VARIABLES = ("ProgramFiles", "ProgramFiles(x86)", "ProgramW6432")
 SYSTEM_VARIABLE = "SystemRoot"
 SYSTEM_PROGRAMS = "System32"
@@ -48,6 +49,16 @@ class FileSystemPathProbe:
         return Path(path).exists()
 
 
+def application_directory() -> Path:
+    """The directory this application keeps its own files in for this user."""
+    return Path.home() / f".{APPLICATION_DIRECTORY.lower()}"
+
+
 def settings_path() -> Path:
     """Where the settings file lives for the current user."""
-    return Path.home() / f".{APPLICATION_DIRECTORY.lower()}" / SETTINGS_FILE_NAME
+    return application_directory() / SETTINGS_FILE_NAME
+
+
+def imported_releases_path() -> Path:
+    """Where imported release notes live, one folder per repository beneath."""
+    return application_directory() / IMPORTED_RELEASES_DIRECTORY

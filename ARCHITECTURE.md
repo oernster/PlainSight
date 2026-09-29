@@ -20,7 +20,10 @@ wish.
 | The application imports no third-party package | `tests/structural/test_layers.py::test_the_application_layer_imports_no_third_party_package` |
 | No module exceeds 400 lines | `tests/structural/test_loc_limits.py::test_no_module_is_over_the_cap` |
 | No module sits in the 381 to 399 danger band | `tests/structural/test_loc_limits.py::test_no_module_sits_in_the_danger_band` |
-| Nothing but the settings store writes anything | `tests/structural/test_read_only.py::test_only_the_settings_store_writes_anything` |
+| Nothing but the settings store and the collection store writes anything | `tests/structural/test_read_only.py::test_only_the_named_writers_write_anything` |
+| A folder's declared document order is the order the tree shows | `tests/infrastructure/test_document_repository_order.py::test_a_declared_order_lists_newest_first_then_everything_else` |
+| No imported file name lands outside its collection | `tests/infrastructure/test_release_collection_store.py::test_a_name_that_climbs_out_is_refused` |
+| A refresh never writes over a file the reader edited | `tests/domain/test_release_collection.py::test_an_edited_file_is_kept_and_reported` |
 | Only the composition root builds an implementation | `tests/structural/test_composition_root.py::test_only_the_composition_root_builds_an_implementation` |
 | The composition root builds every implementation | `tests/structural/test_composition_root.py::test_the_composition_root_builds_every_implementation` |
 | Every third-party package used is declared | `tests/structural/test_declared_dependencies.py::test_every_package_used_is_declared` |
@@ -59,11 +62,18 @@ boundary, which is the only place a path is ever acted on.
 
 ## Read only, as a structural fact
 
-The application never writes to a document. That is not left
-to discipline: `tests/structural/test_read_only.py` names the one module allowed
-to write at all, the settings store, then asserts that no other module in the
-package calls a writing operation. Editing a document is exclusively the
-external editor's job.
+The application never writes to a document the reader chose. That is not left
+to discipline: `tests/structural/test_read_only.py` names the modules allowed
+to write at all, then asserts that no other module in the package calls a
+writing operation. Editing a document is exclusively the external editor's job.
+
+Two modules write, each beneath its own directory and nowhere else: the
+settings store writes the settings file; the collection store writes the
+release notes the GitHub import brings in, under
+`~/.plainsight/github-releases/<owner>/<repository>`. Both write through
+`atomic_write`, the third name on the list, which is the one home of the
+temporary file and the replace. Those imported files become the reader's own
+the moment they exist, which is why a refresh keeps any it finds edited.
 
 The check has one stated limit. It matches the builtin `open` by name but not an
 attribute called `open`, because a port legitimately carries that verb: the
@@ -92,7 +102,29 @@ external opener asks the desktop to open an address and touches no file.
   HTML is the third and had nowhere to go in a boolean.
 - `library`: the tree. A `Folder` holds its subfolders and its documents, each
   ordered case insensitively with folders first; a `Library` holds the roots.
-  The single ordering rule lives here.
+  The ordering rule lives here, together with its one extension: a folder may
+  declare an order for its documents, which then come first in that order,
+  anything undeclared following by name. It is stated generically, a list of
+  file names and nothing about where it came from, so the tree and the
+  renderer know nothing of GitHub; an imported collection uses it to read
+  newest first by publication date whatever its files are called.
+- `repository_address`: which GitHub repository a pasted address names. The
+  forms a browser and a README carry are accepted, sub-pages such as
+  `/releases` included; anything else is refused with the reason, since an
+  address read as the wrong repository imports the wrong history silently.
+- `file_names`: names made from foreign text, safe on Windows (the strictest
+  platform shipped), never a separator, never only dots, never a device name,
+  capped in length and made unique case insensitively.
+- `release`: one published release and the Markdown it becomes: a small header,
+  a rule, then GitHub's notes byte for byte. Titles and tags are escaped so
+  they show as the text they were. Moments are held as a fixed UTC string
+  rather than a `datetime`, since the domain imports no clock module; in that
+  form comparing text is comparing time.
+- `release_collection`: the record of an imported folder and the whole refresh
+  decision as a plan made before a byte is written. A file is known by the
+  digest of what was last written to it, so one whose digest has moved was
+  changed by the reader and is kept; one already holding the new text is
+  recognised as a refresh interrupted after it wrote, not as an edit.
 - `extent`: how much text a document holds, counted as characters and as lines.
   A closing line ending shuts the line before it rather than opening another, so
   a file of three lines reads as three either way. It counts the text rather
@@ -105,7 +137,8 @@ external opener asks the desktop to open an address and touches no file.
 
 `ports` declares the seams as Protocols: `DocumentRepository`, `SettingsStore`,
 `EditorLauncher`, `ExternalOpener`, `PathProbe`, `PlatformPaths`,
-`AssetLocator`, `DocumentRenderer`, `DocumentReader` and `ReleaseSource`. `ReleaseSource` returns a release type
+`AssetLocator`, `DocumentRenderer`, `DocumentReader`, `ReleaseSource`,
+`ReleaseHistorySource` and `ReleaseCollectionStore`. `ReleaseSource` returns a release type
 declared in `update`, which imports `ports` in turn, so the annotation is
 imported under `TYPE_CHECKING` alone; a runtime import there would close a
 circle.
@@ -133,6 +166,13 @@ get right, when to speak and when to stay quiet, is settled by a table of cases
 rather than by a running application. The comparison reads dotted integers only:
 anything it cannot read compares as not newer, so a malformed tag can never
 raise a prompt.
+
+`release_import` holds the GitHub release notes import: `ReleaseImportService`,
+the stages it reports and one exception class per way it can fail, so the
+interface tells the reader what actually happened rather than a status code.
+Its order is fixed: every request to GitHub is made before any write, so a
+failure asking GitHub, which is where nearly every failure is, leaves the disk
+untouched. A stop is honoured until writing starts and never after.
 
 ### Infrastructure
 
@@ -315,8 +355,27 @@ raise a prompt.
   own line breaks disappear. Passing HTML through a parser would lose whatever
   the parser did not understand, once on every pass, to produce the document it
   started with.
-- `update_source`: the one place the application opens a connection of its own.
-  It asks the GitHub releases endpoint for the latest published release of this
+- `github_releases`: every published release of a repository the reader names,
+  through GitHub's REST API, following `Link` pagination and never a next page
+  off the API's own host. A page is refused unread past 32 MiB, since that size
+  is decided before a byte can be checked; every field is checked; drafts are
+  left out. A malformed entry fails the import rather than being skipped, since
+  a history silently missing a release misstates itself. No token is sent.
+- `release_collection_store`: each repository's folder, beneath its owner's so
+  two owners' repositories of one name never meet. A first import is built in a
+  hidden staging folder and renamed into place only when complete; a refresh
+  replaces each file whole and the record last. Every file name is checked to
+  land inside the collection immediately before it is written, including one
+  read back from a record somebody edited.
+- `collection_manifest`: the hidden record in a collection folder, the one home
+  of its format. The tree reads only its document list, as the folder's
+  declared order; everything read back is checked before it is believed. A
+  record that cannot be read counts as no record, which makes every file in the
+  folder the reader's own.
+- `atomic_write`: a temporary file beside the target, then a replace. Both
+  writers use it.
+- `update_source`: the other connection the application opens. It asks the
+  GitHub releases endpoint for the latest published release of this
   repository and nothing else. That endpoint returns only a published,
   non-draft, non-prerelease release, so a tag pushed mid-development is
   invisible here by the endpoint's own contract rather than by a check made
@@ -423,6 +482,17 @@ Two trays around a split body, exactly as design plan part 2 describes.
   `QStatusBar::item` carries a `border: none` rule in the theme, since the style
   otherwise draws a divider at an ordinary item's far edge: measured landing
   against the last letter of the kind, where it read as a text cursor.
+- `release_import_dialog`: the import as the reader meets it. The field opens
+  focused with its default selected, so a paste replaces it; Enter imports
+  through the default button, the one route, so it cannot fire twice. The work
+  runs on a worker thread whose results cross back on signals bound to the
+  dialog, by the same rule as the update check. The dialog never closes while
+  the worker runs: Cancel, Escape and the close button ask it to stop and wait
+  for its answer, so it can never report to a dialog that has gone. On success
+  the window reads the folder as the one chosen and lands on the newest
+  release, which is not the auto-selection the tree refuses: importing was the
+  reader asking for those notes. `release_import_wording` holds every sentence
+  it says.
 - `update_check`: the controller that runs a check off the interface thread and
   reports what it found. Its result crosses back on a signal connected to a
   bound method of an object living on the interface thread, which is the whole
@@ -628,7 +698,8 @@ second copy of it. It follows the house setup model.
   payload rather than left inside the bundle the setup program has not extracted
   yet. A test asserts every mark the window reads is one the staging step
   carries.
-- Removing the application removes the settings directory with it. An account
+- Removing the application removes the settings directory with it, together
+  with any release notes imported into it; the uninstall screen says so. An account
   that uninstalls has said it is done, so a later install starts as a first
   install does rather than reviving a folder chosen months ago. The directory is
   named from the display name rather than written out a second time, so setup

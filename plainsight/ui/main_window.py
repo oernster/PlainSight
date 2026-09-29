@@ -17,11 +17,12 @@ from PySide6.QtWidgets import (
 
 from .. import version
 from ..application.ports import AssetLocator, DocumentRenderer
+from ..application.release_import import ReleaseImportService
 from ..application.services import LibraryService
 from ..application.update import UpdateService
 from ..domain.document import Document
 from ..domain.settings import Appearance, EditorChoice, FontSize
-from . import dialogs
+from . import dialogs, release_import_dialog
 from .bottom_tray import BottomTray
 from .document_view import DocumentView
 from .keyboard_nav import KeyboardNavigator, NeutralStart
@@ -51,9 +52,13 @@ class MainWindow(QMainWindow):
         renderer: DocumentRenderer,
         assets: AssetLocator,
         updates: UpdateService | None = None,
+        imports: ReleaseImportService | None = None,
     ) -> None:
         super().__init__()
         self._service = service
+        # Like the update check, optional so a test can build a window that
+        # asks nothing of the network; the composition root always supplies it.
+        self._imports = imports
         self._assets = assets
         self._renderer = renderer
         self._palette: Palette = palette_for(service.appearance())
@@ -66,6 +71,7 @@ class MainWindow(QMainWindow):
             assets,
             on_choose_folder=self.choose_folder,
             on_open_file=self.open_file,
+            on_import_releases=self.import_releases,
             on_choose_editor=self.choose_editor,
             on_open_in_editor=self.open_in_editor,
             on_cycle_font_size=self.cycle_font_size,
@@ -303,6 +309,13 @@ class MainWindow(QMainWindow):
     def open_file(self) -> None:
         """Open one document, listing no directory around it."""
         self._reading.open_file()
+
+    def import_releases(self) -> None:
+        """Import a repository's release notes, then read them as the folder."""
+        if self._imports is not None:
+            release_import_dialog.import_releases(
+                self, self._imports, self._reading.open_collection, self.report_status
+            )
 
     def choose_editor(self) -> None:
         """Pick the editor a document opens in."""

@@ -30,6 +30,41 @@ def test_a_folder_orders_its_documents_case_insensitively() -> None:
     assert [one.name for one in folder.documents] == ["Alpha.md", "beta.md"]
 
 
+def test_a_declared_order_puts_its_documents_first_in_that_order() -> None:
+    """Newest first by the folder's own say, whatever the names sort as."""
+    folder = Folder.of(
+        "releases",
+        "/root",
+        documents=[
+            a_document("2026-01-01_v1.md"),
+            a_document("notes.md"),
+            a_document("2026-03-01_v3.md"),
+            a_document("2026-02-01_v2.md"),
+            a_document("Aside.md"),
+        ],
+        declared_order=("2026-03-01_v3.md", "2026-02-01_v2.md", "2026-01-01_v1.md"),
+    )
+
+    assert [one.name for one in folder.documents] == [
+        "2026-03-01_v3.md",
+        "2026-02-01_v2.md",
+        "2026-01-01_v1.md",
+        "Aside.md",
+        "notes.md",
+    ]
+
+
+def test_a_declared_name_with_no_document_changes_nothing() -> None:
+    folder = Folder.of(
+        "root",
+        "/root",
+        documents=[a_document("b.md"), a_document("a.md")],
+        declared_order=("gone.md",),
+    )
+
+    assert [one.name for one in folder.documents] == ["a.md", "b.md"]
+
+
 def test_a_folder_orders_its_subfolders_case_insensitively() -> None:
     folder = Folder.of(
         "root",

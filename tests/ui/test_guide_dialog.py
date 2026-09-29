@@ -28,6 +28,7 @@ from plainsight.ui.top_tray import (
     DARK_MODE_ICON,
     FOLDER_ICON,
     HELP_ICON,
+    IMPORT_RELEASES_ICON,
     LAUNCH_EDITOR_ICON,
     LIGHT_MODE_ICON,
     OPEN_FILE_ICON,
@@ -36,6 +37,7 @@ from plainsight.ui.top_tray import (
 NAMED_IN_THE_TRAYS = (
     FOLDER_ICON,
     OPEN_FILE_ICON,
+    IMPORT_RELEASES_ICON,
     CHOOSE_EDITOR_ICON,
     LAUNCH_EDITOR_ICON,
     LIGHT_MODE_ICON,

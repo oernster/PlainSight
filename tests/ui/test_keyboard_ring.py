@@ -47,26 +47,27 @@ def press(widget: QWidget, key: Qt.Key) -> None:
     )
 
 
-def test_the_ring_is_the_thirteen_stops_of_the_design_in_order(
+def test_the_ring_is_the_fourteen_stops_of_the_design_in_order(
     window: MainWindow,
 ) -> None:
-    """The two openers lead, since everything after acts on what they found."""
+    """The three openers lead, since everything after acts on what they found."""
     stops = window.ring_stops()
 
     assert stops[0] is window.top_tray.folder_button
     assert stops[1] is window.top_tray.open_file_button
-    assert stops[2] is window.top_tray.choose_editor_button
-    assert stops[3] is window.top_tray.open_in_editor_button
-    assert stops[4] is window.top_tray.font_size_button
-    assert stops[5] is window.top_tray.appearance_button
-    assert stops[6] is window.top_tray.help_button
-    assert stops[7] is window.library_tree
-    assert stops[8] is window.document_view
-    assert stops[9] is window.bottom_tray.donate_button
-    assert stops[10] is window.bottom_tray.ui_licence_button
-    assert stops[11] is window.bottom_tray.model_licence_button
-    assert stops[12] is window.bottom_tray.filter_button
-    assert len(stops) == 13
+    assert stops[2] is window.top_tray.import_releases_button
+    assert stops[3] is window.top_tray.choose_editor_button
+    assert stops[4] is window.top_tray.open_in_editor_button
+    assert stops[5] is window.top_tray.font_size_button
+    assert stops[6] is window.top_tray.appearance_button
+    assert stops[7] is window.top_tray.help_button
+    assert stops[8] is window.library_tree
+    assert stops[9] is window.document_view
+    assert stops[10] is window.bottom_tray.donate_button
+    assert stops[11] is window.bottom_tray.ui_licence_button
+    assert stops[12] is window.bottom_tray.model_licence_button
+    assert stops[13] is window.bottom_tray.filter_button
+    assert len(stops) == 14
 
 
 def test_each_tray_declares_its_own_order_left_to_right_as_drawn(

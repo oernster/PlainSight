@@ -15,6 +15,7 @@ from .widgets import icon_button
 
 FOLDER_ICON = "file.png"
 OPEN_FILE_ICON = "open-file.png"
+IMPORT_RELEASES_ICON = "gh-release-notes.png"
 CHOOSE_EDITOR_ICON = "choose-editor.png"
 LAUNCH_EDITOR_ICON = "launch-editor.png"
 HELP_ICON = "help-about.png"
@@ -28,6 +29,7 @@ DARK_MODE_ICON = "dark-mode.png"
 
 FOLDER_TOOLTIP = "Choose the folder your documents live in"
 OPEN_FILE_TOOLTIP = "Open a single document"
+IMPORT_RELEASES_TOOLTIP = "Import GitHub release notes"
 CHOOSE_EDITOR_TOOLTIP = "Choose the editor to open a document in"
 LAUNCH_EDITOR_TOOLTIP = "Open the selected document in your editor"
 HELP_TOOLTIP = "The guide, About PlainSight and the update check"
@@ -60,6 +62,7 @@ class TopTray(QWidget):
         assets: AssetLocator,
         on_choose_folder: Callable[[], None],
         on_open_file: Callable[[], None],
+        on_import_releases: Callable[[], None],
         on_choose_editor: Callable[[], None],
         on_open_in_editor: Callable[[], None],
         on_cycle_font_size: Callable[[], None],
@@ -83,6 +86,15 @@ class TopTray(QWidget):
             assets.find(OPEN_FILE_ICON),
             OPEN_FILE_TOOLTIP,
             on_open_file,
+            TRAY_SCALE,
+        )
+        # The third way of getting something to read, so it joins the openers:
+        # it ends in a folder chosen, exactly as the folder button does.
+        self.import_releases_button = icon_button(
+            self,
+            assets.find(IMPORT_RELEASES_ICON),
+            IMPORT_RELEASES_TOOLTIP,
+            on_import_releases,
             TRAY_SCALE,
         )
         self.choose_editor_button = icon_button(
@@ -143,6 +155,7 @@ class TopTray(QWidget):
         row.setSpacing(TRAY_SPACING_PX)
         row.addWidget(self.folder_button)
         row.addWidget(self.open_file_button)
+        row.addWidget(self.import_releases_button)
         row.addWidget(self.choose_editor_button)
         row.addWidget(self.open_in_editor_button)
         row.addWidget(self.separator)
@@ -166,6 +179,7 @@ class TopTray(QWidget):
         return (
             self.folder_button,
             self.open_file_button,
+            self.import_releases_button,
             self.choose_editor_button,
             self.open_in_editor_button,
             self.font_size_button,

@@ -59,9 +59,9 @@ _WORDING = {
     Route.UNINSTALL: Wording(
         heading=f"Remove {PRODUCT}",
         lead=(
-            "The application, its shortcuts and its settings are removed, so "
-            "installing it again starts fresh. Your documents themselves are "
-            "left where they are."
+            "The application, its shortcuts, its settings and any release "
+            "notes imported from GitHub are removed, so installing it again "
+            "starts fresh. Your documents themselves are left where they are."
         ),
         go_ahead="Uninstall",
     ),

@@ -8,7 +8,7 @@ said the same way.
 
 from __future__ import annotations
 
-from collections.abc import Iterable, Iterator
+from collections.abc import Iterable, Iterator, Sequence
 from dataclasses import dataclass
 
 from .document import Document
@@ -25,8 +25,11 @@ class Folder:
     """One directory: the folders inside it, then the documents it holds.
 
     Folders come before documents and each group is ordered case insensitively
-    by name, which is the one ordering rule the application has. Build through
-    ``of`` rather than the constructor, so nothing has to remember to sort.
+    by name. A folder may declare an order of its own for its documents, which
+    is how a collection of releases reads newest first whatever its files are
+    called; the documents it declares come first in that order and anything
+    else it holds follows by name. Build through ``of`` rather than the
+    constructor, so nothing has to remember to sort.
     """
 
     name: str
@@ -40,13 +43,21 @@ class Folder:
         path: str,
         folders: Iterable[Folder] = (),
         documents: Iterable[Document] = (),
+        declared_order: Sequence[str] = (),
     ) -> Folder:
         """A folder with its contents in display order."""
+        place = {file_name: index for index, file_name in enumerate(declared_order)}
+        unplaced = len(place)
         return Folder(
             name=name,
             path=path,
             folders=tuple(sorted(folders, key=lambda folder: folder.sort_key)),
-            documents=tuple(sorted(documents, key=lambda one: one.sort_key)),
+            documents=tuple(
+                sorted(
+                    documents,
+                    key=lambda one: (place.get(one.name, unplaced), one.sort_key),
+                )
+            ),
         )
 
     @property

@@ -56,6 +56,11 @@ BUTTON_MARKS = (
 )
 MASTER_SUFFIX = "-master.png"
 
+# Marks whose master is not square and whose artwork runs to its edges, so a
+# centre crop would cut it: each is cropped to its artwork and padded out to a
+# square instead, then derived exactly as the others are.
+PADDED_MARKS = ("gh-release-notes",)
+
 # The tree filter's two pictures keep the names their owner gave them, so each
 # master is read where it lies rather than renamed to the suffix above. The
 # filter is square and takes the button path; the cross is wider than it is
@@ -78,6 +83,15 @@ def load_master(path: pathlib.Path) -> Image.Image:
     left = (image.width - side) // 2
     top = (image.height - side) // 2
     return image.crop((left, top, left + side, top + side))
+
+
+def pad_to_square(path: pathlib.Path) -> Image.Image:
+    """The master's artwork, centred on a transparent square just large enough."""
+    artwork = crop_to_artwork(Image.open(path).convert("RGBA"))
+    side = max(artwork.width, artwork.height)
+    square = Image.new("RGBA", (side, side), (0, 0, 0, NO_ALPHA))
+    square.paste(artwork, ((side - artwork.width) // 2, (side - artwork.height) // 2))
+    return square
 
 
 def crop_to_artwork(image: Image.Image) -> Image.Image:
@@ -120,13 +134,16 @@ def write_icon_set(master: Image.Image) -> list[pathlib.Path]:
 def write_button_marks() -> list[pathlib.Path]:
     """Each tray glyph, from its own master, at the height it is drawn."""
     written: list[pathlib.Path] = []
-    for name in BUTTON_MARKS:
+    for name in (*BUTTON_MARKS, *PADDED_MARKS):
         master_path = ASSETS_DIR / f"{name}{MASTER_SUFFIX}"
         if not master_path.is_file():
             continue
-        mark = load_master(master_path).resize(
-            (DONATE_HEIGHT_PX, DONATE_HEIGHT_PX), RESAMPLE
+        square = (
+            pad_to_square(master_path)
+            if name in PADDED_MARKS
+            else load_master(master_path)
         )
+        mark = square.resize((DONATE_HEIGHT_PX, DONATE_HEIGHT_PX), RESAMPLE)
         path = ASSETS_DIR / f"{name}.png"
         mark.save(path)
         written.append(path)

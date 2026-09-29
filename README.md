@@ -14,8 +14,8 @@ approve. Point it at your notes, your project documentation or anything else
 and it reads that the same way. Point it at a Claude skills folder, which is
 where this began, to bring the plugins tree beside it too, as a second root.
 
-Nothing is changed by looking. It never writes to a document; editing is handed
-to the editor you choose.
+Nothing is changed by looking. It never writes to a document you point it at;
+editing is handed to the editor you choose.
 
 > **Commercial licences available.** PlainSight is free and open source under
 > GPL-3.0, with its interface layer under LGPL-3.0. If those terms do not suit
@@ -35,18 +35,25 @@ at all.
 
 ## What it is not
 
-It is not a text editor and it never writes to a document. Editing is handed to
-an editor you choose, which is enforced by a structural test rather than left
-to discipline.
+It is not a text editor and it never writes to a document you point it at.
+Editing is handed to an editor you choose. The only files it writes are its
+own: its settings, then any release notes you ask it to import from GitHub,
+each beneath its own directory. That is enforced by a structural test rather
+than left to discipline.
+
+It is not a GitHub client. The release notes import reads a repository's
+published releases and nothing else: no issues, no commits, no tags without a
+release, no downloads, nothing sent back.
 
 It is not a search tool and it indexes nothing. It reads the folder when you
 open it and again whenever the window comes back to the front.
 
-It makes exactly one network request of its own, never any other: it
-asks GitHub whether a newer release of PlainSight has been published. That
-happens a few seconds after the window opens, once a day while it stays open
-and whenever you ask for it from the Help menu. Nothing about you goes with the
-question and there is no telemetry anywhere in it.
+It makes two kinds of network request of its own, never any other. It asks
+GitHub whether a newer release of PlainSight has been published: a few seconds
+after the window opens, once a day while it stays open and whenever you ask
+from the Help menu. It asks GitHub's public API for a repository's releases
+when you import them, only then and only for the repository you named. Nothing
+about you goes with either question and there is no telemetry anywhere in it.
 
 Everything else it opens, it opens by handing an address to your desktop for
 your browser to fetch, in three places: the donate button, a link you click
@@ -106,6 +113,16 @@ prompt. Nothing is fetched or sent without that click.
 - Opens a single document too, from the button beside the folder one. That
   reads the one file and lists no directory around it, so whatever sits
   beside it on disk stays unread.
+- Imports a GitHub repository's release notes as a folder of Markdown files,
+  from the third button. Paste the repository's address, press Enter and the
+  folder opens on the newest release, the rest listed newest first by
+  publication date. Pre-releases are marked as such; drafts are left out; a
+  release with no notes still gets its page. Importing the same repository
+  again brings the folder up to date without duplicating anything, keeps any
+  file you edited as you left it and keeps the notes of a release GitHub no
+  longer lists. The folder lives under `~/.plainsight/github-releases`. It uses
+  GitHub's public API with no account, which allows 60 requests an hour; an
+  import spends one per hundred releases.
 - Renders the document you select, with whatever it declares in its
   frontmatter. Nothing is selected until you select it.
 - Holds reflowed text to a readable column, so a wide window buys margins
@@ -189,8 +206,9 @@ The setup program installs into your own account only. It writes under
 `%LOCALAPPDATA%\Programs` and `HKCU`, so Windows never asks for an
 administrator; it removes cleanly from the Apps list. Removing it takes your
 settings with it, so installing again starts as a first install does rather
-than reviving the folder you chose months ago. Your documents are never
-touched.
+than reviving the folder you chose months ago. Release notes you imported live
+beside the settings and go with them, edits included. Your own documents are
+never touched.
 
 ## Test
 

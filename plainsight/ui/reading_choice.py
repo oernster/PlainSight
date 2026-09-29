@@ -13,10 +13,12 @@ being given in different places and disagreeing.
 
 from __future__ import annotations
 
+import os
 from typing import TYPE_CHECKING
 
 from ..domain.library import Library
 from . import dialogs
+from .library_tree import DOCUMENT_ROLE, FIRST_COLUMN
 
 if TYPE_CHECKING:  # pragma: no cover
     # For the annotation only. The window builds this, so importing it at
@@ -99,6 +101,18 @@ class ReadingChoice:
         self._opened_file = chosen
         self._show(library, only_document=True)
 
+    def open_collection(self, root: str, newest: str) -> None:
+        """Read an imported folder as the folder chosen; land on ``newest``.
+
+        Chosen exactly as a folder picked in the chooser is, so it is
+        remembered and re-read like one. Landing on its newest document is not
+        the auto-selection the tree refuses: the reader asked for these
+        release notes by importing them, so the newest is what they came for.
+        """
+        self._opened_file = None
+        self._show(self._window.service.choose_root(root))
+        self._select_path(newest)
+
     def _again(self) -> Library:
         """The library as it stands now: the opened file, else the folder.
 
@@ -133,3 +147,23 @@ class ReadingChoice:
         rows = tree.document_items()
         if rows:
             tree.setCurrentItem(rows[0])
+
+    def _select_path(self, path: str) -> None:
+        """Open the folders above the document read from ``path``; select it."""
+        tree = self._window.library_tree
+        for item in tree.document_items():
+            if not same_path(item.data(FIRST_COLUMN, DOCUMENT_ROLE).path, path):
+                continue
+            parent = item.parent()
+            while parent is not None:
+                parent.setExpanded(True)
+                parent = parent.parent()
+            tree.setCurrentItem(item)
+            return
+
+
+def same_path(first: str, second: str) -> bool:
+    """Whether two paths name one file, however each was spelled."""
+    return os.path.normcase(os.path.normpath(first)) == os.path.normcase(
+        os.path.normpath(second)
+    )

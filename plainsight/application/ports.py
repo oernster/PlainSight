@@ -2,10 +2,14 @@
 
 from __future__ import annotations
 
+from collections.abc import Callable
 from typing import TYPE_CHECKING, Protocol
 
 from ..domain.document import Document, DocumentBody, DocumentKind, DocumentSummary
 from ..domain.library import Folder
+from ..domain.release import Release
+from ..domain.release_collection import RefreshPlan, ReleaseCollection
+from ..domain.repository_address import RepositoryAddress
 from ..domain.settings import EditorChoice, Settings
 
 if TYPE_CHECKING:  # pragma: no cover
@@ -132,4 +136,48 @@ class ReleaseSource(Protocol):
 
     def latest_release(self) -> ReleaseInfo | None:
         """The newest release; None when the source could not be asked."""
+        ...
+
+
+class ReleaseHistorySource(Protocol):
+    """Every published release of a repository, drafts left out."""
+
+    def releases(
+        self,
+        address: RepositoryAddress,
+        on_page: Callable[[int], None],
+        cancelled: Callable[[], bool],
+    ) -> tuple[Release, ...]:
+        """All of them, every page read; raises an ``ImportProblem`` otherwise.
+
+        ``on_page`` hears the running count after each page. ``cancelled`` is
+        asked before each request, so a reader who stops waits for one request
+        at most.
+        """
+        ...
+
+
+class ReleaseCollectionStore(Protocol):
+    """Keeps each repository's imported releases as a folder of documents."""
+
+    def location(self, address: RepositoryAddress) -> str:
+        """The folder this repository's releases live in, there or not."""
+        ...
+
+    def load(self, address: RepositoryAddress) -> ReleaseCollection | None:
+        """What the folder records; None when there is no folder yet.
+
+        A folder whose record is missing or unreadable answers an empty
+        collection, so every file in it is treated as the reader's own.
+        """
+        ...
+
+    def digests(
+        self, address: RepositoryAddress, file_names: tuple[str, ...]
+    ) -> dict[str, str | None]:
+        """Each named file's digest as it stands; None where it is absent."""
+        ...
+
+    def commit(self, address: RepositoryAddress, plan: RefreshPlan) -> None:
+        """Carry out the plan whole; raises ``CollectionWriteFailed`` otherwise."""
         ...

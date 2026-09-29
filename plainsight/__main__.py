@@ -8,18 +8,22 @@ from PySide6.QtWidgets import QApplication
 
 from . import version
 from .application.ports import DocumentReader
+from .application.release_import import ReleaseImportService
 from .application.services import LibraryService
 from .application.update import UpdateService, platform_key_for
 from .domain.document import DocumentKind
 from .infrastructure.desktop import DesktopEditorLauncher, QtExternalOpener
 from .infrastructure.document_reader import TextDocumentReader
 from .infrastructure.document_repository import FileSystemDocumentRepository
+from .infrastructure.github_releases import GitHubReleaseHistory
 from .infrastructure.pdf_reader import PdfDocumentReader
 from .infrastructure.platform import (
     FileSystemPathProbe,
     HomePlatformPaths,
+    imported_releases_path,
     settings_path,
 )
+from .infrastructure.release_collection_store import FileSystemReleaseCollections
 from .infrastructure.renderer import DocumentHtmlRenderer
 from .infrastructure.resources import BundledAssets
 from .infrastructure.settings_store import JsonSettingsStore
@@ -67,6 +71,14 @@ def build_update_service() -> UpdateService:
     )
 
 
+def build_import_service() -> ReleaseImportService:
+    """The release import, reading GitHub and writing beside the settings."""
+    return ReleaseImportService(
+        source=GitHubReleaseHistory(),
+        store=FileSystemReleaseCollections(imported_releases_path()),
+    )
+
+
 def main() -> int:
     """Start the application."""
     application = QApplication(sys.argv)
@@ -76,6 +88,7 @@ def main() -> int:
         DocumentHtmlRenderer(),
         BundledAssets(),
         build_update_service(),
+        build_import_service(),
     )
     window.present()
     return application.exec()
