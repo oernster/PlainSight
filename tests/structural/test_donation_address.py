@@ -13,7 +13,7 @@ from plainsight import version
 
 from .layers import PACKAGE_ROOT, package_files, parse
 
-ADDRESS = "https://www.paypal.com/ncp/payment/3Q37J8BK54PME"
+ADDRESS = "https://www.paypal.com/ncp/payment/JMKUS8D3ES3S4"
 REQUIRED_SCHEME = "https://"
 IDENTITY_MODULE = "version.py"
 
