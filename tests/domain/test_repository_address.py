@@ -41,7 +41,7 @@ def test_every_accepted_form_names_the_same_repository(text: str) -> None:
     [
         "https://github.com/oernster/PlainSight/releases",
         "https://github.com/oernster/PlainSight/releases/",
-        "https://github.com/oernster/PlainSight/releases/tag/v2.3.3",
+        "https://github.com/oernster/PlainSight/releases/tag/v1.0.0",
         "https://github.com/oernster/PlainSight/tree/main/docs",
         "github.com/oernster/PlainSight/issues/12",
     ],

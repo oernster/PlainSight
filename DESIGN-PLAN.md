@@ -6,7 +6,9 @@ Reads a folder of documents, shows it as the tree it is on disk,
 renders the document you select and hands editing to an editor the user chooses.
 It reads nothing until the user chooses a folder; the chooser opens on the
 user's home directory, which is an offer rather than a scan. It is not a text
-editor and it never writes to a document.
+editor and it never writes to a document the user points it at. It can also
+import a GitHub repository's release notes as a folder of Markdown of its own
+(section 19).
 
 ## Identity
 
@@ -126,7 +128,10 @@ stored on disk, so nothing here can see them and nothing here pretends to.
 ## 3. Displaying a document
 
 3.1 The left pane is a **tree mirroring the folders on disk**, folders before
-documents and each group ordered case insensitively. Every folder opens and
+documents and each group ordered case insensitively. A folder may declare an
+order for its documents in a hidden record; those it names come first in that
+order, the rest following by name. An imported collection (section 19) is the
+one writer of such a record. Every folder opens and
 closes on its own arrow and carries a count of what it holds, so a shut branch
 says whether it is worth opening. Exactly one document is displayed at a time.
 
@@ -214,8 +219,8 @@ shown, dialogs included, in the application and in the setup program alike.
 
 ## 6. Choosing an editor
 
-6.1 A choose editor button in the top tray, immediately right of the open one
-document button of 2.6.
+6.1 A choose editor button in the top tray, immediately right of the release
+notes import button of 19.1.
 
 6.2 It opens a file chooser for the editor executable. The choice persists between
 runs, recorded as a path plus a display name.
@@ -246,17 +251,18 @@ everywhere.
 
 1. browse folder
 2. open one document
-3. choose editor
-4. view in editor (skipped while disabled)
-5. text size
-6. appearance toggle
-7. help and about
-8. the library tree (one stop; Up and Down walk the rows)
-9. the rendered pane, **only while it overflows**
-10. donate
-11. UI licence
-12. model licence
-13. tree filter
+3. import release notes
+4. choose editor
+5. view in editor (skipped while disabled)
+6. text size
+7. appearance toggle
+8. help and about
+9. the library tree (one stop; Up and Down walk the rows)
+10. the rendered pane, **only while it overflows**
+11. donate
+12. UI licence
+13. model licence
+14. tree filter
 
 then wrapping back to the browse button.
 
@@ -324,11 +330,18 @@ a dialog: the user did not cause it and cannot fix it from here.
 
 ## 13. Read only, as an invariant
 
-13.1 The application never writes to any path beneath a chosen root. Editing is
-exclusively the external editor's job.
+13.1 The application never writes to any path beneath a root the user chose.
+Editing is exclusively the external editor's job.
 
-13.2 This is enforced by a structural test rather than by convention, in the same
-spirit as the no-network test in `postal-gambit`.
+13.2 It writes two things of its own and nowhere else: its settings file, then
+the release notes collections of section 19 when the user asks for an import,
+each beneath the application's own directory. A collection is a root the
+application made; once it exists its files are the user's, so a refresh keeps
+any it finds edited.
+
+13.3 This is enforced by a structural test naming the modules allowed to write,
+rather than by convention, in the same spirit as the no-network test in
+`postal-gambit`.
 
 ## 14. Telling the user a newer release exists
 
@@ -351,9 +364,11 @@ Download hands the file for this operating system to the desktop, falling back
 to the release page; the application fetches nothing itself. Skip remembers that
 one release tag, so the next release still reaches the user.
 
-14.5 This is the one connection the application opens of its own accord, so
-every claim to the contrary in the README, the release notes and the code
-comments is corrected in the same change rather than left to be found.
+14.5 This is one of the two connections the application opens of its own
+accord; the other is the release notes import of section 19, made only when the
+user asks for one. Every claim to the contrary in the README, the release notes
+and the code comments is corrected in the same change rather than left to be
+found.
 
 ## 15. Text size
 
@@ -455,6 +470,25 @@ has to give (7.4 among them) covers it until it has been read and the kind
 returns after it. The count is permanent at the right, where nothing transient
 reaches it.
 
+## 19. Importing a repository's release notes
+
+19.1 A button in the top tray immediately right of the open one document button
+of 2.6, with its own artwork, puts up a small dialog taking a GitHub repository
+address. The field opens with `https://github.com/` selected so a paste replaces
+it; Enter imports; Escape cancels.
+
+19.2 Every published release is read through GitHub's REST API and written as
+one Markdown file in a folder of its own under
+`~/.plainsight/github-releases/<owner>/<repository>`, which then becomes the
+folder being read, landing on the newest release. The releases list newest
+first by publication date through the declared order of 3.1.
+
+19.3 Importing the same repository again refreshes that folder rather than
+making a second one, keeping any file the user edited.
+
+19.4 The full specification, each requirement with the test that verifies it,
+is `RELEASE-IMPORT.md`; it is not repeated here.
+
 ---
 
 # Part 2: design
@@ -490,7 +524,8 @@ Frozen dataclasses with `slots=True`, `tuple[...]` over `list`.
   travels with the absence rather than being worked out from it, since a locked
   file and a missing one want different words in front of a reader.
 - `Folder`: a directory's subfolders and documents, each ordered case
-  insensitively with folders first, plus the recursive `document_count`.
+  insensitively with folders first, a declared order taking precedence for the
+  documents it names (3.1), plus the recursive `document_count`.
 - `Library`: the roots being read, with `by_path()` and the walk in drawn order.
   Beside it, `ENVIRONMENT_FOLDER_NAMES` names the folders the tree filter passes
   over.
@@ -502,6 +537,10 @@ Frozen dataclasses with `slots=True`, `tuple[...]` over `list`.
   opening another.
 - `passage.soften`: breaking a wall of text at divisions its author already
   wrote. Pure string work, adding and removing nothing.
+- For section 19: `RepositoryAddress` with its parser, `Release` with the
+  Markdown it becomes, the Windows-safe file names in `file_names` and
+  `ReleaseCollection` with the refresh plan, decided whole before anything is
+  written.
 
 ## Application (domain plus stdlib only)
 
@@ -523,6 +562,10 @@ Ports, all Protocols:
 - `AssetLocator`: `find(name) -> str | None`
 - `DocumentRenderer`: `render(body, kind) -> str`
 - `ReleaseSource`: `latest_release() -> ReleaseInfo | None`
+- `ReleaseHistorySource`: `releases(address, on_page, cancelled) ->
+  tuple[Release, ...]`
+- `ReleaseCollectionStore`: `location(address)`, `load(address)`,
+  `digests(address, file_names)`, `commit(address, plan)`
 
 Services:
 
@@ -538,6 +581,8 @@ Services:
   opens. Separating those two is the whole point of 2.1. Beside them,
   `plugins_root_for` decides whether a chosen folder implies the sibling tree
   of 2.4, while `default_editor` finds the machine's own editor.
+- `ReleaseImportService`, frozen: asks GitHub for every release, plans the
+  refresh, then commits it, raising one exception class per way it can fail.
 
 ## Infrastructure
 
@@ -551,12 +596,15 @@ text out of a PDF and telling its three failures apart,
 `QtExternalOpener` (`QDesktopServices.openUrl`), `DocumentHtmlRenderer`, plus
 `resources.py` carrying `find_asset`, `read_version` and the `BundledAssets`
 adapter, so assets resolve under development, a Nuitka bundle and Flatpak
-alike.
+alike. For section 19, `GitHubReleaseHistory` (the paginated REST client) and
+`FileSystemReleaseCollections` (staged first imports, whole-file refreshes, a
+containment check on every name), with `collection_manifest` as the one home of
+the hidden record's format and `atomic_write` shared with the settings store.
 
 ## UI
 
 ```
-top tray:    [folder] [open file] [choose editor] [view in editor] | [size] .. [light/dark] [help/about]
+top tray:    [folder] [open file] [import releases] [choose editor] [view in editor] | [size] .. [light/dark] [help/about]
 body:        library tree (left)          |  rendered document (right)
 bottom tray: [donate] [UI licence] [model licence] .............. [tree filter]
 status bar:  kind of document ................... length and lines of its text
@@ -567,17 +615,19 @@ installed as an application event filter, driving the ring of section 8. A theme
 module holding semantic tokens, with `ring` and `danger` named per theme so the
 three-state colour model holds by construction.
 
-Dialogs: `AboutDialog`, `GuideDialog`, plus one `LicenceDialog(title, path,
-parent)` reused by both licence buttons, each derived from the first-stop
-dialog base.
+Dialogs: `AboutDialog`, `GuideDialog`, `ReleaseImportDialog`, plus one
+`LicenceDialog(title, path, parent)` reused by both licence buttons, each
+derived from the first-stop dialog base.
 
 ## Assets
 
 The master is `plainsight.png` at the repository root, square RGBA at 1254
 pixels. `generate_icons.py` derives the whole set into `assets/`: the sized PNGs,
-the canonical 256, a multi-size Windows `.ico`, a macOS `.icns`, the nine tray
+the canonical 256, a multi-size Windows `.ico`, a macOS `.icns`, the ten tray
 marks, the tree filter picture with its cross and the donate mark. The two tree
-filter masters keep the names their owner gave them. Nothing is ever upscaled: a master smaller than a
+filter masters keep the names their owner gave them. The release notes mark's
+master is not square and its artwork runs to the edges, so it is cropped to its
+artwork and padded out to a square rather than centre cropped. Nothing is ever upscaled: a master smaller than a
 wanted size is reported rather than stretched. The donate mark does not go
 through the squaring path the icon takes; it is cropped to its artwork and
 scaled by height alone.
@@ -592,7 +642,7 @@ buildexe.py  buildinstaller.py  build_flatpak.sh  clean_flatpak.sh  builddmg.py
 build_utils.py  dmg_icon.py
 LICENSE  LICENSE-GPL-3.0.txt  LICENSE-LGPL-3.0.txt  INSTALLER_LICENSE
 main.py            the entry script the build scripts compile
-README.md  ARCHITECTURE.md  DESIGN-PLAN.md  TECH_DEBT.md
+README.md  ARCHITECTURE.md  DESIGN-PLAN.md  TECH_DEBT.md  RELEASE-IMPORT.md
 docs/              the GitHub Pages site
 installer/         the setup program, a second application in the same tree
 plainsight/
@@ -600,17 +650,22 @@ plainsight/
   version.py
   domain/          document.py  library.py  parsing.py  settings.py
                    passage.py  extent.py
+                   repository_address.py  release.py  file_names.py
+                   release_collection.py
   application/     ports.py  services.py  defaults.py  update.py
+                   release_import.py
   infrastructure/  document_repository.py  document_reader.py  word_reader.py
                    pdf_reader.py  pdf_structure.py  word_html.py  html_text.py
-                   settings_store.py  desktop.py
+                   settings_store.py  atomic_write.py  desktop.py
                    renderer.py  resources.py  platform.py
-                   update_source.py
+                   update_source.py  github_releases.py
+                   release_collection_store.py  collection_manifest.py
   ui/              main_window.py  top_tray.py  bottom_tray.py  library_tree.py
                    document_view.py  reading_pane.py  auto_scroller.py
                    keyboard_nav.py  theme.py  widgets.py  update_check.py
                    status_readouts.py  inactive_tooltips.py
                    about_dialog.py  guide_dialog.py  licence_dialog.py
+                   release_import_dialog.py  release_import_wording.py
                    dialogs.py
                    reading_choice.py
 tests/             mirrors the source tree, plus tests/structural/
@@ -652,6 +707,7 @@ installer, Linux through `build_flatpak.sh` and `clean_flatpak.sh`, macOS throug
 PyInstaller.
 
 The setup program installs per user and never asks for an administrator. It
-removes what it wrote plus the settings directory, so an account that
-uninstalls and installs again starts as a first install does. A folder of
+removes what it wrote plus the application's own directory, settings and
+imported release notes alike, so an account that uninstalls and installs again
+starts as a first install does. A folder of
 documents is never touched by either operation.

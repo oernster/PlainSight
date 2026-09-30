@@ -81,8 +81,9 @@
     should not find a page already scrolling past them.
   </p>
   <p>
-    It reads and nothing else. It never writes to a document, which is enforced by a structural test that reads the
-    whole program and fails the build if any part of it but the settings file calls a writing operation. When you want
+    It reads your documents and nothing else. It never writes to one, which is enforced by a structural test that
+    reads the whole program and fails the build if anything calls a writing operation but the two parts that write
+    its own files: its settings and the release notes you ask it to import. When you want
     to change something it hands the file to the editor you chose. Leave to edit, come back, then the folder is
     re-read with your place kept.
   </p>
@@ -117,9 +118,9 @@
       </nav>
     </div>
     <div class="footer-bottom">
-      <p>A local-first reader for folders of Markdown, text, HTML, Word and PDF files. It reads nothing until you choose a folder; the chooser opens on your home directory. Read only, open source, no cloud. Not affiliated with Anthropic and not endorsed by them.</p>
+      <p>A local-first reader for folders of Markdown, text, HTML, Word and PDF files. It reads nothing until you choose a folder; the chooser opens on your home directory. It never writes to your documents; open source, no cloud. Not affiliated with Anthropic and not endorsed by them.</p>
       <div class="chips">
-        <span class="chip">Version <!--VERSION-->2.3.3<!--/VERSION--></span>
+        <span class="chip">Version <!--VERSION-->2.4.0<!--/VERSION--></span>
         <span class="chip">Python</span>
         <span class="chip">PySide6</span>
         <span class="chip">GPL-3.0</span>

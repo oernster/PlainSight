@@ -75,9 +75,13 @@ release notes the GitHub import brings in, under
 temporary file and the replace. Those imported files become the reader's own
 the moment they exist, which is why a refresh keeps any it finds edited.
 
-The check has one stated limit. It matches the builtin `open` by name but not an
-attribute called `open`, because a port legitimately carries that verb: the
-external opener asks the desktop to open an address and touches no file.
+The check has two stated limits, one each way. It matches the builtin `open` by
+name but not an attribute called `open`, because a port legitimately carries
+that verb: the external opener asks the desktop to open an address and touches
+no file. In the other direction it matches any call to a method named
+`replace`, a string's and a date's included, since it cannot tell them from the
+filesystem's; code outside the named writers reaches for `html.escape`,
+`Path.as_uri` or `datetime.combine` instead, which says what it means anyway.
 
 ## Components
 
@@ -340,7 +344,11 @@ untouched. A stop is honoured until writing starts and never after.
   document at listing.
 - `desktop`: the two things handed to the desktop, an editor started detached
   and an address handed to whatever opens links.
-- `platform`: the home directory and the path probe.
+- `platform`: the home directory, the path probe and the application's own
+  directory beneath the home directory, with the two places inside it: the
+  settings file and the root imported release notes live under. Both derive
+  from that one directory, so the setup program's removal of it cannot miss
+  either.
 - `renderer`: rendering through the `markdown` package for a kind that is laid
   out; into an escaped preformatted block for one kept as typed; untouched for
   one that is already HTML. Every preformatted block it produces, fenced or
@@ -456,7 +464,9 @@ Two trays around a split body, exactly as design plan part 2 describes.
   the body, so a value running to thousands of characters cannot bury the text
   the reader opened.
 - `top_tray` and `bottom_tray`: each declares `ring_stops()` left to right as
-  drawn, so the ring's order is never inferred from a layout walk. The text
+  drawn, so the ring's order is never inferred from a layout walk. The top tray
+  leads with the three ways of getting something to read: choose a folder, open
+  one document, import a repository's release notes. The text
   size control sits right of the editor controls behind a `QFrame` hairline
   which, being a container, takes no focus and appears in no ring. Both cycling
   controls wear the state they would move to rather than the current one; both
@@ -724,8 +734,9 @@ second copy of it. It follows the house setup model.
 The read-only invariant is about the application, not the
 setup program: an installer writes files by definition. What it never touches
 is a folder of documents. Installing writes under `%LOCALAPPDATA%\Programs` and
-`HKCU` alone; removing reaches one place beyond those, the settings directory
-under the home directory, which it deletes rather than reads.
+`HKCU` alone; removing reaches one place beyond those, the application's own
+directory under the home directory, holding the settings and any imported
+release notes. It deletes that directory rather than reading it.
 
 ## Quality enforcement
 

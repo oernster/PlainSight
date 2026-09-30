@@ -167,6 +167,7 @@ prompt. Nothing is fetched or sent without that click.
 | Word documents | python-docx |
 | PDFs | pypdf |
 | Settings | versioned JSON, written atomically |
+| Release notes import | GitHub's REST API through the standard library, no token |
 
 ## Install and run
 

@@ -30,9 +30,9 @@ of a local file because its release was withdrawn.
 
 | # | Decision | Reason |
 |---|---|---|
-| D1 | The collection store is the one module besides the settings store allowed to write; it writes only beneath its import directory. | The feature writes files by definition; `tests/structural/test_read_only.py` names it rather than being weakened. |
+| D1 | The collection store is the one module besides the settings store allowed to write; it writes only beneath its import directory. Both write through one shared atomic writer, the third permitted name. | The feature writes files by definition; `tests/structural/test_read_only.py` names it rather than being weakened. |
 | D2 | A folder may declare the order of its documents through a manifest; documents it does not name follow in the ordinary case-insensitive order. | Newest first by publication date, without relying on file names and without GitHub-specific code in the tree or renderer. |
-| D3 | Collections live at `~/.plainsight/github-releases/<owner>/<repo>`. | Beside the settings, the application's own storage; one directory per owner cannot collide. Uninstalling removes it with the settings (see Open questions). |
+| D3 | Collections live at `~/.plainsight/github-releases/<owner>/<repo>`. | Beside the settings, the application's own storage; one directory per owner cannot collide. Uninstalling removes it with the settings (D7). |
 | D4 | Opening a collection is choosing it as the folder being read, which is remembered. | It is the existing "open a directory" path; no second mode. |
 | D5 | Cancel is honoured until writing begins, never during it. | Nothing on disk changes before the plan is committed, so stopping earlier is always safe. |
 | D6 | A still-published release whose local file was deleted is written again. | A refresh re-synchronises from GitHub; writing a missing file destroys nothing. |
@@ -96,10 +96,10 @@ of a local file because its release was withdrawn.
   Verified by `tests/infrastructure/test_release_collection_store.py::test_a_failed_first_import_leaves_no_collection`
 - **FR-19** If a refresh fails, then every file in the collection shall be either its previous or its new content in full.
   Verified by `tests/infrastructure/test_release_collection_store.py::test_a_failed_refresh_leaves_the_collection_readable`
-- **FR-24** When a collection is written, the collection store shall remove every staging folder beside it untouched for more than ten minutes; it shall remove nothing else.
-  Verified by `tests/infrastructure/test_release_collection_store.py::test_a_stale_staging_folder_is_swept_and_nothing_else_is`
 - **FR-20** The collection store shall refuse any file name that would land outside the collection, including one read from a tampered manifest.
   Verified by `tests/infrastructure/test_release_collection_store.py::test_a_name_that_climbs_out_is_refused`
+- **FR-24** When a collection is written, the collection store shall remove every staging folder beside it untouched for more than ten minutes; it shall remove nothing else.
+  Verified by `tests/infrastructure/test_release_collection_store.py::test_a_stale_staging_folder_is_swept_and_nothing_else_is`
 
 ### Interface
 

@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>PlainSight: read the documents you never open</title>
-  <meta name="description" content="A local-first reader for folders of Markdown, text, HTML, Word and PDF files. PlainSight shows a folder as the tree it is on disk and renders the document you pick. It reads nothing until you choose a folder; the chooser opens on your home directory, which asks no permission of you. Read only, no account, no cloud.">
+  <meta name="description" content="A local-first reader for folders of Markdown, text, HTML, Word and PDF files. PlainSight shows a folder as the tree it is on disk and renders the document you pick. It reads nothing until you choose a folder; the chooser opens on your home directory, which asks no permission of you. It never writes to your documents; no account, no cloud.">
   <link rel="canonical" href="https://ernster.dev/PlainSight/">
   <meta name="theme-color" content="#1e1e2e">
   <!-- Social link previews. og:image must be an absolute URL and a raster
@@ -32,7 +32,7 @@
     "operatingSystem": "Windows, macOS, Linux",
     "applicationCategory": "DeveloperApplication",
     "applicationSubCategory": "Document reader",
-    "description": "A local-first reader for folders of Markdown, text, HTML, Word and PDF files. It reads nothing until you choose a folder, then shows it as the tree it is on disk and renders the document you pick. Read only: it never writes to a document.",
+    "description": "A local-first reader for folders of Markdown, text, HTML, Word and PDF files. It reads nothing until you choose a folder, then shows it as the tree it is on disk and renders the document you pick. It never writes to your documents.",
     "url": "https://ernster.dev/PlainSight/",
     "downloadUrl": "https://github.com/oernster/PlainSight/releases",
     "softwareHelp": "https://github.com/oernster/PlainSight",
@@ -110,8 +110,8 @@
 <div class="stats-bar">
   <div class="stats-inner">
     <div class="stat"><div class="stat-value">.md .txt .html .docx .pdf</div><div class="stat-label">Any folder you point it at</div></div>
-    <div class="stat"><div class="stat-value">Read only</div><div class="stat-label">Enforced by a test</div></div>
-    <div class="stat"><div class="stat-value">Local</div><div class="stat-label">Nothing leaves the machine</div></div>
+    <div class="stat"><div class="stat-value">Read only</div><div class="stat-label">Your documents, enforced by a test</div></div>
+    <div class="stat"><div class="stat-value">Local</div><div class="stat-label">Nothing about you leaves the machine</div></div>
     <div class="stat"><div class="stat-value">0</div><div class="stat-label">Accounts or cloud</div></div>
     <div class="stat"><div class="stat-value">GPL + LGPL</div><div class="stat-label">Open source</div></div>
   </div>
@@ -131,6 +131,7 @@
           <li><strong>Where it lives.</strong> The tree mirrors your folders exactly, each one carrying a count so a shut branch tells you whether it is worth opening.</li>
           <li><strong>Your Claude skills, if you keep them.</strong> Point it at that folder and the plugins tree beside it comes too, as a second root, so the skills you wrote and the ones that arrived with a plugin stay apart.</li>
           <li><strong>How much of it there is.</strong> The foot of the window names the kind of document you have open and counts the characters and the lines of its text, the way an editor's status bar does.</li>
+          <li><strong>A project's release history.</strong> Paste a GitHub repository's address and its published release notes arrive as a folder of Markdown, newest first, opened on the latest release. Import it again later and the folder catches up without touching anything you edited.</li>
           <li><strong>What is broken.</strong> A file that cannot be read is still listed, with the reason shown rather than quietly dropped.</li>
         </ul>
         <a class="btn-secondary" href="features.html">Everything it does</a>
@@ -149,9 +150,10 @@
 <section class="section" style="text-align:center;">
   <h2 class="section-title">Looking changes nothing.</h2>
   <p class="section-sub" style="margin-left:auto;margin-right:auto;">
-    PlainSight never writes to a document. That is not a promise made in a readme: a structural test reads the whole
-    program and fails the build if any part of it but the settings file calls a writing operation. When you want to
-    change something, it hands the document to the editor you chose and stands back.
+    PlainSight never writes to a document you point it at. That is not a promise made in a readme: a structural test
+    reads the whole program and fails the build if any part of it calls a writing operation other than the two that
+    write its own files, its settings and the release notes you ask it to import. When you want to change something,
+    it hands the document to the editor you chose and stands back.
   </p>
   <div class="hero-cta">
     <a class="btn-primary" href="download.html">
@@ -194,9 +196,9 @@
       </nav>
     </div>
     <div class="footer-bottom">
-      <p>A local-first reader for folders of Markdown, text, HTML, Word and PDF files. It reads nothing until you choose a folder; the chooser opens on your home directory. Read only, open source, no cloud. Not affiliated with Anthropic and not endorsed by them. A commercial licence for my own code is also available, separately from the open-source licences: see <a href="https://ernster.dev/commercial-licensing.html">commercial licensing</a>.</p>
+      <p>A local-first reader for folders of Markdown, text, HTML, Word and PDF files. It reads nothing until you choose a folder; the chooser opens on your home directory. It never writes to your documents; open source, no cloud. Not affiliated with Anthropic and not endorsed by them. A commercial licence for my own code is also available, separately from the open-source licences: see <a href="https://ernster.dev/commercial-licensing.html">commercial licensing</a>.</p>
       <div class="chips">
-        <span class="chip">Version <!--VERSION-->2.3.3<!--/VERSION--></span>
+        <span class="chip">Version <!--VERSION-->2.4.0<!--/VERSION--></span>
         <span class="chip">Python</span>
         <span class="chip">PySide6</span>
         <span class="chip">GPL-3.0</span>

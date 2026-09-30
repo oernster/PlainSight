@@ -50,8 +50,8 @@
   <p class="section-sub">
     Free and open source, the user interface under LGPL-3.0 and the model under
     GPL-3.0. Installed per user on every platform, so no administrator rights are needed. No
-    account, no cloud: the only request it makes of its own accord is asking GitHub whether a
-    newer release exists.
+    account, no cloud: it asks GitHub whether a newer release exists, then asks GitHub for a
+    repository's releases only when you import them. Nothing about you goes with either.
   </p>
   <span class="dl-version" id="dl-version">Latest release</span>
   <div class="downloads">
@@ -81,7 +81,7 @@
       <a class="btn-primary" href="https://github.com/oernster/PlainSight/releases/latest/download/plainsight.flatpak">
         Download for Linux</a>
       <p class="meta" data-asset="plainsight.flatpak">Flatpak bundle (.flatpak)</p>
-      <p class="how">Install with <code>flatpak install --user plainsight.flatpak</code>. It runs sandboxed. It is granted your home folder so it can read the documents you point it at, plus network access for the update check; nothing else.</p>
+      <p class="how">Install with <code>flatpak install --user plainsight.flatpak</code>. It runs sandboxed. It is granted your home folder so it can read the documents you point it at, plus network access for the update check and the release notes import; nothing else.</p>
     </div>
   </div>
   <p class="dl-links">
@@ -119,9 +119,9 @@
       </nav>
     </div>
     <div class="footer-bottom">
-      <p>A local-first reader for folders of Markdown, text, HTML, Word and PDF files. It reads nothing until you choose a folder; the chooser opens on your home directory. Read only, open source, no cloud. Not affiliated with Anthropic and not endorsed by them.</p>
+      <p>A local-first reader for folders of Markdown, text, HTML, Word and PDF files. It reads nothing until you choose a folder; the chooser opens on your home directory. It never writes to your documents; open source, no cloud. Not affiliated with Anthropic and not endorsed by them.</p>
       <div class="chips">
-        <span class="chip">Version <!--VERSION-->2.3.3<!--/VERSION--></span>
+        <span class="chip">Version <!--VERSION-->2.4.0<!--/VERSION--></span>
         <span class="chip">Python</span>
         <span class="chip">PySide6</span>
         <span class="chip">GPL-3.0</span>
