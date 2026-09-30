@@ -73,6 +73,25 @@ def test_it_opens_focused_on_the_address_with_the_default_selected(
     assert dialog.address_field.selectedText() == wording.DEFAULT_ADDRESS
 
 
+def test_an_example_address_is_shown_beneath_the_field(
+    application: QApplication,
+) -> None:
+    dialog, _imported, _store = a_dialog(FakeReleaseSource())
+
+    assert dialog.example.isVisible()
+    assert dialog.example.text() == (
+        "For example: https://github.com/oernster/PlainSight"
+    )
+    assert dialog.example.focusPolicy() == Qt.FocusPolicy.NoFocus
+
+
+def test_the_example_is_an_address_the_dialog_accepts() -> None:
+    """An example the dialog would refuse is worse than none."""
+    address = parsing.parse_repository_address(wording.EXAMPLE_ADDRESS)
+
+    assert (address.owner, address.name) == ("oernster", "PlainSight")
+
+
 def test_a_paste_replaces_the_default_whole(application: QApplication) -> None:
     dialog, _imported, _store = a_dialog(FakeReleaseSource())
     QApplication.clipboard().setText(PASTED)

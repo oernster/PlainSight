@@ -44,6 +44,7 @@ from . import release_import_wording as wording
 from .widgets import FirstStopDialog
 
 MINIMUM_WIDTH_PX = 480
+EXAMPLE_NAME = "ImportExample"
 PROBLEM_NAME = "ImportProblem"
 STATUS_NAME = "ImportStatus"
 
@@ -72,6 +73,10 @@ class ReleaseImportDialog(FirstStopDialog):
         self.address_field = QLineEdit(wording.DEFAULT_ADDRESS, self)
         self.address_field.setAccessibleName(wording.FIELD_LABEL)
         label.setBuddy(self.address_field)
+        # Beneath the field rather than inside it: the field already holds the
+        # default the paste replaces, so a placeholder there would never show.
+        self.example = QLabel(wording.EXAMPLE, self)
+        self.example.setObjectName(EXAMPLE_NAME)
         self.problem = QLabel("", self)
         self.problem.setObjectName(PROBLEM_NAME)
         self.problem.setWordWrap(True)
@@ -96,6 +101,7 @@ class ReleaseImportDialog(FirstStopDialog):
         column = QVBoxLayout(self)
         column.addWidget(label)
         column.addWidget(self.address_field)
+        column.addWidget(self.example)
         column.addWidget(self.problem)
         column.addWidget(self.status)
         column.addLayout(buttons)

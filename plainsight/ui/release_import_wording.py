@@ -27,6 +27,8 @@ from ..application.release_import import (
 TITLE = "Import GitHub Releases"
 FIELD_LABEL = "Repository address"
 DEFAULT_ADDRESS = "https://github.com/"
+EXAMPLE_ADDRESS = "https://github.com/oernster/PlainSight"
+EXAMPLE = f"For example: {EXAMPLE_ADDRESS}"
 IMPORT_LABEL = "Import"
 CANCEL_LABEL = "Cancel"
 
