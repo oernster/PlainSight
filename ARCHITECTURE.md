@@ -20,7 +20,7 @@ wish.
 | The application imports no third-party package | `tests/structural/test_layers.py::test_the_application_layer_imports_no_third_party_package` |
 | No module exceeds 400 lines | `tests/structural/test_loc_limits.py::test_no_module_is_over_the_cap` |
 | No module sits in the 381 to 400 danger band | `tests/structural/test_loc_limits.py::test_no_module_sits_in_the_danger_band` |
-| Nothing but the settings store and the collection store writes anything | `tests/structural/test_read_only.py::test_only_the_named_writers_write_anything` |
+| Nothing but the settings store, the collection store and their shared atomic writer writes anything | `tests/structural/test_read_only.py::test_only_the_named_writers_write_anything` |
 | A folder's declared document order is the order the tree shows | `tests/infrastructure/test_document_repository_order.py::test_a_declared_order_lists_newest_first_then_everything_else` |
 | No imported file name lands outside its collection | `tests/infrastructure/test_release_collection_store.py::test_a_name_that_climbs_out_is_refused` |
 | A refresh never writes over a file the reader edited | `tests/domain/test_release_collection.py::test_an_edited_file_is_kept_and_reported` |
@@ -308,7 +308,7 @@ untouched. A stop is honoured until writing starts and never after.
   than chosen; each carries what it was measured against. Four of those
   measurements are the module: a line's size is the size MOST of its text is
   set in, because a stray run at the previous line's size promoted body text to
-  a heading; a page where more than a third of the lines would be headings has
+  a heading; a page where more than 35 percent of the lines would be headings has
   none, because a form has no dominant body size and a real payslip came back
   as a stack of headings with every line shouting; a wrapped item's second line
   continues the open item, because it carries no bullet of its own and every

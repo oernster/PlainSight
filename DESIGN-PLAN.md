@@ -643,6 +643,7 @@ build_utils.py  dmg_icon.py
 LICENSE  LICENSE-GPL-3.0.txt  LICENSE-LGPL-3.0.txt  INSTALLER_LICENSE
 main.py            the entry script the build scripts compile
 README.md  ARCHITECTURE.md  DESIGN-PLAN.md  TECH_DEBT.md  RELEASE-IMPORT.md
+DECISIONS-TRADEOFFS.md
 docs/              the GitHub Pages site
 installer/         the setup program, a second application in the same tree
 plainsight/

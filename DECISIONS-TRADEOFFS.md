@@ -13,9 +13,9 @@ debt.
 ### A reader, never a writer
 
 PlainSight never writes to a document it is pointed at. Editing is handed to
-an editor the reader chooses. A structural test names the only modules
-allowed to write anything at all: the settings store, the store for imported
-release notes and the one helper both of them write through.
+an editor the reader chooses. The only things it writes are its own: its
+settings and any release notes the reader asks it to import. A structural
+test names the code allowed to write and fails on anything else.
 
 - **Rather than:** a viewer with editing built in.
 - **Gains:** looking at a folder cannot change it; the promise is a test
@@ -24,15 +24,14 @@ release notes and the one helper both of them write through.
 
 ### Any folder of documents, not one kind of file
 
-A document is any file whose suffix names a kind PlainSight reads: Markdown,
-plain text, HTML, Word and PDF. It began as a viewer for Claude skills,
-hard-wired to one file name.
+A document is any file of a kind PlainSight reads: Markdown, plain text, HTML,
+Word and PDF. It began as a viewer for Claude skills, tied to one file name.
 
 - **Rather than:** discovery tied to skill folders, which listed nothing in a
   folder of ordinary notes.
 - **Gains:** notes, project documentation and skills are read the same way
   with no configuration.
-- **Costs:** five readers to maintain where there was one.
+- **Costs:** a reader to maintain for every kind where there was one.
 
 ### What PlainSight deliberately is not
 
@@ -46,48 +45,41 @@ the front.
 
 ### Specification before code
 
-The design plan is written as numbered requirements; the release notes
-import has its own specification in which every requirement names the test
-that verifies it, with a list of what is deliberately out of scope.
+The design is written as numbered requirements before it is built. The
+release notes import has its own specification in which every requirement
+names the test that verifies it, with a list of what is deliberately out of
+scope.
 
 - **Rather than:** building first and describing afterwards.
 - **Gains:** a ruled-out idea stays ruled out; a claim in the docs is one a
   test holds.
-- **Costs:** keeping the specifications true is work of its own; several
-  documentation passes have been spent correcting claims that had drifted.
+- **Costs:** keeping the specifications true is work of its own; documentation
+  passes keep finding claims that have drifted.
 
 ## Reading only what was asked
 
 ### Nothing is read until a folder is chosen
 
-There is no default folder and no first-run scan. A fresh install opens on
-an empty tree and an invitation, having listed no directory at all.
+There is no default folder and no first-run scan. A fresh install opens on an
+empty tree and an invitation, having listed no directory at all. The folder
+chooser opens on the last folder taken, else the home directory. Where it
+opens is kept apart from what is read: a folder offered in a dialog has not
+been read.
 
-- **Rather than:** opening on the Claude skills folder, as it once did.
-- **Gains:** reading somebody's files is theirs to authorise; an unasked walk
-  of a home directory never happens.
+- **Rather than:** opening on the Claude skills folder, as it once did;
+  starting the chooser in a documents folder, which one operating system gates
+  by name.
+- **Gains:** reading somebody's files is theirs to authorise; the starting
+  place raises no permission prompt on any of the three operating systems.
 - **Costs:** a first run shows nothing until the reader acts.
-
-### The chooser opens on the home directory
-
-The folder chooser starts at the last folder taken, else the home directory.
-Where it opens is kept apart from what is read: a folder offered in a dialog
-has not been read.
-
-- **Rather than:** the Claude skills folder, a dotted directory belonging to
-  another application; the Documents folder, which macOS gates by name.
-- **Gains:** the starting place raises no permission prompt on any of the
-  three operating systems.
-- **Costs:** the documents folder is one row down rather than open already.
 
 ### A neighbouring folder only where it is implied
 
 The plugins tree beside a Claude skills folder is read as a second root only
-when the chosen folder is a skills directory inside a `.claude` one. Any
-other folder is read on its own.
+when the chosen folder plainly is one. Any other folder is read on its own.
 
-- **Rather than:** reading the sibling called plugins beside any chosen
-  folder, which once meant choosing a notes folder walked whatever sat next
+- **Rather than:** reading a sibling plugins folder beside whatever was
+  chosen, which once meant choosing a notes folder walked whatever sat next
   door.
 - **Gains:** exactly one directory is read unless the choice plainly means two.
 - **Costs:** a plugins tree kept anywhere else is not found.
@@ -104,38 +96,30 @@ remembered; the next run opens on the chosen folder.
 
 ### Nothing is selected until the reader selects it
 
-There is no fallback to the first row. The pane opens saying "Select a
-document".
+There is no fallback to the first row. The pane opens empty, saying so.
 
-- **Rather than:** selecting the first document, which chose one on every
-  window activation; the pane reads itself down the page, so it was scrolling
-  through a file nobody had opened.
+- **Rather than:** selecting the first document, which chose one again on
+  every return to the window while the pane scrolled through a file nobody
+  had opened.
 - **Gains:** what is on screen is always what the reader asked for.
 - **Costs:** one more click on a first visit.
 
 ### Fresh on every return to the window
 
 The library is read again whenever the window is activated. There is no file
-watcher and no polling thread.
+watcher and no polling. A listing keeps what each document says about itself
+and a fingerprint of its file, never its text. The text is read for the one
+document that is opened; a document already on screen and unchanged is not
+drawn again.
 
-- **Rather than:** watching the folders for changes.
+- **Rather than:** watching the folders for changes; holding every document's
+  text in memory; redrawing on every read, which sent the reader back to the
+  top whenever they left the window.
 - **Gains:** a reader who leaves to edit a document comes back to the current
-  text; nothing runs in the background.
-- **Costs:** the listing is paid for on every activation, which is why
-  listing has to stay cheap.
-
-### Bodies fetched when opened, not when listed
-
-A listing keeps what each document says about itself and a fingerprint of
-its file (size and modification time), never its text. The text is read for
-the one document that is opened.
-
-- **Rather than:** holding every body in the library. Measured over a skills
-  tree, that retained 859.6KB of text to show one document; it is now 42.2KB.
-- **Gains:** listing forty PDFs of twelve pages takes 7ms where extracting
-  them all took 515ms; a document left on screen is never read off disk again.
-- **Costs:** a document that has gone by the time it is opened has to say so
-  rather than show a blank page.
+  text at the place they left; nothing runs in the background; a folder of
+  large PDFs lists quickly.
+- **Costs:** the listing is paid for on every activation, so it has to stay
+  cheap; a document that has gone by the time it is opened has to say so.
 
 ### A document that cannot be read is still listed
 
@@ -146,18 +130,20 @@ opened.
 - **Rather than:** a dialog; leaving the file out.
 - **Gains:** the reader sees everything that is there and why some of it
   cannot be read.
-- **Costs:** none recorded.
+- **Costs:** the tree can hold rows that open onto an explanation rather than
+  a document.
 
 ### Somebody else's code and empty files hidden by default
 
 While the tree filter is on, which it is until the reader turns it off,
-folders named `venv` or `node_modules` are passed over and documents holding
-no text are left out. A folder left with nothing to read goes too. Emptiness
-is judged only from what listing already cost, so a PDF is never judged. A
-document opened on its own is never filtered.
+Python environment and Node package folders are passed over and documents
+holding no text are left out, along with any folder left with nothing to
+read. Emptiness is judged only from what listing already cost, so a PDF is
+never judged. A document opened on its own is never filtered. One button turns
+the filter off and on.
 
-- **Rather than:** a right-click menu on the tree with the filter off by
-  default, which it replaced.
+- **Rather than:** showing everything; a right-click menu on the tree with the
+  filter off by default, which it replaced.
 - **Gains:** licence and metadata files from installed packages stay out of
   the tree.
 - **Costs:** an empty PDF still shows; a document the reader wanted inside one
@@ -167,31 +153,22 @@ document opened on its own is never filtered.
 
 ### One home for the kinds
 
-Which suffixes are read, whether a kind declares fields, how its text reaches
-the screen and what it is called in the status bar all live on one
-enumeration. The reader for each kind is written out by hand in the
-composition root rather than derived; a structural test requires every kind
-to have one.
+Which file names are read, whether a kind declares fields, how its text
+reaches the screen and what it is called in front of a reader all live in one
+place. A body is laid out for the page, kept exactly as typed or handed over
+as the HTML it already is. The reader for each kind is named by hand rather
+than derived; a test requires every kind to have one.
 
-- **Rather than:** lists of suffixes held by each part that cares.
+- **Rather than:** lists of file types held by each part that cares; a flag
+  for how text is shown, which had nowhere to put HTML.
 - **Gains:** the chooser, discovery and rendering cannot disagree; a kind
   added without a reader fails a test rather than being read by the wrong one.
 - **Costs:** adding a kind touches two places on purpose.
 
-### Three ways to the screen rather than a flag
-
-A body is laid out for the page, kept exactly as typed or handed over as the
-HTML it already is.
-
-- **Rather than:** a boolean, which carried two meanings and had nowhere to
-  put HTML.
-- **Gains:** each kind says plainly what happens to it.
-- **Costs:** none recorded.
-
 ### Plain text is shown exactly as typed
 
-A text file is escaped into a preformatted block and never passed through the
-Markdown renderer.
+A text file is shown as its own characters and line breaks, never passed
+through the Markdown renderer.
 
 - **Rather than:** rendering it as Markdown, which would turn a line of
   hyphens into a heading rule and lose the author's line breaks.
@@ -202,12 +179,12 @@ Markdown renderer.
 ### HTML is shown as the page it is; nothing in it runs
 
 An HTML document is handed to the reading surface untouched. Scripts neither
-run nor appear as text; htmx attributes are inert; a picture held at a web
-address is not fetched. Tests pin all three, the last against a real server
-on the loopback interface.
+run nor appear as text; a picture held at a web address is not fetched. The
+reading surface has no way to reach the network at all.
 
 - **Rather than:** parsing the page to write it back, which would lose
-  whatever the parser did not understand on every pass.
+  whatever the parser did not understand on every pass; a surface able to run
+  scripts or fetch.
 - **Gains:** a document somebody sent cannot act on the machine or reach the
   network.
 - **Costs:** a page that needs scripts or remote pictures shows only the text
@@ -215,38 +192,27 @@ on the loopback interface.
 
 ### Word documents become HTML, not Markdown
 
-A Word document is converted to HTML as it is read, at the boundary, so the
-reading pane never learns where it came from. Headings, paragraphs, lists,
-tables and emphasis cross; presentation does not.
+A Word document is converted to HTML as it is read, so the reading pane never
+learns where it came from. Headings, paragraphs, lists, tables and emphasis
+cross; presentation does not. A table is drawn as a table only when it has
+something to tabulate, since Word lays pages out with tables as often as it
+tabulates.
 
-- **Rather than:** Markdown, the first answer. Text that means nothing in Word
-  became syntax on the way through: three paragraphs of a real CV indented
-  with four spaces arrived as blocks of code. Escaping into HTML is total,
-  where guarding Markdown against each such case has no end.
-- **Gains:** nothing an author typed can be misread as markup; measured on a
-  real CV, 11190 characters went in and 11190 came out.
-- **Costs:** fonts, colours and page layout are not carried across.
-
-### A Word table must have something to tabulate
-
-A table is drawn as a table only with more than one row and more than one
-column; anything else gives up its cells as the blocks of text they hold.
-Runs sharing their emphasis are joined before they are marked.
-
-- **Rather than:** drawing every table as one. Word lays pages out with tables
-  as often as it tabulates; one single-row layout table on a real CV became a
-  row 2550 characters long.
-- **Gains:** a Word document reads as the document it looks like.
-- **Costs:** a genuine single-row or single-column table is shown as plain
-  blocks.
+- **Rather than:** Markdown, the first answer, where text that means nothing
+  in Word became syntax on the way through and guarding against each case had
+  no end; drawing every layout table as a table.
+- **Gains:** escaping into HTML is total, so nothing an author typed can be
+  misread as markup; a Word document reads as the document it looks like.
+- **Costs:** fonts, colours and page layout are not carried across; a genuine
+  single-row or single-column table is shown as plain blocks.
 
 ### A PDF is rebuilt into the document its page was laid out to be
 
-Every run of text is taken with its place, size and face; a line set larger
-than the body becomes a heading, a bold line is emphasised, a line opening
-with a bullet is an item and running lines of body text are one paragraph.
-Every threshold was measured on real files. A page that cannot be rebuilt
-falls back to its plain words, asked first for their layout.
+A PDF holds glyphs with places, sizes and faces rather than headings and
+paragraphs, so those are read back the way an eye reads them: larger than the
+body is a heading, bold is emphasis, a bullet opens an item and running lines
+are one paragraph. Every threshold was measured on real files. A page that
+cannot be rebuilt falls back to its plain words.
 
 - **Rather than:** the words alone, which turned a real CV into a wall of
   monospace with every heading and bullet gone.
@@ -257,58 +223,47 @@ falls back to its plain words, asked first for their layout.
 
 ### A reader never takes the application down
 
-The Word and PDF readers catch every exception when opening a file, each
-marked with its reason. They parse files somebody else chose, through
-libraries with no contract about what they raise.
+The Word and PDF readers catch every failure when opening a file, each catch
+carrying its reason. They parse files somebody else chose, through libraries
+with no contract about what they raise.
 
-- **Rather than:** catching a list of the exception types seen so far.
+- **Rather than:** catching a list of the failures seen so far.
 - **Gains:** a broken file costs its own row, never the session.
 - **Costs:** a genuine fault inside a reader is reported as an unreadable file.
 
-### A wall of text gets somewhere for the eye to rest
+### Long text is arranged for reading, never rewritten
 
 An over-long passage is shown in groups of whole sentences with a gap between
-them; an inventory with no sentence ends is broken at the divisions its
-author did write. Code, headings, tables, quotations and bracketed asides are
-never broken. A test takes the breaks out again and requires the original
-text character for character.
+them, falling back to the divisions its author did write. A declared field too
+long for the header is given its own section after the body. Nothing is
+added, removed or reordered; a test takes the breaks out again to prove it.
 
-- **Rather than:** showing very long paragraphs as they are; rewriting them.
-- **Gains:** measured over a real library, the longest block a reader meets
-  fell from 5604 characters to 1893; nothing is added, removed or reordered.
-- **Costs:** the breaks are PlainSight's, not the author's.
-
-### Long declared fields follow the body
-
-A frontmatter value too long for a header row is lifted out and given its
-own section after the document.
-
-- **Rather than:** showing every field above the body; the longest measured
-  ran to 11717 characters on one line and buried the document beneath it.
-- **Gains:** the reader lands on the text they opened.
-- **Costs:** a long field is found at the foot rather than the head.
+- **Rather than:** showing walls of text as they arrive; rewriting them.
+- **Gains:** the eye has somewhere to rest; the reader lands on the text they
+  opened rather than beneath a field.
+- **Costs:** the breaks are PlainSight's, not the author's; a long field is
+  found at the foot rather than the head.
 
 ### The status bar counts the text, not the file
 
-The foot of the window names the kind of document at the left and counts its
-characters and lines at the right. The count is of the text being read: a
-Markdown document beneath its declared fields, a PDF or Word document as what
-was read out of it. A document that could not be read names its kind and
-carries no count.
+The foot of the window names the kind of document and counts the characters
+and lines of the text being read: a Markdown document beneath its declared
+fields, a PDF or Word document as what was read out of it. A document that
+could not be read names its kind and carries no count.
 
 - **Rather than:** a byte count of the file.
 - **Gains:** the figure means the same thing for every kind.
-- **Costs:** none recorded.
+- **Costs:** it says nothing about how large the file itself is.
 
 ## The network
 
 ### Two requests of its own, never a third
 
 PlainSight asks GitHub whether a newer release of itself exists. It also asks
-GitHub's public API for a repository's releases when the reader imports them.
-It opens no other connection and carries no telemetry. The donate button, a
-link clicked inside a document and the Download button on an update prompt
-each hand an address to the desktop for the browser to fetch.
+GitHub for a repository's releases when the reader imports them. It opens no
+other connection and carries no telemetry. The donate button, a link clicked
+inside a document and the Download button on an update prompt each hand an
+address to the desktop for the browser to fetch.
 
 - **Rather than:** a reader that fetches on a document's behalf; usage
   reporting.
@@ -317,13 +272,12 @@ each hand an address to the desktop for the browser to fetch.
 
 ### Update checks: daily, quiet unless there is news
 
-A check runs three seconds after the window opens and once a day while it
-stays open, off the interface thread, with a five second limit and no
-retries. It asks for the latest published release only, so a pre-release or
-draft is never offered. A check nobody asked for speaks only when there is
-something to download; one from the Help menu reports every outcome. A
-version that is not dotted integers is never treated as newer. A skipped
-release is one remembered tag.
+A check runs shortly after the window opens and once a day while it stays
+open, with a short time limit and no retries. It asks only for the latest
+published release, so a pre-release or draft is never offered. A check nobody
+asked for speaks only when there is something to download; one from the Help
+menu reports every outcome. A version it cannot read is never treated as
+newer. A skipped release is one remembered release.
 
 - **Rather than:** no check at all; one that reports every outcome.
 - **Gains:** updates are found without nagging; a malformed tag can never
@@ -336,14 +290,14 @@ Both requests go to GitHub without a token or an account.
 
 - **Rather than:** an authenticated client.
 - **Gains:** nothing to leak or to configure.
-- **Costs:** the release import is held to GitHub's unauthenticated allowance
-  of 60 requests an hour; an import spends one per hundred releases.
+- **Costs:** the release import is held to GitHub's hourly allowance for
+  requests made without an account, so it asks for as many releases per
+  request as GitHub allows.
 
 ### The donation address is pinned literally
 
-The donate address lives in one module as a plain constant. Structural tests
-assert it character for character, assert its scheme and assert it appears
-exactly once.
+The donate address has one home. Structural tests assert it character for
+character, assert its scheme and assert it appears exactly once.
 
 - **Rather than:** a check of its shape.
 - **Gains:** a transposed character cannot send a supporter to someone else's
@@ -365,33 +319,27 @@ are left out and pre-releases marked.
   the reader's to keep.
 - **Costs:** the folder is a copy, current only as of the last import.
 
-### Every request before any write
+### Every request before any write; never half a history
 
 All of GitHub's answers are gathered and the whole refresh is planned before
-a byte is written. A stop is honoured until writing starts and never after.
+a byte is written. A stop is honoured until writing starts and never after. A
+first import is built out of sight and moved into place only when complete; a
+refresh replaces each file whole and its record last. Staging left behind by
+an import that died is swept once it is old enough that no live import can
+still be writing it.
 
-- **Rather than:** writing each release as it arrives.
+- **Rather than:** writing each release as it arrives; writing into the
+  collection directly.
 - **Gains:** a failure asking GitHub, where nearly every failure is, leaves
-  the disk untouched.
-- **Costs:** a large history is held in memory until it is written.
-
-### Never half a history
-
-A first import is built in a hidden staging folder and renamed into place
-only when complete. A refresh replaces each file whole and the record last.
-Each import also sweeps staging folders that a dead import left untouched for
-more than ten minutes.
-
-- **Rather than:** writing into the collection directly.
-- **Gains:** a failed first import leaves no collection; a failed refresh
-  leaves every file either as it was or as it should be.
-- **Costs:** the sweep waits ten minutes so that a second running copy's live
-  staging folder is never taken.
+  the disk untouched; a failed first import leaves no collection and a failed
+  refresh leaves every file either as it was or as it should be.
+- **Costs:** a large history is held in memory until it is written; dead
+  staging waits a while before it is cleared.
 
 ### The reader's edits and withdrawn releases are kept
 
-A file is known by its GitHub id and by a digest of what was last written to
-it. A refresh rewrites a file only when it is unedited and GitHub's text
+A file is known by its release and by a fingerprint of what was last written
+to it. A refresh rewrites a file only when it is unedited and GitHub's text
 changed. A file the reader edited is kept and reported; a release GitHub no
 longer lists keeps its file.
 
@@ -402,11 +350,12 @@ longer lists keeps its file.
 ### A bad answer fails the import
 
 A malformed entry in GitHub's answer fails the whole import rather than being
-skipped. A page past 32 MiB is refused unread; a next page off GitHub's own
-API host is refused; retrieval stops after a hundred pages.
+skipped. An oversized page is refused unread, a next page anywhere but
+GitHub's own API is refused and retrieval stops at a fixed number of pages.
 
 - **Rather than:** importing what could be read.
-- **Gains:** a history never silently misses a release.
+- **Gains:** a history never silently misses a release; a hostile or broken
+  answer cannot run away with memory or time.
 - **Costs:** one bad entry blocks the rest.
 
 ### A folder may declare its order, generically
@@ -437,70 +386,49 @@ Uninstalling removes that directory, edited notes included.
 
 A change of colour or text size draws the page again without moving the
 reader. The new page is built, styled and laid out before it is attached, so
-there is no moment at which the position can be lost. When the height comes
-back unchanged, as it does after a change of colour, the exact pixel is put
-back; when it moved under a new size, the place is followed as an offset into
-the text. The reading cycle then holds still for a moment.
+there is no moment at which the position can be lost; where the layout moved
+under a new size, the place is followed into the text rather than kept as a
+scroll position.
 
 - **Rather than:** setting the text on the live widget and restoring the
-  place afterwards. Three attempts at that each guessed a different moment to
-  restore and lost the place in a race.
-- **Gains:** measured on a real display, the reader is back on the same pixel
-  within 120ms after a change of colour.
+  place afterwards, which lost it in a race.
+- **Gains:** the reader stays on the words they were reading.
 - **Costs:** a more intricate redraw than setting text.
-
-### An unchanged document is left alone
-
-The library is read again on every activation. A document already on screen
-and unchanged is not drawn again; one edited on disk is.
-
-- **Rather than:** redrawing on every read, which sent the reader back to the
-  top whenever they left the window.
-- **Gains:** leaving to look something up costs nothing.
-- **Costs:** a document must compare by value, which is what the fingerprint
-  is for.
 
 ### A readable column that does not pen in code
 
 Prose wraps at a readable line length, so a wide window buys margins rather
-than longer lines. The cap is on where a line wraps rather than on how much
-of the pane a page may use, so a code block or diagram too wide to wrap keeps
-every pixel the window has. Text that arrived hard wrapped is left as it came.
+than longer lines. The cap is on where a line wraps rather than on how much of
+the pane a page may use, so a block of code or a diagram is drawn as one box,
+in a face whose box-drawing strokes join up, keeping every pixel the window
+has. Text that arrived hard wrapped is left as it came.
 
 - **Rather than:** shrinking the pane to the column, which penned wide diagrams
-  into the same narrow strip with empty margin either side.
+  into the same narrow strip; the toolkit's own drawing of code, which broke
+  it into a ragged staircase of dashed lines.
 - **Gains:** prose reads comfortably and diagrams scroll sideways only when
   the window is genuinely too narrow.
-- **Costs:** none recorded.
-
-### A code block is one box
-
-Every preformatted block sits in a table of one cell, in a monospace face
-with whole box-drawing strokes, at its own line height.
-
-- **Rather than:** the toolkit's own drawing, which painted the background
-  line by line as a ragged staircase and picked Courier New, whose vertical
-  strokes stop short.
-- **Gains:** box-drawn diagrams join up; a wide block scrolls sideways as one
-  rectangle.
-- **Costs:** none recorded.
+- **Costs:** a wide window leaves much of its width as margin.
 
 ### The page reads itself
 
 The document pane, the guide, About and both licences scroll gently on their
 own and hand control back the moment the reader takes over. One set of
-timings serves every surface; a page that fits is left still.
+timings serves every surface; a page that fits is left still. A dialog is
+destroyed when it closes, so no cycle carries on behind the window.
 
-- **Rather than:** static pages.
-- **Gains:** long text can be read hands free.
-- **Costs:** none recorded.
+- **Rather than:** static pages; dialogs kept hidden for reuse, which left
+  their reading cycles running.
+- **Gains:** long text can be read hands free; nothing runs that the reader
+  cannot see.
+- **Costs:** a page in motion the reader did not start; a dialog is built
+  afresh each time.
 
 ### Three text sizes from one button
 
-Medium, large and extra large are stepped by one button that wraps back to
-the start. The sizes derive from one base and one step. The rendered page
-declares no size of its own, so a change reaches the trays, the tree and the
-page together.
+Three sizes are stepped by one button that wraps back to the start, derived
+from one base and one step. The rendered page declares no size of its own, so
+a change reaches the trays, the tree and the page together.
 
 - **Rather than:** a continuous scale.
 - **Gains:** one button, walkable in a moment; the sizes cannot drift apart.
@@ -510,8 +438,7 @@ page together.
 
 The appearance and text size buttons wear the state a press would move to.
 The tree filter button is the exception: its picture shows the filter as it
-stands (crossed out while everything is shown) while its tooltip offers
-the press.
+stands while its tooltip offers the press.
 
 - **Rather than:** one rule for every toggle.
 - **Gains:** each picture answers the question a reader asks of it.
@@ -525,39 +452,22 @@ belongs to a control, never to the tree or the page being read.
 
 - **Rather than:** a focus order inferred from the layout; rings on panes.
 - **Gains:** the whole application works without a mouse; clicking the text
-  no longer draws a rectangle round the page.
+  never draws a rectangle round the page.
 - **Costs:** every new control needs its place in the ring.
 
-### A help menu without a menu bar
+### Help lives on the controls, with one short guide
 
-The help button drops a menu of the Guide, About and Check for Updates, in
-that order. It is popped by hand rather than set on the button.
+Every control carries a tooltip, shown even while another program has focus.
+A help button drops a short menu, the Guide first, then About, then the update
+check, with no menu bar. The guide names each tray control with the icon the
+tray itself draws, then says what each kind of document becomes on the way to
+the pane.
 
-- **Rather than:** a menu bar; a button carrying its menu, which grows an
-  arrow indicator unlike every other picture in the tray.
-- **Gains:** the tray stays a row of pictures; the Guide leads, since that is
-  what most people opening the menu are asking.
-- **Costs:** none recorded.
-
-### The guide is drawn from the real icons
-
-The guide names every tray control with the icon the tray itself draws,
-through the same lookup and the same file-name constants. A missing asset
-costs its picture and never the guide.
-
-- **Rather than:** screenshots or descriptions of the pictures.
-- **Gains:** the guide cannot drift from the interface.
+- **Rather than:** a menu bar; screenshots or descriptions of the pictures;
+  the toolkit's default of withholding tooltips from an inactive window.
+- **Gains:** the tray stays a row of pictures; the guide cannot drift from the
+  interface and stays short enough to finish.
 - **Costs:** the guide is generated rather than freely laid out.
-
-### Tooltips over an inactive window
-
-Every top-level window is marked to show tooltips while another program has
-focus, in the application and the setup program alike.
-
-- **Rather than:** the toolkit's default of withholding them.
-- **Gains:** hovering over PlainSight while working elsewhere still explains a
-  control.
-- **Costs:** none recorded.
 
 ### Contrast held by test
 
@@ -565,8 +475,8 @@ Light and dark each name their own ring and danger colours. Every pairing
 that carries text is held to the WCAG AA ratio by a test, in the application
 and the setup program.
 
-- **Rather than:** judging colours by eye; three pairings looked deliberate
-  and were under the ratio.
+- **Rather than:** judging colours by eye, under which several pairings looked
+  deliberate and were unreadable.
 - **Gains:** a colour that cannot be read fails the suite rather than
   shipping.
 - **Costs:** the dark theme needs a selection fill of its own, since one accent
@@ -574,48 +484,28 @@ and the setup program.
 
 ### Folders open shut and stay as left
 
-The tree remembers which folders the reader opened, by path. An empty record
-is every folder shut, which is how a fresh install opens.
+The tree remembers which folders the reader opened, by path. A fresh install
+opens with every folder shut.
 
 - **Rather than:** remembering which were closed; opening everything.
 - **Gains:** a run opens as the last one closed; two folders sharing a name
   are never confused.
 - **Costs:** a first visit to a deep tree takes some opening.
 
-### A closed dialog is destroyed
-
-A dialog is deleted when it closes rather than hidden.
-
-- **Rather than:** keeping it parented and hidden. Ten openings of a licence
-  left ten dialogs alive with ten reading cycles still ticking.
-- **Gains:** nothing runs behind the window that the reader cannot see.
-- **Costs:** a dialog is built afresh each time.
-
 ## Building and installing
 
-### Nuitka
+### Nuitka, with unused parts of Qt fenced out
 
 The application, the setup program and the macOS application are compiled
-with Nuitka. The project moved to it from PyInstaller.
+with Nuitka. The build fences out the parts of Qt nothing imports.
 
-- **Rather than:** PyInstaller, which bundles an interpreter beside the
-  source.
+- **Rather than:** PyInstaller, which bundles an interpreter beside the source;
+  collecting Qt whole under it produced a far larger bundle.
 - **Gains:** one rule finds the bundled files in development and under a
-  compiled build alike; the first release on it produced a setup program of
-  63 megabytes.
-- **Costs:** some packages must be named for inclusion by hand (the Markdown
-  extensions, python-docx and pypdf), which ties the build to how those
-  libraries load.
-
-### Unused parts of Qt fenced out
-
-The build excludes WebEngine, 3D, charts, multimedia and other Qt modules
-nothing imports.
-
-- **Rather than:** collecting the toolkit whole, which was measured at a
-  726MB bundle under PyInstaller.
-- **Gains:** nothing unused can creep in through an indirect import.
-- **Costs:** a new Qt feature may need the fence moved.
+  compiled build alike; nothing unused can creep in through an indirect
+  import.
+- **Costs:** some packages must be named for inclusion by hand, which ties the
+  build to how those libraries load; a new Qt feature may need the fence moved.
 
 ### Installed for one user, without administrator rights
 
@@ -633,77 +523,58 @@ imported release notes included; documents are never touched.
 
 Install, update, downgrade, management and removal are one bespoke program.
 It moves between screens rather than greying controls in place, rebuilds its
-footer per screen and ends every path in a verdict. Its progress bar is
-weighted by measured time rather than step count. Every entry in the payload
-is checked to land inside
-the install folder before any is written.
+footer per screen, weights its progress by measured time and ends every path
+in a verdict. Every entry in the payload is checked to land inside the install
+folder before any is written. When it starts the application it hands that
+process the foreground, which the application then takes.
 
-- **Rather than:** a generic installer.
+- **Rather than:** a generic installer; a plain show, which opened the window
+  behind everything after a fresh install.
 - **Gains:** one identity throughout; a crafted archive cannot write half its
-  contents before it is caught.
-- **Costs:** the setup program is PlainSight's own to maintain; its shortcut
-  writer is still untested.
-
-### Setup hands the foreground to what it starts
-
-On Windows the setup program grants the foreground to the process it has just
-started; the application asks for it by raising and activating its window.
-Setup closes only after the start returns.
-
-- **Rather than:** a plain show, which opened the window behind everything
-  after a fresh install.
-- **Gains:** the application comes to the front when setup finishes.
-- **Costs:** neither half can be checked offscreen, so both are tested at the
-  mechanism rather than by seeing the window come forward.
+  contents before it is caught; the application comes to the front when setup
+  finishes.
+- **Costs:** the setup program is PlainSight's own to maintain; foreground
+  handling cannot be checked offscreen, so it is tested at the mechanism.
 
 ### Each platform builds on itself
 
 Windows, macOS and Linux packages are built by their own scripts on their own
 platforms. The macOS application and its disk image are signed and
-notarised. The Flatpak fetches wheels for three platform tags, most specific
-first.
+notarised.
 
-- **Rather than:** cross-compiling; one platform tag, which found no wheel for
-  lxml and failed before the build began.
+- **Rather than:** cross-compiling.
 - **Gains:** each package is built by the tools that know that platform.
 - **Costs:** a machine of each kind and an Apple developer account; Windows
   is the one built regularly, so the other two can fall behind.
 
-### Delivery tools kept out of the product's requirements
+### Dependencies declared, kept apart and credited
 
-Nuitka and Pillow sit in the development requirements, since the application
-imports neither. A structural test checks that every package imported and
-every tool run as a subprocess is declared.
+The delivery tools sit in the development requirements, since the
+application imports none of them. A structural test checks that every package
+imported and every tool run as a subprocess is declared; another compares the
+About dialog's credits with both requirements files.
 
 - **Rather than:** one requirements file; trusting an import scan, which
-  cannot see a tool started as a subprocess.
-- **Gains:** a fresh checkout can build as well as run.
-- **Costs:** none recorded.
-
-### Every dependency credited and held there
-
-The About dialog credits every declared dependency with its licence. A test
-compares the credit list with both requirements files.
-
-- **Rather than:** a credit list written once and left. It had quietly fallen
-  behind, crediting nothing for the packaging toolchain.
-- **Gains:** a dependency cannot be added without being credited.
-- **Costs:** the test checks the names; the licence text is still read by a
+  cannot see a tool started as a subprocess; a credit list written once and
+  left.
+- **Gains:** a fresh checkout can build as well as run; a dependency cannot be
+  added without being credited.
+- **Costs:** the tests check names; the licence text is still read by a
   person.
 
 ### One version, stamped into the site alone
 
-`VERSION` is the single source of truth: the runtime reads it and the
+One version file is the single source of truth: the runtime reads it and the
 website is stamped from it. No other document carries a version. The settings
-file has a format number of its own. The stamper also tags each stylesheet
-and script link with a hash of its content.
+file has a format number of its own. The stamper also tags each stylesheet and
+script link with a hash of its content.
 
 - **Rather than:** version numbers written into documents; tying the settings
   format to the application version.
 - **Gains:** the application version can move without anything being done to
   a user's settings; a browser never pairs a new page with a stale stylesheet.
-- **Costs:** the Linux build script does not call the stamper, so it is run by
-  hand when that is the only build made.
+- **Costs:** the Linux build does not call the stamper, so it is run by hand
+  when that is the only build made.
 
 ### Icons from one master each
 
@@ -740,30 +611,24 @@ each platform; nothing tells a visitor to build from source.
 ### Layers with one place where they meet
 
 The code is split into domain, application, infrastructure and interface,
-each allowed to depend only inward. One composition root builds every
-implementation; structural tests hold the boundaries and forbid anything
-being built at import time. The interface finds its artwork through a port
-rather than by reaching into infrastructure.
+each allowed to depend only inward. The domain reads nothing from outside
+itself, so paths and moments in time are plain text there. One composition
+root builds every implementation; structural tests hold the boundaries and
+forbid anything being built at import time.
 
-- **Rather than:** convention alone.
+- **Rather than:** convention alone; path and date objects in the domain,
+  which would bring the filesystem and clock with them.
 - **Gains:** the rules about documents, releases and updates are tested with
   no disk, network or screen.
-- **Costs:** more modules and more explicit wiring.
-
-### Paths are strings in the domain
-
-The domain holds paths as plain strings and imports no filesystem, clock or
-threading module. Moments in time are held as fixed UTC text.
-
-- **Rather than:** path and date objects, which would bring those modules in.
-- **Gains:** the purity rule holds without exception.
-- **Costs:** conversion happens at the boundary every time.
+- **Costs:** more modules, more explicit wiring and a conversion at every
+  boundary.
 
 ### Complete coverage where it means something
 
 Branch coverage must be total over the domain and application layers. The
 infrastructure, the interface and the setup program carry real tests against
-temporary directories and a real offscreen toolkit, outside that figure.
+temporary directories and a real offscreen toolkit, outside that figure. The
+toolkit suites destroy whatever each test built.
 
 - **Rather than:** one figure over everything, which would mean either a weaker
   number or a list of exclusions.
@@ -773,55 +638,34 @@ temporary directories and a real offscreen toolkit, outside that figure.
 
 ### Small modules
 
-No module in the application, the setup program or the tests may exceed four
-hundred lines; one within the band just beneath that fails too. Build
-scripts are exempt.
+No module in the application, the setup program or the tests may exceed a
+fixed line cap; one just beneath it fails too. Build scripts are exempt.
 
 - **Rather than:** letting files grow.
-- **Gains:** modules are split at real seams before they are crowded; the main
-  window has twice been cut down this way.
+- **Gains:** modules are split at real seams before they are crowded.
 - **Costs:** many small files.
 
 ### Background work reports back on the interface thread
 
-The update check and the release import run on worker threads. Their results
-cross back on signals bound to objects living on the interface thread. The
-import dialog never closes while its worker runs; cancelling asks it to stop
-and waits.
+The update check and the release import run off the interface thread. Their
+results cross back on signals bound to objects living on the interface thread.
+The import dialog never closes while its work runs; an update answer that
+arrives after its window has gone is dropped.
 
 - **Rather than:** callbacks that would run on the worker's own thread.
 - **Gains:** no widget is touched from the wrong thread; a worker never
-  reports to a dialog that has gone.
+  reports to a window or dialog that has gone.
 - **Costs:** more ceremony around background work.
 
-### Widgets a test built are destroyed
+### Checks kept separate, guards proved by breaking them
 
-Both toolkit suites tear down through one shared helper that destroys what
-each test built.
+The formatters, the linters and the test suite are separate commands, each
+read by its exit code. Every structural guard was proved by planting a
+violation and watching it fail.
 
-- **Rather than:** closing and scheduling deletion, which outside a running
-  event loop destroyed nothing; the suite died with an access violation five
-  times in fifteen.
-- **Gains:** twenty five runs with no crash; the suite fell from about four
-  minutes to five seconds.
-- **Costs:** none recorded.
-
-### Formatters as separate gates
-
-`black`, `flake8`, `ruff` and the test suite are four commands, each read by
-its exit code.
-
-- **Rather than:** wiring the formatters into the suite as assertions.
-- **Gains:** each failure names its own cause.
-- **Costs:** four commands to remember to run.
-
-### Guards proved by breaking them
-
-Every structural guard was proved by planting a violation and reading the exit
-code. Several first versions failed that test and were strengthened until they
-bit.
-
-- **Rather than:** assuming a guard works because it passes.
-- **Gains:** a guard is known to catch what it claims to.
-- **Costs:** every new guard costs a deliberate breakage and a second run
-  before it is trusted.
+- **Rather than:** wiring the formatters into the suite; assuming a guard
+  works because it passes.
+- **Gains:** each failure names its own cause; a guard is known to catch what
+  it claims to.
+- **Costs:** several commands to remember to run; every new guard costs a
+  deliberate breakage before it is trusted.

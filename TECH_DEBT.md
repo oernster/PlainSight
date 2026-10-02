@@ -12,9 +12,10 @@ against `ARCHITECTURE.md` and the structural tests.
 fallback when the COM bindings are absent from the bundle. Neither path is
 tested: both write a real file into the user's own desktop and Start menu.
 
-Worth a temporary-directory test that points the shortcut paths somewhere
-harmless, which needs those two functions to take a destination rather than
-reading it themselves.
+Both already take the link they write as an argument, so nothing needs
+reshaping first: a Windows-only test can point them at a temporary directory
+and check that a shortcut lands there aimed at the right target. The fallback
+needs the COM import made to fail inside that test to be reached at all.
 
 ## Looks like debt, not worth touching
 

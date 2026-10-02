@@ -151,8 +151,9 @@ BYTES_PER_MIB = 1024 * 1024
 CREATE_DMG_OK = (0, 2)  # 2 means it could not set a window background, headless
 
 # Minimal hardened-runtime entitlements. PlainSight reads local documents, has
-# no JIT and reaches the network only for its update check, which needs no
-# entitlement outside the sandbox. disable-library-validation lets the hardened
+# no JIT and reaches the network only for its update check and the release
+# notes import the reader asks for, neither of which needs an entitlement
+# outside the sandbox. disable-library-validation lets the hardened
 # runtime load the bundled Qt frameworks signed with our identity.
 ENTITLEMENTS = """\
 <?xml version="1.0" encoding="UTF-8"?>
