@@ -10,5 +10,5 @@ ruff>=0.6
 # program (buildexe.py, buildinstaller.py, builddmg.py); Pillow derives every
 # icon from the one master (generate_icons.py). Neither is imported by the
 # application itself, so neither belongs in requirements.txt.
-Nuitka>=2.0
+Nuitka>=4.2.1
 pillow>=10.0

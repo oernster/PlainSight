@@ -42,7 +42,7 @@ from pathlib import Path
 from typing import IO
 
 import stamp_version
-from build_utils import require, require_macos, run, section
+from build_utils import require, require_macos, require_nuitka, run, section
 from buildexe import (
     EXCLUDED_MODULES,
     INCLUDED_PACKAGES,
@@ -179,6 +179,7 @@ def data_files() -> tuple[Path, ...]:
 def check_platform() -> None:
     section("Platform check")
     require_macos()
+    require_nuitka()
     result = subprocess.run(
         ["sw_vers", "-productVersion"], capture_output=True, text=True, check=False
     )
