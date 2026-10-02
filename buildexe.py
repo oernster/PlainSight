@@ -23,6 +23,7 @@ import subprocess
 import sys
 
 import stamp_version
+from build_utils import require_nuitka
 
 PROJECT_ROOT = pathlib.Path(__file__).resolve().parent
 
@@ -239,7 +240,8 @@ def stage() -> None:
 
 
 def main() -> int:
-    """Stamp, clean, build, stage."""
+    """Check Nuitka, stamp, clean, build, stage."""
+    require_nuitka()
     print(f"Building {APP_DISPLAY_NAME} {stamp_version.read_version()}")
     stamp_version.main()
     clean()

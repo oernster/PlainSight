@@ -1,4 +1,7 @@
-"""Small helpers shared by the macOS delivery script."""
+"""Small helpers shared by the delivery scripts.
+
+The Nuitka check serves all three; the rest serve the macOS build.
+"""
 
 from __future__ import annotations
 

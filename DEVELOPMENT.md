@@ -49,26 +49,28 @@ python buildinstaller.py
 
 `buildexe.py`:
 
-1. stamps the version into the site under `docs/` (`stamp_version.py`);
-2. removes the previous build;
-3. compiles the entry point `main.py` with Nuitka as a deployment build, one
+1. stops unless Nuitka 4.2.1 or newer is installed (`require_nuitka` in
+   `build_utils.py`), before anything is touched;
+2. stamps the version into the site under `docs/` (`stamp_version.py`);
+3. removes the previous build;
+4. compiles the entry point `main.py` with Nuitka as a deployment build, one
    job per logical core;
-4. stages the result as `installer/payload/PlainSight/PlainSight.exe`.
+5. stages the result as `installer/payload/PlainSight/PlainSight.exe`.
 
 `buildinstaller.py`:
 
-1. stamps the version again;
-2. zips the staged bundle into `installer/payload/PlainSight.zip` and copies
+1. makes the same Nuitka check;
+2. stamps the version again;
+3. zips the staged bundle into `installer/payload/PlainSight.zip` and copies
    beside it the files the setup program's own window reads (`VERSION`,
    `INSTALLER_LICENSE` and four pictures), through `installer/build_payload.py`;
-3. compiles `installer/app.py` with Nuitka into one compressed executable that
+4. compiles `installer/app.py` with Nuitka into one compressed executable that
    carries the payload;
-4. moves it to `dist-installer/PlainSightSetup.exe`, retrying while antivirus or
+5. moves it to `dist-installer/PlainSightSetup.exe`, retrying while antivirus or
    Explorer still holds the old one open.
 
-Neither Windows script checks the installed Nuitka version before building; only
-`builddmg.py` does. Install `requirements-dev.txt` into the venv first so the
-build runs on 4.2.1 or newer.
+A missing or older Nuitka stops either script with the version found, the
+version wanted and the install command.
 
 **macOS** (run on a Mac):
 

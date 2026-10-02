@@ -22,6 +22,7 @@ import sys
 import time
 
 import stamp_version
+from build_utils import require_nuitka
 from buildexe import (
     APP_AUTHOR,
     APP_DESCRIPTION,
@@ -123,7 +124,8 @@ def place() -> pathlib.Path:
 
 
 def main() -> int:
-    """Stamp, stage the payload, wrap it, place the result."""
+    """Check Nuitka, stamp, stage the payload, wrap it, place the result."""
+    require_nuitka()
     print(f"Wrapping {APP_DISPLAY_NAME} {stamp_version.read_version()}")
     stamp_version.main()
     stage()
