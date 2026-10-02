@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PlainSight documents: what it reads and what each becomes</title>
+  <meta name="description" content="What PlainSight reads and how: Markdown, text, HTML, Word and PDF beneath a folder you choose and what each becomes on the way to the pane. It runs nothing a document carries and fetches nothing on its behalf.">
+  <link rel="canonical" href="https://ernster.dev/PlainSight/documents.html">
+  <meta name="theme-color" content="#1e1e2e">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="PlainSight">
+  <meta property="og:url" content="https://ernster.dev/PlainSight/documents.html">
+  <meta property="og:title" content="PlainSight documents: what it reads and what each becomes">
+  <meta property="og:description" content="What PlainSight reads and how: Markdown, text, HTML, Word and PDF beneath a folder you choose and what each becomes on the way to the pane. It runs nothing a document carries and fetches nothing on its behalf.">
+  <meta property="og:image" content="https://ernster.dev/PlainSight/plainsight-512.png">
+  <meta property="og:image:width" content="512">
+  <meta property="og:image:height" content="512">
+  <meta property="og:image:alt" content="PlainSight app icon">
+  <meta property="og:locale" content="en_GB">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="PlainSight documents: what it reads and what each becomes">
+  <meta name="twitter:description" content="What PlainSight reads and how: Markdown, text, HTML, Word and PDF beneath a folder you choose and what each becomes on the way to the pane. It runs nothing a document carries and fetches nothing on its behalf.">
+  <meta name="twitter:image" content="https://ernster.dev/PlainSight/plainsight-512.png">
+  <link rel="icon" href="favicon.ico" sizes="any">
+  <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
+  <link rel="apple-touch-icon" href="apple-touch-icon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<nav>
+  <a class="nav-brand" href="./">
+    <img src="plainsight-512.png" alt="PlainSight icon">
+    <span>PlainSight</span>
+  </a>
+  <div class="nav-right">
+    <a class="nav-link" href="features.html">Features</a>
+    <a class="nav-link" href="why.html">Why</a>
+    <a class="nav-link" href="download.html">Download</a>
+    <a class="btn-primary" href="download.html">Download</a>
+  </div>
+</nav>
+
+<div class="crumb"><a href="features.html">Features</a> <span aria-hidden="true">/</span> What it reads</div>
+
+<section class="section">
+  <div class="section-label">What it reads</div>
+  <h1 class="section-title">Five kinds of document.</h1>
+
+  <h2 class="section-title" style="margin-top:2.5rem;">Finding them</h2>
+  <ul>
+    <li>Reads Markdown (<code>.md</code>), plain text (<code>.txt</code>), HTML (<code>.html</code>), Word (<code>.docx</code>) and PDF (<code>.pdf</code>), anywhere beneath the folder you point it at.</li>
+    <li>Reads nothing until you choose a folder. The chooser opens on your home directory, the one starting place no operating system asks you to approve. Point it at a Claude skills folder and the plugins tree beside it comes too, as a second root.</li>
+    <li>Opens a single document as well, from the second button. It reads that file and lists no directory around it, so whatever sits beside it stays unread.</li>
+    <li>Browse to any other folder instead, a notes folder or a project's documentation; the choice is remembered for next time.</li>
+    <li>Hidden and cache directories are passed over; so is a branch that leads to no document at all, so every branch you can open leads somewhere.</li>
+    <li>A folder it cannot open costs only itself rather than the whole tree.</li>
+    <li>A Word document is turned into HTML as it is read, so it reads like everything else here. HTML rather than Markdown because escaping into it is total: whatever the author typed stays text, where Markdown would read an indent as a block of code and a leading hyphen as a list. Word arranges pages with tables as often as it tabulates anything, so a table that is really layout gives up its contents as the paragraphs they are rather than being drawn as a table.</li>
+    <li>A PDF is read back into the document its page was laid out to be, with its pages marked. A PDF holds no headings, no paragraphs and no lists; it holds glyphs, each with a place, a size and a face. Ask it for the words alone and a CV arrives as a wall of monospace with every heading, every bold phrase and every bullet gone, so the sizes and the faces are read the way your eye reads them: larger than the body is a heading, bold is emphasis, a bullet opens an item, lines running on are one paragraph. That is a reading of the page rather than anything the file says, because the file does not say: no fonts, no rules and no pictures come across, while a form's grid becomes reading order, since a document read back as prose is prose. Where a PDF is a scan, a picture of a page rather than the words on it, no text can be taken and it says so instead of showing you nothing; a PDF that is password protected says that.</li>
+    <li>Opening a folder of them does not read them. Listing forty PDFs of twelve pages was measured at 7ms where extracting them all took 515ms; the text is fetched for the one document you pick.</li>
+    <li>Runs nothing a document carries. A page's scripts are dropped rather than executed, so a document somebody sent you cannot act on your machine; anything needing a script runtime is inert and shows as the plain text around it.</li>
+    <li>Fetches nothing on a document's behalf. A picture stored beside the document is shown; one held at a web address is not fetched and not shown, because the reading surface has no way to reach the network at all.</li>
+  </ul>
+</section>
+
+<section class="section onward">
+  <p class="onward-links">
+    <a class="btn-secondary" href="features.html">All features</a>
+    <a class="btn-secondary" href="reading.html">The tree and the page</a>
+  </p>
+</section>
+
+<footer>
+  <div class="footer-inner">
+    <div class="footer-top">
+      <a class="footer-brand" href="./">
+        <img src="plainsight-512.png" alt="PlainSight">
+        <span>PlainSight</span>
+      </a>
+      <nav class="footer-links">
+        <a href="features.html">Features</a>
+        <a href="why.html">Why</a>
+        <a href="download.html">Download</a>
+        <a href="https://github.com/oernster/PlainSight">GitHub</a>
+        <a href="https://github.com/oernster/PlainSight/releases">Releases</a>
+        <a href="https://github.com/oernster/PlainSight/blob/main/ARCHITECTURE.md">Architecture</a>
+        <a href="https://github.com/oernster/PlainSight/blob/main/LICENSE">Licence</a>
+      </nav>
+    </div>
+    <div class="footer-bottom">
+      <p>A local-first reader for folders of Markdown, text, HTML, Word and PDF files. It reads nothing until you choose a folder; the chooser opens on your home directory. It never writes to your documents; open source, no cloud. Not affiliated with Anthropic and not endorsed by them.</p>
+      <div class="chips">
+        <span class="chip">Version <!--VERSION-->2.4.0<!--/VERSION--></span>
+        <span class="chip">Python</span>
+        <span class="chip">PySide6</span>
+        <span class="chip">GPL-3.0</span>
+        <span class="chip">LGPL-3.0</span>
+      </div>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>
