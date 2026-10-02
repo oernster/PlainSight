@@ -511,7 +511,13 @@ Two trays around a split body, exactly as design plan part 2 describes.
   reports what it found. Its result crosses back on a signal connected to a
   bound method of an object living on the interface thread, which is the whole
   reason the class exists: a signal connected to a bare callable runs in the
-  sender's thread; no widget may be touched from there. `MainWindow` takes
+  sender's thread; no widget may be touched from there. The controller is a
+  child of the window, so a window destroyed while a check is out would take
+  it along; the worker then drops that answer rather than letting the emit's
+  error escape its thread. Anything else the emit raises is still raised
+  (`tests/ui/test_update_check_after_close.py`). No path in the application is
+  known to destroy the window mid-check: quitting was probed and leaves the
+  controller alive, so this is a guard rather than a fix. `MainWindow` takes
   the update service as an optional dependency, so a test can build a window
   that asks nothing of the network; the composition root always supplies one.
 - `library_tree`: one stop, walked with Up and Down, with internal cell tab

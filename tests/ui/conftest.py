@@ -78,6 +78,20 @@ def opener() -> FakeOpener:
 
 
 @pytest.fixture
+def library(documents_root: Path, store: FakeSettingsStore) -> LibraryService:
+    """A library over the test documents, for what needs one but no window."""
+    store.settings = Settings(documents_root=str(documents_root))
+    return LibraryService(
+        repository=FileSystemDocumentRepository(build_readers()),
+        settings_store=store,
+        launcher=FakeLauncher(),
+        opener=FakeOpener(),
+        probe=FakeProbe(),
+        paths=FakePaths(),
+    )
+
+
+@pytest.fixture
 def window(
     application: QApplication,
     documents_root: Path,

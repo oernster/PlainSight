@@ -12,6 +12,7 @@ from __future__ import annotations
 import threading
 from collections.abc import Callable
 
+import shiboken6
 from PySide6.QtCore import QObject, QTimer, Signal
 from PySide6.QtWidgets import QMessageBox, QWidget
 
@@ -106,8 +107,22 @@ class UpdateCheckController(QObject):
         thread.start()
 
     def _run(self, skipped: str, manual: bool) -> None:
-        """The worker body. Nothing here touches a widget."""
-        self._result_ready.emit(self._updates.check(skipped), manual)
+        """The worker body. Nothing here touches a widget.
+
+        If the window is destroyed while the question is out, it takes this
+        controller with it; the emit then raises on a thread nothing would
+        catch it on. No path in the application is known to do that (quitting
+        was probed and leaves the controller alive), so this is a guard.
+        Nobody is left to tell, so that answer is dropped. Asking first whether
+        the controller still exists would not do: it can go between the asking
+        and the emit. Anything else the emit raises is still raised.
+        """
+        status = self._updates.check(skipped)
+        try:
+            self._result_ready.emit(status, manual)
+        except RuntimeError:
+            if shiboken6.isValid(self):
+                raise
 
     def _apply_result(self, status: UpdateStatus, manual: bool) -> None:
         """Report the result. This runs on the interface thread."""

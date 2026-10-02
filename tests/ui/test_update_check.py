@@ -5,7 +5,6 @@ from __future__ import annotations
 import threading
 import time
 from collections.abc import Iterator
-from pathlib import Path
 
 import pytest
 from PySide6.QtCore import QEvent, Qt
@@ -13,7 +12,6 @@ from PySide6.QtGui import QKeyEvent
 from PySide6.QtTest import QTest
 from PySide6.QtWidgets import QApplication, QWidget
 
-from plainsight.__main__ import build_readers
 from plainsight.application.services import LibraryService
 from plainsight.application.update import (
     ReleaseAsset,
@@ -21,20 +19,12 @@ from plainsight.application.update import (
     UpdateService,
     UpdateStatus,
 )
-from plainsight.domain.settings import Settings
-from plainsight.infrastructure.document_repository import FileSystemDocumentRepository
 from plainsight.infrastructure.renderer import DocumentHtmlRenderer
 from plainsight.infrastructure.resources import BundledAssets
 from plainsight.ui.main_window import MainWindow
 from plainsight.ui.top_tray import ABOUT_ITEM, CHECK_UPDATES_ITEM, GUIDE_ITEM, TopTray
 from plainsight.ui.update_check import UpdateCheckController, update_message
-from tests.application.fakes import (
-    FakeLauncher,
-    FakeOpener,
-    FakePaths,
-    FakeProbe,
-    FakeSettingsStore,
-)
+from tests.ui.update_support import CURRENT_VERSION, a_service_over
 
 A_PAGE = "https://example.test/releases"
 SPIN_SECONDS = 2.0
@@ -65,9 +55,7 @@ def an_update_service(release: ReleaseInfo | None) -> UpdateService:
     There is deliberately no default: a helper that read None as its own
     default silently turned every unreachable case into a reachable one.
     """
-    return UpdateService(
-        source=FakeSource(release), current_version="0.1.0", platform_key="windows"
-    )
+    return a_service_over(FakeSource(release))
 
 
 class RecordingController(UpdateCheckController):
@@ -104,19 +92,6 @@ def spin_until(predicate: object) -> bool:
 
 
 @pytest.fixture
-def library(documents_root: Path, store: FakeSettingsStore) -> LibraryService:
-    store.settings = Settings(documents_root=str(documents_root))
-    return LibraryService(
-        repository=FileSystemDocumentRepository(build_readers()),
-        settings_store=store,
-        launcher=FakeLauncher(),
-        opener=FakeOpener(),
-        probe=FakeProbe(),
-        paths=FakePaths(),
-    )
-
-
-@pytest.fixture
 def checked_window(
     application: QApplication,
     library: LibraryService,
@@ -129,7 +104,7 @@ def checked_window(
         library,
         DocumentHtmlRenderer(),
         BundledAssets(),
-        an_update_service(a_release("0.1.0")),
+        an_update_service(a_release(CURRENT_VERSION)),
     )
     main.show()
     yield main
@@ -267,7 +242,7 @@ def test_a_newer_release_is_offered_with_its_file(
 def test_an_up_to_date_check_the_user_asked_for_says_so(
     host: QWidget, library: LibraryService
 ) -> None:
-    controller = a_controller(host, library, a_release("0.1.0"))
+    controller = a_controller(host, library, a_release(CURRENT_VERSION))
 
     controller.check_manually()
 

@@ -32,13 +32,17 @@ FIRST_PARTY = frozenset(
     }
 )
 
-# Where an import name and the distribution that provides it differ.
+# Where an import name and the declared distribution that provides it differ.
+# PySide6 pins shiboken6 to its own exact version and cannot import without it,
+# so the PySide6 line is what installs it; naming it separately would only add
+# a second floor free to disagree with the first.
 DISTRIBUTION_OF = {
     "PIL": "pillow",
     "docx": "python-docx",
     "pytestqt": "pytest-qt",
     "win32com": "pywin32",
     "pythoncom": "pywin32",
+    "shiboken6": "pyside6",
 }
 
 # Imported inside a try that falls back when absent, so the build does not
