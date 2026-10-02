@@ -769,3 +769,8 @@ no crash; reinstating the old teardown in the setup program's fixtures alone
 brought it back at ten in twenty, which is what makes this the cause rather than
 a correlation. It also took the suite from about four minutes to five seconds.
 `tests/ui/test_qt_teardown.py` holds the guard.
+
+---
+
+See also [README.md](README.md), [TESTING.md](TESTING.md) and
+[DEVELOPMENT.md](DEVELOPMENT.md).

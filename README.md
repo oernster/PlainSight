@@ -192,19 +192,8 @@ python -m pip install -r requirements-dev.txt
 | Linux | `./build_flatpak.sh` | `plainsight.flatpak` |
 | macOS | `python builddmg.py` | `PlainSight.dmg` |
 
-The icons all derive from one master: `python generate_icons.py` reads
-`plainsight.png` at the repository root and writes the whole set into
-`assets/`, along with the tray marks and the donate mark.
-
-`python stamp_version.py` writes the version from `VERSION` into the delimited
-tokens of the GitHub Pages site under `docs/`, which carries one on each of its
-six pages. It is idempotent, so running it on a current tree changes nothing.
-It also puts a content hash on every local stylesheet and script link in the
-site (`styles.css?v=<hash>`) so a browser cannot pair a fresh page with a stale
-cached stylesheet.
-The three Python delivery scripts call it before they build, so a packaged
-release cannot ship a site that reads behind the version; `build_flatpak.sh`
-does not, so run it by hand when a Linux build is the only one made.
+What each build does in order, the generated icons, version stamping and
+cutting a release are in [DEVELOPMENT.md](DEVELOPMENT.md).
 
 The setup program installs into your own account only. It writes under
 `%LOCALAPPDATA%\Programs` and `HKCU`, so Windows never asks for an
@@ -218,22 +207,15 @@ never touched.
 
 ```
 python -m pytest
-```
-
-The gate is 100% branch coverage over the domain and application layers, read by
-exit code rather than by the last line of output. Those are the layers a machine
-can exercise with no filesystem and no toolkit, so anything short of complete
-there is a gap nobody chose.
-
-The formatters and linters are separate commands, not assertions inside the
-suite. Run all four:
-
-```
-python -m pytest
 python -m black --check .
 python -m flake8 .
 python -m ruff check .
 ```
+
+The gate is 100% branch coverage over the domain and application layers, read by
+exit code. The formatters and linters are separate commands, not assertions
+inside the suite, so run all four. [TESTING.md](TESTING.md) says what the floor
+leaves out, the rules a run by hand follows and how a test is written.
 
 ## Supporting the project
 
