@@ -7,11 +7,18 @@ nothing, so the build scripts can call it every time.
 Scope is the site and nothing else. No document outside it carries a version at
 all, which is why there is no root glob here.
 
+It also versions each page's asset links. GitHub Pages lets a browser keep a
+stylesheet for ten minutes, so a fresh page can arrive beside its stale CSS and
+render broken. Every local `href="x.css"` or `src="x.js"` therefore carries
+`?v=<hash>` of the file's content, taken with CRLF folded to LF so a Windows
+checkout and the LF blob GitHub serves give the same hash.
+
     python stamp_version.py
 """
 
 from __future__ import annotations
 
+import hashlib
 import pathlib
 import re
 import sys
@@ -29,6 +36,15 @@ TOKEN = re.compile(re.escape(OPEN_TOKEN) + r".*?" + re.escape(CLOSE_TOKEN), re.D
 # here would invite exactly the version strings that rule forbids.
 STAMPED_GLOBS = ("docs/**/*.html", "docs/**/*.md")
 EXCLUDED_NAMES = frozenset({"NOTES.md"})
+
+ASSET_HASH_LENGTH = 10
+# A stylesheet or script reference; any query it already has is replaced.
+ASSET_LINK = re.compile(
+    r"""(?<![\w-])((?:href|src)=)(["'])"""
+    r"""([^"'?#]+\.(?:css|js))(?:\?[^"'#]*)?(#[^"']*)?\2"""
+)
+# Only relative paths are local files: a scheme, `//` or a leading `/` is not.
+NOT_RELATIVE = re.compile(r"^(?:[A-Za-z][A-Za-z0-9+.-]*:|/)")
 
 
 def read_version() -> str:
@@ -60,6 +76,34 @@ def stamp(path: pathlib.Path, version: str) -> bool:
     return True
 
 
+def asset_hash(path: pathlib.Path) -> str:
+    """The content hash of one asset, with CRLF folded to LF first."""
+    if not path.is_file():
+        raise FileNotFoundError(f"a site page links to a missing asset: {path}")
+    data = path.read_bytes().replace(b"\r\n", b"\n")
+    return hashlib.sha256(data).hexdigest()[:ASSET_HASH_LENGTH]
+
+
+def version_assets(path: pathlib.Path) -> bool:
+    """Hash every local asset link in one page; True when the page changed."""
+    with path.open("r", encoding="utf-8", newline="") as handle:
+        original = handle.read()
+
+    def _link(match: re.Match[str]) -> str:
+        attribute, quote, target, fragment = match.groups()
+        if NOT_RELATIVE.match(target):
+            return match.group(0)
+        digest = asset_hash(path.parent / target)
+        return f"{attribute}{quote}{target}?v={digest}{fragment or ''}{quote}"
+
+    linked = ASSET_LINK.sub(_link, original)
+    if linked == original:
+        return False
+    with path.open("w", encoding="utf-8", newline="") as handle:
+        handle.write(linked)
+    return True
+
+
 def main() -> int:
     """Stamp every static file, naming the ones that changed."""
     version = read_version()
@@ -68,6 +112,12 @@ def main() -> int:
         print(f"stamped {path.relative_to(PROJECT_ROOT)} to {version}")
     if not changed:
         print(f"every stamped file already reads {version}")
+    pages = [path for path in stamped_files() if path.suffix == ".html"]
+    linked = [path for path in pages if version_assets(path)]
+    for path in linked:
+        print(f"versioned asset links in {path.relative_to(PROJECT_ROOT)}")
+    if not linked:
+        print("every asset link already carries its current hash")
     return 0
 
 

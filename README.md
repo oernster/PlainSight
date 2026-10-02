@@ -199,6 +199,9 @@ The icons all derive from one master: `python generate_icons.py` reads
 `python stamp_version.py` writes the version from `VERSION` into the delimited
 tokens of the GitHub Pages site under `docs/`, which carries one on each of its
 six pages. It is idempotent, so running it on a current tree changes nothing.
+It also puts a content hash on every local stylesheet and script link in the
+site (`styles.css?v=<hash>`) so a browser cannot pair a fresh page with a stale
+cached stylesheet.
 The three Python delivery scripts call it before they build, so a packaged
 release cannot ship a site that reads behind the version; `build_flatpak.sh`
 does not, so run it by hand when a Linux build is the only one made.
