@@ -273,3 +273,5 @@ run since either.
 
 `ARCHITECTURE.md` holds the invariants and the design; `TECH_DEBT.md` holds
 what is still open.
+[`DECISIONS-TRADEOFFS.md`](DECISIONS-TRADEOFFS.md) sets out the decisions
+PlainSight rests on, with what each one gains and what it costs.
