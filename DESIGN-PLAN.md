@@ -679,7 +679,7 @@ tests/             mirrors the source tree, plus tests/structural/
   sit outside the floor rather than dragging it to a number that means nothing.
 - `black --check`, `flake8` and `ruff check` as standing steps, read by exit code.
 - Structural tests: layer direction, domain purity, the 400-line cap with its 381
-  to 399 danger band, the composition-root whitelist, no module-level singletons,
+  to 400 danger band, the composition-root whitelist, no module-level singletons,
   the no-write invariant of 13.1, the focus chain walk and QSS scan from
   `noborderfocus`, ring order against drawn order, the donate address asserted
   literally, plus the rule that every kind the application reads has a reader

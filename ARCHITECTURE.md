@@ -19,7 +19,7 @@ wish.
 | The domain imports no filesystem, clock, logging or threading module | `tests/structural/test_layers.py::test_the_domain_reads_nothing_from_outside_itself` |
 | The application imports no third-party package | `tests/structural/test_layers.py::test_the_application_layer_imports_no_third_party_package` |
 | No module exceeds 400 lines | `tests/structural/test_loc_limits.py::test_no_module_is_over_the_cap` |
-| No module sits in the 381 to 399 danger band | `tests/structural/test_loc_limits.py::test_no_module_sits_in_the_danger_band` |
+| No module sits in the 381 to 400 danger band | `tests/structural/test_loc_limits.py::test_no_module_sits_in_the_danger_band` |
 | Nothing but the settings store and the collection store writes anything | `tests/structural/test_read_only.py::test_only_the_named_writers_write_anything` |
 | A folder's declared document order is the order the tree shows | `tests/infrastructure/test_document_repository_order.py::test_a_declared_order_lists_newest_first_then_everything_else` |
 | No imported file name lands outside its collection | `tests/infrastructure/test_release_collection_store.py::test_a_name_that_climbs_out_is_refused` |

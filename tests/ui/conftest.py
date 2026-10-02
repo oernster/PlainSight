@@ -1,4 +1,8 @@
-"""One real QApplication for the whole session; Qt is never mocked."""
+"""One real QApplication for the whole session; every widget is a real one.
+
+A few tests do replace a modal call with monkeypatch (a message box, a dialog's
+exec, the file chooser) so the run is not left waiting on a click.
+"""
 
 from __future__ import annotations
 
