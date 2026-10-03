@@ -17,6 +17,24 @@ reshaping first: a Windows-only test can point them at a temporary directory
 and check that a shortcut lands there aimed at the right target. The fallback
 needs the COM import made to fail inside that test to be reached at all.
 
+## 2. Two repository names can share one collection folder
+
+`safe_segment` makes a repository's name safe for a folder, which on Windows
+means dropping trailing dots among other things, so `acme/foo` and `acme/foo.`
+both land in `github-releases/acme/foo` (measured). Importing the second then
+finds a record naming the first: every file is kept as the reader's own, none
+of the second repository's releases is written and the record is rewritten to
+name the second, so the first's next refresh keeps everything too. Nothing is
+lost; releases go missing. Whether GitHub allows names that collide this way
+is not checked; until it is, this is a lead rather than a known failure.
+
+Changing `safe_segment` would move existing collections to new folders, so it
+is not the fix. The safe one is to refuse an import into a folder whose
+readable record names another repository, with its own problem and wording
+in the import dialog. Not done in the round that found it: it needs a new
+problem type, a change to what `load` reports for a mismatched record and new
+dialog text, which is more than a cheap fix.
+
 ## Looks like debt, not worth touching
 
 **Paths held as strings in the domain.** It reads as a missed abstraction and is
@@ -44,10 +62,11 @@ fails the moment that stops being true.
 
 ## Not debt (do not "fix" these)
 
-**The read-only guard ignores an attribute called `open`.** A port legitimately
-carries that verb; the external opener asks the desktop to open an address and
-touches no file. Widening the check to attribute calls would flag that port and
-teach the next reader to weaken the guard.
+**The read-only guard passes an `open` with one variable argument.** A port
+legitimately carries that verb; the external opener asks the desktop to open an
+address and touches no file. An `open` given a mode or flag that writes is caught,
+as is a `mode=` it cannot read; flagging every `open` would flag that port
+and teach the next reader to weaken the guard.
 
 **A document that cannot be read is still listed.** The user neither caused it
 nor can fix it from the viewer, so the reason is shown in place of the body

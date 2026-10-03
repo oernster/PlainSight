@@ -15,12 +15,18 @@ debt.
 PlainSight never writes to a document it is pointed at. Editing is handed to
 an editor the reader chooses. The only things it writes are its own: its
 settings and any release notes the reader asks it to import. A structural
-test names the code allowed to write and fails on anything else.
+test grants each module the writes it needs by name and fails on any other
+write it can see. The Flatpak is granted the home folder read only, with only
+the application's own folder writable.
 
-- **Rather than:** a viewer with editing built in.
-- **Gains:** looking at a folder cannot change it; the promise is a test
-  result rather than a habit.
-- **Costs:** every correction means a trip to another program.
+- **Rather than:** a viewer with editing built in; a check that listed a few
+  writing calls by name, which the audit found blind to most ways of writing.
+- **Gains:** looking at a folder cannot change it; a new way of writing in a
+  new place fails the test rather than slipping past it.
+- **Costs:** every correction means a trip to another program. The test reads
+  names, not types, so a string's `replace` reads as a write; it cannot see a
+  library writing on the application's behalf. Under the Flatpak an editor
+  started from inside the sandbox could not save to the home folder either.
 
 ### Any folder of documents, not one kind of file
 
@@ -179,16 +185,33 @@ through the Markdown renderer.
 ### HTML is shown as the page it is; nothing in it runs
 
 An HTML document is handed to the reading surface untouched. Scripts neither
-run nor appear as text; a picture held at a web address is not fetched. The
-reading surface has no way to reach the network at all.
+run nor appear as text; a picture held at a web address is not fetched.
 
-- **Rather than:** parsing the page to write it back, which would lose
-  whatever the parser did not understand on every pass; a surface able to run
-  scripts or fetch.
-- **Gains:** a document somebody sent cannot act on the machine or reach the
-  network.
+### What a document may reach is decided by PlainSight, not by Qt
+
+Qt's reading surface fetches nothing over the web. Left alone, though, it reads a
+picture from a network share (`\\server\share`, `//server/share`,
+`file://server/...`), looks for a relatively named one in whatever folder the
+application started in and hands any clicked link to whichever program owns
+its scheme; a `file:` link replaced the page. All of that was measured. So one
+rule, in the domain, decides both. A picture is read from this computer only:
+a relative name from the document's own folder, climbing out with `..` while
+it stays local; anything naming a host is refused. A link is handed to the
+browser only for `https`, `http` and `mailto`; a link within the page scrolls;
+every other link does nothing.
+
+The rule is applied twice in the pane, because refusing in the loader alone
+was measured not to stop the read: Qt reads a picture again by its own name
+once the loader's answer will not decode. Every picture is therefore renamed
+to the local file it resolves to (or to nothing) before layout; the loader
+answers a refusal with Qt's own missing picture.
+
+- **Rather than:** trusting Qt's defaults; a filter in the loader alone.
+- **Gains:** opening a document somebody sent cannot make the machine reach a
+  share it names, nor start a protocol handler with a history of abuse.
 - **Costs:** a page that needs scripts or remote pictures shows only the text
-  around them.
+  around them; `ftp:`, `file:` and every other link does nothing. A drive
+  letter mapped to a share reads as local, since its name cannot say otherwise.
 
 ### Word documents become HTML, not Markdown
 
@@ -261,7 +284,8 @@ could not be read names its kind and carries no count.
 
 PlainSight asks GitHub whether a newer release of itself exists. It also asks
 GitHub for a repository's releases when the reader imports them. It opens no
-other connection and carries no telemetry. The donate button, a link clicked
+other connection and carries no telemetry. Both follow a redirect only while it
+stays on the host they asked. The donate button, a web or mail link clicked
 inside a document and the Download button on an update prompt each hand an
 address to the desktop for the browser to fetch.
 

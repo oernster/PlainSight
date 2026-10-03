@@ -65,7 +65,7 @@
         <li>Open the selected document in the editor you choose; on Windows one is already picked for you.</li>
         <li>The control stays disabled until there is genuinely something to do: a document selected, an editor chosen and that editor still where you left it.</li>
         <li>Come back to the window and the library is re-read, so an edit made outside shows up without a refresh button.</li>
-        <li>It never writes to a document you point it at, which a structural test enforces rather than leaving to discipline. The only files it writes are its own: its settings and the release notes you import.</li>
+        <li>It never writes to a document you point it at. A structural test holds the source to that rather than leaving it to discipline: each part of the program is granted the ways of writing it needs by name and any other it can see fails the build. The only files it writes are its own: its settings and the release notes you import.</li>
       </ul>
     </div>
     <div class="feat">

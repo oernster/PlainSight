@@ -81,7 +81,7 @@
       <a class="btn-primary" href="https://github.com/oernster/PlainSight/releases/latest/download/plainsight.flatpak">
         Download for Linux</a>
       <p class="meta" data-asset="plainsight.flatpak">Flatpak bundle (.flatpak)</p>
-      <p class="how">Install with <code>flatpak install --user plainsight.flatpak</code>. It runs sandboxed. It is granted your home folder so it can read the documents you point it at, plus network access for the update check and the release notes import; nothing else.</p>
+      <p class="how">Install with <code>flatpak install --user plainsight.flatpak</code>. It runs sandboxed. It is granted your home folder read only, so it can read the documents you point it at and cannot change them; it may write only in its own <code>~/.plainsight</code> folder, where its settings and imported release notes live. It also has network access for the update check and the release notes import; nothing else.</p>
     </div>
   </div>
   <p class="dl-links">

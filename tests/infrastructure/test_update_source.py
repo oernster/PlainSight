@@ -84,13 +84,14 @@ def test_it_asks_this_repository_and_nothing_else() -> None:
     assert opener.timeout == TIMEOUT_SECONDS
 
 
-def test_the_default_opener_is_the_standard_library() -> None:
-    """Constructed with nothing, it still has something to ask through."""
-    import urllib.request
+def test_the_default_opener_keeps_redirects_on_the_host_asked() -> None:
+    """Constructed with nothing, it asks through the standard library's opener,
+    with redirects held to the host asked; see test_redirects_stay_home."""
+    from plainsight.infrastructure.same_host_opener import open_on_same_host
 
     source = GitHubReleaseSource()
 
-    assert source._opener is urllib.request.urlopen
+    assert source._opener is open_on_same_host
 
 
 @pytest.mark.parametrize(

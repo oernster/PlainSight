@@ -157,7 +157,12 @@ finish-args:
   - --socket=fallback-x11
   - --socket=wayland
   - --device=dri
-  - --filesystem=home
+  # The documents are only ever read, so home is granted read only. The one
+  # place the application writes is its own folder beneath it: the settings
+  # file and the imported release notes. That folder alone is writable; it
+  # is created on first run if it is not there yet.
+  - --filesystem=home:ro
+  - --filesystem=~/.plainsight:create
 
 modules:
   - name: python-deps

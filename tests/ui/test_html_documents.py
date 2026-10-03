@@ -115,7 +115,7 @@ def test_htmx_attributes_are_inert_and_leave_only_their_text() -> None:
 def test_a_document_embedding_a_remote_picture_fetches_nothing() -> None:
     """The guard on what the application says about the network.
 
-    It claims exactly one network request of its own. A document that could
+    It claims two network requests of its own and no others. A document that could
     make it fetch something would break that claim quietly, so the claim is
     tested against a real server rather than reasoned about: the server is
     asked whether it was ever called.

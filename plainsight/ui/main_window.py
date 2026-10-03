@@ -41,6 +41,7 @@ STATUS_TIMEOUT_MS = 6000
 UNREADABLE_FILE_MESSAGE = "That is not a kind of document PlainSight reads"
 NO_EDITOR_MESSAGE = "Could not start the editor"
 NO_BROWSER_MESSAGE = "Could not open a browser for the donation page"
+NO_LINK_MESSAGE = "Could not open that link"
 
 
 class MainWindow(QMainWindow):
@@ -90,7 +91,9 @@ class MainWindow(QMainWindow):
         )
         self.bottom_tray.face_filter(service.tree_filtered())
         self.library_tree = LibraryTree(self._palette, service.opened_folders(), self)
-        self.document_view = DocumentView(renderer, self._palette, self)
+        self.document_view = DocumentView(
+            renderer, self._palette, self, follow=self.open_link
+        )
         self.library_tree.document_selected.connect(self.show_document)
         self.library_tree.folders_changed.connect(self.remember_folders)
 
@@ -343,6 +346,11 @@ class MainWindow(QMainWindow):
         """
         if not self._service.open_donation_page(version.DONATE_URL):
             self.report_status(NO_BROWSER_MESSAGE)
+
+    def open_link(self, address: str) -> None:
+        """Hand a document's web or mail link to the desktop; say if it declines."""
+        if not self._service.open_page(address):
+            self.report_status(NO_LINK_MESSAGE)
 
     def check_for_updates(self) -> None:
         """The Help menu's own check: it reports whatever it finds."""

@@ -235,3 +235,10 @@ def test_an_entry_can_be_found_by_its_release_number() -> None:
 
 def test_the_digest_of_text_is_the_digest_of_its_bytes() -> None:
     assert digest_of("é") == digest_of_bytes("é".encode())
+
+
+def test_a_new_name_avoids_every_file_present_whatever_its_case() -> None:
+    names = file_names_for(None, (a_release(1),), ("2026-09-10_V1.1.MD",))
+
+    assert names[1].casefold() != "2026-09-10_v1.1.md"
+    assert names[1].endswith(".md")

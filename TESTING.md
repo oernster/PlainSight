@@ -103,7 +103,8 @@ for code nobody has written yet. The suite in `tests/structural/`:
 |---|---|
 | `test_layers.py` | the layer directions; the domain reads nothing from outside itself; the application imports no third-party package |
 | `test_composition_root.py` | one composition root, the only place an implementation is built, with nothing constructed at import time |
-| `test_read_only.py` | nothing writes to a document the reader chose; only the named writers write anything |
+| `test_read_only.py` | each module uses only the write capabilities granted to it by name; no grant outlives its use; a check on source names, with its limits stated in `write_capabilities.py` |
+| `test_write_forms.py` | every write form the audit listed (aliased imports, `os.open`, `QFile`, `QImage.save`, `sqlite3`, `subprocess`, `getattr` and the rest) is seen by that check; the reading forms are not |
 | `test_readers.py` | every kind of document has a reader of its own and no reader is kept for a kind that does not exist |
 | `test_loc_limits.py` | the 400 line cap and the danger band beneath it, the band derived from the cap |
 | `test_declared_dependencies.py` | every third-party package and every tool run as a subprocess is declared |

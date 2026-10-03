@@ -20,7 +20,15 @@ wish.
 | The application imports no third-party package | `tests/structural/test_layers.py::test_the_application_layer_imports_no_third_party_package` |
 | No module exceeds 400 lines | `tests/structural/test_loc_limits.py::test_no_module_is_over_the_cap` |
 | No module sits in the 381 to 400 danger band | `tests/structural/test_loc_limits.py::test_no_module_sits_in_the_danger_band` |
-| Nothing but the settings store, the collection store and their shared atomic writer writes anything | `tests/structural/test_read_only.py::test_only_the_named_writers_write_anything` |
+| No module uses a write capability it was not granted by name | `tests/structural/test_read_only.py::test_no_module_writes_beyond_its_grant` |
+| No grant outlives its use | `tests/structural/test_read_only.py::test_every_grant_is_still_used` |
+| Every write form the audit listed is seen by the write check | `tests/structural/test_write_forms.py::test_every_write_form_is_named` |
+| A picture on a network path is never read | `tests/ui/test_document_pictures.py::test_a_picture_on_a_network_path_is_never_read` |
+| A relative picture is read from the document's own folder | `tests/ui/test_document_pictures.py::test_a_picture_beside_the_document_is_drawn` |
+| No refused name survives into a shown document | `tests/ui/test_document_pictures.py::test_no_picture_in_a_shown_document_keeps_a_name_the_rule_refuses` |
+| Only a web or mail link is handed on | `tests/ui/test_document_links.py::test_a_link_of_any_other_scheme_does_nothing` |
+| A redirect never leaves the host asked | `tests/infrastructure/test_redirects_stay_home.py::test_a_redirect_to_another_host_is_refused` |
+| A new release never takes the name of a file already present | `tests/infrastructure/test_release_name_collisions.py::test_a_release_named_like_the_readers_own_file_is_still_imported` |
 | A folder's declared document order is the order the tree shows | `tests/infrastructure/test_document_repository_order.py::test_a_declared_order_lists_newest_first_then_everything_else` |
 | No imported file name lands outside its collection | `tests/infrastructure/test_release_collection_store.py::test_a_name_that_climbs_out_is_refused` |
 | A refresh never writes over a file the reader edited | `tests/domain/test_release_collection.py::test_an_edited_file_is_kept_and_reported` |
@@ -60,28 +68,69 @@ path object's behaviour; importing one would put a filesystem module inside the
 layer that is defined by not having one. Infrastructure converts at the
 boundary, which is the only place a path is ever acted on.
 
-## Read only, as a structural fact
+## Read only, as an allowlist
 
 The application never writes to a document the reader chose. That is not left
-to discipline: `tests/structural/test_read_only.py` names the modules allowed
-to write at all, then asserts that no other module in the package calls a
-writing operation. Editing a document is exclusively the external editor's job.
+to discipline: `tests/structural/test_read_only.py` holds a grant for each
+module allowed to write, naming exactly the write capabilities it may use; it
+fails on any capability used without a grant, in any module, a new one
+included. A second test fails on a grant nothing uses any more, so the list
+cannot quietly widen. Editing a document is exclusively the external editor's
+job.
 
 Two modules write, each beneath its own directory and nowhere else: the
 settings store writes the settings file; the collection store writes the
 release notes the GitHub import brings in, under
-`~/.plainsight/github-releases/<owner>/<repository>`. Both write through
-`atomic_write`, the third name on the list, which is the one home of the
-temporary file and the replace. Those imported files become the reader's own
-the moment they exist, which is why a refresh keeps any it finds edited.
+`~/.plainsight/github-releases/<owner>/<repository>`. A refresh writes through
+`atomic_write`, the one home of the temporary file and the replace; a first
+import builds the whole collection in a temporary folder beside it and renames
+it into place. Those imported files become the reader's own the moment they
+exist, which is why a refresh keeps any it finds edited. Two more grants are
+not writes: the editor launcher may start a process, which is the reader's
+editor; the library service calls the settings port named `save`, a name it
+shares with `QImage.save`.
 
-The check has two stated limits, one each way. It matches the builtin `open` by
-name but not an attribute called `open`, because a port legitimately carries
-that verb: the external opener asks the desktop to open an address and touches
-no file. In the other direction it matches any call to a method named
-`replace`, a string's and a date's included, since it cannot tell them from the
-filesystem's; code outside the named writers reaches for `html.escape`,
-`Path.as_uri` or `datetime.combine` instead, which says what it means anyway.
+What counts as a write capability is `tests/structural/write_capabilities.py`:
+methods named for writing, deleting or starting things; modules that exist to
+write or to run things (`shutil`, `tempfile`, `subprocess`, `sqlite3`, `io`,
+`ctypes` and the like); Qt classes that write or start processes (`QFile`,
+`QSaveFile`, `QSettings`, `QProcess` and the like); the builtin `open` in any
+guise, rebound or imported under another name; an `open` given a mode or flag
+that writes or a mode it cannot read; and the dynamic forms that would hide
+any of these (`exec`, `eval`, `__import__`, `getattr` by a built name).
+`tests/structural/test_write_forms.py` feeds it every form the audit listed and
+every one must be named.
+
+It is a check on source, with stated limits. It reads names, not types, so a
+string's `replace` reads as the filesystem's; code outside the granted modules
+reaches for `html.escape`, `str.translate` or `datetime.combine` instead. A
+port's `open` with a single variable argument reads as nothing being opened,
+since the external opener legitimately carries that verb. A write made by a
+library or by Qt itself on the application's behalf is invisible to it. On
+Linux the Flatpak is granted the home folder read only, with only
+`~/.plainsight` writable, which enforces the rule at run time.
+
+## What a document may reach
+
+`domain/document_reach.py` is the one home of two rules about a document's
+own content. A link is handed to the browser only for `https`, `http` and
+`mailto`; a link within the page scrolls to its anchor; every other scheme,
+`file:` included, does nothing. A file the document embeds, a picture or a
+background, is read from this computer only: named relatively, from the
+document's own folder, climbing out with `..` only while it lands on a local
+path; named absolutely, only from a local path; anything naming a host
+(`file://host`, `//host`, `\\host`) or any scheme other than `file` is
+refused. Inline `data:` pictures name no file and are left to Qt.
+
+`ui/confined_reach.py` applies the rules to the pane in two places, because one
+was measured not to be enough: the pane's `loadResource` reads only what the
+rule resolves and answers anything else with Qt's own missing picture, never
+with nothing, since Qt reads a picture again by its own name when the answer
+will not decode; and every picture in a freshly built document is renamed to
+the local file it resolves to (or to no name) before layout, so a refused name
+never reaches Qt's image handling at all. The pane never follows a link
+itself (`setOpenLinks(False)`); the window hands a followed one to the
+external opener port.
 
 ## Components
 
@@ -128,7 +177,12 @@ filesystem's; code outside the named writers reaches for `html.escape`,
   decision as a plan made before a byte is written. A file is known by the
   digest of what was last written to it, so one whose digest has moved was
   changed by the reader and is kept; one already holding the new text is
-  recognised as a refresh interrupted after it wrote, not as an edit.
+  recognised as a refresh interrupted after it wrote, not as an edit. A new
+  release's file name avoids every file already in the folder as well as every
+  recorded one, so a file the reader put there under a release's natural name
+  never swallows that release.
+- `document_reach`: which links a document may hand on and which files it may
+  show; see "What a document may reach".
 - `extent`: how much text a document holds, counted as characters and as lines.
   A closing line ending shuts the line before it rather than opening another, so
   a file of three lines reads as three either way. It counts the text rather
@@ -386,6 +440,11 @@ untouched. A stop is honoured until writing starts and never after.
   folder the reader's own.
 - `atomic_write`: a temporary file beside the target, then a replace. Both
   writers use it.
+- `same_host_opener`: the opener both connections use by default: the standard
+  library's, following a redirect only while it stays on the scheme, host and
+  port that were asked. A redirect anywhere else is refused before anything is
+  sent there; the import reports it as a strange answer, the update check as
+  no answer.
 - `update_source`: the other connection the application opens. It asks the
   GitHub releases endpoint for the latest published release of this
   repository and nothing else. That endpoint returns only a published,
@@ -547,6 +606,9 @@ Two trays around a split body, exactly as design plan part 2 describes.
   scrolling looked as though it had been ignored. A document compares by value
   and carries a fingerprint of the file it came from, so one edited on disk is a
   different document and is redrawn as it should be.
+- `confined_reach` and `document_header`: the two concerns lifted out of
+  `document_view`. The first applies `document_reach` to Qt; the second is what
+  a document says about itself around its body.
 - `reading_pane`: one home for how a scrolling text region behaves. It attaches
   the reading cycle, gates its own focus on overflow (a page that fits scrolls
   nowhere, so it is no stop at all) and answers Home, End, Ctrl+Home and

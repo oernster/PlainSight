@@ -38,8 +38,13 @@ at all.
 It is not a text editor and it never writes to a document you point it at.
 Editing is handed to an editor you choose. The only files it writes are its
 own: its settings, then any release notes you ask it to import from GitHub,
-each beneath its own directory. That is enforced by a structural test rather
-than left to discipline.
+each beneath its own directory. A structural test holds the code to that: it
+grants each module the writes it needs by name (the settings store, the
+release notes store and their shared writer; the editor launcher may only
+start your editor) and fails on any other way of writing it can see, in any
+module. It reads source rather than watching the program run, so it cannot
+see a library writing on PlainSight's behalf; the Linux Flatpak adds a
+read-only home folder on top.
 
 It is not a GitHub client. The release notes import reads a repository's
 published releases and nothing else: no issues, no commits, no tags without a
@@ -55,10 +60,16 @@ from the Help menu. It asks GitHub's public API for a repository's releases
 when you import them, only then and only for the repository you named. Nothing
 about you goes with either question and there is no telemetry anywhere in it.
 
+Neither question follows a redirect to any host other than the one it asked.
+
 Everything else it opens, it opens by handing an address to your desktop for
 your browser to fetch, in three places: the donate button, a link you click
 inside a document you are reading, then the Download button on an update
-prompt. Nothing is fetched or sent without that click.
+prompt. Nothing is fetched or sent without that click. A link inside a
+document is handed on only when it is a web page (`https`, `http`) or an email
+(`mailto`); a link to a place within the page moves you there. Any other kind
+of link does nothing at all (a `file:` link included); the page you are
+reading stays where it is.
 
 ## Capabilities
 
@@ -90,10 +101,15 @@ prompt. Nothing is fetched or sent without that click.
   executed, so a document you were sent cannot act on your machine. Anything
   needing a script runtime, htmx among it, is inert here and shows as the
   plain text around it.
-- Fetches nothing on a document's behalf. A picture stored beside the document
-  is shown; one held at a web address is not fetched and not shown, because the
-  reading surface has no way to reach the network. That is not a setting to
-  turn on: there is no network in it at all.
+- Fetches nothing on a document's behalf. A picture is read from this computer
+  only. One named relatively is looked for from the document's own folder, so
+  a picture stored beside the document is shown; it may name a folder above
+  with `..` while it stays on this computer. One held at a web address is not
+  fetched and not shown, nor is one on a network share (`\\server\share`,
+  `//server/share`, `file://server/...`): anything naming another machine is
+  refused before it is read. A document opened from a share shows the
+  pictures in its own folder there and nothing further across the network. A
+  drive letter mapped to a share looks like a local drive, so it reads as one.
 - Shows the folders as a tree, each one opening and closing on its own arrow,
   with a count of what it holds so a shut branch says whether it is worth
   opening.

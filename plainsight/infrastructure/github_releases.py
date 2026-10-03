@@ -7,8 +7,9 @@ this month. No token is asked for or sent; public releases need none.
 Everything that comes back is foreign input. A page is refused unread past a
 size cap, since that size is decided before a byte of it can be checked; every
 field of every release is checked before it is used; a next page is followed
-only while it stays on the API's own host. A failure of any kind is raised as
-the problem it is, so the reader is told what actually happened.
+only while it stays on the API's own host; so is a redirect. A failure of
+any kind is raised as the problem it is, so the reader is told what actually
+happened.
 """
 
 from __future__ import annotations
@@ -38,6 +39,7 @@ from ..application.release_import import (
 )
 from ..domain.release import InvalidRelease, Release
 from ..domain.repository_address import RepositoryAddress
+from .same_host_opener import RedirectRefused, open_on_same_host
 
 API_ROOT = "https://api.github.com"
 # GitHub's own maximum per page. It keeps the number of requests as small as it
@@ -85,7 +87,7 @@ class GitHubReleaseHistory:
     ) -> None:
         # Both are injected so no test reaches the network or the wall clock;
         # the defaults are the standard library, so nothing is added to ship it.
-        self._opener = urllib.request.urlopen if opener is None else opener
+        self._opener = open_on_same_host if opener is None else opener
         self._clock = time.time if clock is None else clock
 
     def releases(
@@ -118,6 +120,10 @@ class GitHubReleaseHistory:
                 link = response.headers.get(LINK_HEADER) or ""
         except urllib.error.HTTPError as error:
             raise self._refusal(error.code, error.headers) from error
+        except RedirectRefused as error:
+            raise MalformedResponse(
+                "GitHub sent the request to another host"
+            ) from error
         except urllib.error.URLError as error:
             if isinstance(error.reason, TimeoutError):
                 raise TimedOut() from error

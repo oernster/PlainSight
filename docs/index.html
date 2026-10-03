@@ -151,8 +151,9 @@
   <h2 class="section-title">Looking changes nothing.</h2>
   <p class="section-sub" style="margin-left:auto;margin-right:auto;">
     PlainSight never writes to a document you point it at. That is not a promise made in a readme: a structural test
-    reads the whole program and fails the build if any part of it calls a writing operation other than the two that
-    write its own files, its settings and the release notes you ask it to import. When you want to change something,
+    reads the whole program's source, grants each part the ways of writing it needs by name and fails the build on any
+    other it can see; only the two parts that write its own files, its settings and the release notes you ask it to
+    import, are granted any. On Linux the Flatpak can read your home folder but not write to it. When you want to change something,
     it hands the document to the editor you chose and stands back.
   </p>
   <div class="hero-cta">

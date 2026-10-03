@@ -92,6 +92,18 @@ class FileSystemReleaseCollections:
                 found[name] = UNREADABLE
         return found
 
+    def present(self, address: RepositoryAddress) -> tuple[str, ...]:
+        """The name of every file in the folder now; none when there is no folder.
+
+        A folder that cannot be listed answers none: the digests asked for
+        next cannot be read either, so every file there is still kept as the
+        reader's own.
+        """
+        try:
+            return tuple(entry.name for entry in self._directory(address).iterdir())
+        except OSError:
+            return ()
+
     def commit(self, address: RepositoryAddress, plan: RefreshPlan) -> None:
         """Carry out the plan whole; raises ``CollectionWriteFailed`` otherwise."""
         directory = self._directory(address)

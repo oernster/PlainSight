@@ -81,9 +81,10 @@
     should not find a page already scrolling past them.
   </p>
   <p>
-    It reads your documents and nothing else. It never writes to one, which is enforced by a structural test that
-    reads the whole program and fails the build if anything calls a writing operation but the two parts that write
-    its own files: its settings and the release notes you ask it to import. When you want
+    It reads your documents and nothing else. It never writes to one, which a structural test holds the source to:
+    it grants each part of the program the ways of writing it needs by name and fails the build on any other it can
+    see, so only the two parts that write its own files are granted any: its settings and the release notes you ask it
+    to import. When you want
     to change something it hands the file to the editor you chose. Leave to edit, come back, then the folder is
     re-read with your place kept.
   </p>

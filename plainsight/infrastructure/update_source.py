@@ -1,9 +1,12 @@
-"""The one place the application opens a connection of its own.
+"""The update check: one of the two connections the application opens itself.
 
-It asks GitHub for the latest published release of this repository and nothing
-else. The endpoint returns only a published, non-draft, non-prerelease release,
-so a tag pushed mid-development is invisible here by the endpoint's own
-contract rather than by a check made after the fact.
+The other is the release notes import, in ``github_releases``, which runs only
+when the reader asks for it. This one asks GitHub for the latest published
+release of this repository and nothing else; like the import, it follows a
+redirect only while it stays on the host it asked. The endpoint returns only
+a published, non-draft, non-prerelease release, so a tag pushed
+mid-development is invisible here by the endpoint's own contract rather than
+by a check made after the fact.
 
 Every failure is answered with None. There are no retries: a check that could
 not be made is simply not made; the next one happens a day later.
@@ -17,6 +20,7 @@ from collections.abc import Callable
 from typing import Any
 
 from ..application.update import ReleaseAsset, ReleaseInfo
+from .same_host_opener import open_on_same_host
 
 RELEASE_URL = "https://api.github.com/repos/oernster/PlainSight/releases/latest"
 ACCEPT_HEADER = "application/vnd.github+json"
@@ -37,7 +41,7 @@ class GitHubReleaseSource:
     def __init__(self, opener: Opener | None = None) -> None:
         # The opener is injected so a test never reaches the network; the
         # default is the standard library, so nothing is added to ship this.
-        self._opener = urllib.request.urlopen if opener is None else opener
+        self._opener = open_on_same_host if opener is None else opener
 
     def latest_release(self) -> ReleaseInfo | None:
         """The newest published release; None when it could not be read."""

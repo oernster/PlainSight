@@ -106,7 +106,9 @@ class RefreshPlan:
 
 
 def file_names_for(
-    existing: ReleaseCollection | None, releases: Iterable[Release]
+    existing: ReleaseCollection | None,
+    releases: Iterable[Release],
+    present: Iterable[str] = (),
 ) -> dict[int, str]:
     """The file each release lives in: the one it had, else a new unique one.
 
@@ -114,9 +116,13 @@ def file_names_for(
     release is the same file rather than a second one. New releases are named
     oldest number first, so the same set of releases always gets the same
     names whatever order GitHub listed them in.
+
+    ``present`` is every file in the folder now. A new name avoids those too:
+    a file the reader put there under a release's natural name is theirs; the
+    release it collides with is written beside it rather than lost to it.
     """
     known = {} if existing is None else _names_by_id(existing)
-    taken = {name.casefold() for name in known.values()}
+    taken = {name.casefold() for name in (*known.values(), *present)}
     names = dict(known)
     fresh = sorted(
         (one for one in releases if one.source_id not in known),

@@ -114,7 +114,7 @@ class ReleaseImportService:
         if not releases:
             raise NoPublishedReleases()
         existing = self.store.load(address)
-        names = file_names_for(existing, releases)
+        names = file_names_for(existing, releases, self.store.present(address))
         on_disk = self.store.digests(address, tuple(names.values()))
         plan = plan_refresh(address, existing, releases, names, on_disk)
         if cancelled():

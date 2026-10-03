@@ -178,6 +178,10 @@ class ReleaseCollectionStore(Protocol):
         """Each named file's digest as it stands; None where it is absent."""
         ...
 
+    def present(self, address: RepositoryAddress) -> tuple[str, ...]:
+        """The name of every file in the folder now; none when there is no folder."""
+        ...
+
     def commit(self, address: RepositoryAddress, plan: RefreshPlan) -> None:
         """Carry out the plan whole; raises ``CollectionWriteFailed`` otherwise."""
         ...

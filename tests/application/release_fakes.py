@@ -71,6 +71,9 @@ class FakeCollectionStore:
             for name in file_names
         }
 
+    def present(self, address: RepositoryAddress) -> tuple[str, ...]:
+        return tuple(self.files)
+
     def commit(self, address: RepositoryAddress, plan: RefreshPlan) -> None:
         if self.fail_commit:
             raise CollectionWriteFailed("disk full")

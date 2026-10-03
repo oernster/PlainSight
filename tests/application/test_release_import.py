@@ -120,3 +120,17 @@ def test_a_failed_write_is_raised_as_the_problem_it_is() -> None:
 def test_a_rate_limit_carries_when_it_resets() -> None:
     assert RateLimited(1234).reset_epoch == 1234
     assert RateLimited().reset_epoch is None
+
+
+def test_a_new_release_avoids_a_file_already_in_the_folder() -> None:
+    """A file of the reader's under a release's natural name is left alone."""
+    store = FakeCollectionStore()
+    store.files["2026-06-01_v2.0.md"] = "the reader's own"
+    service, _ = service_with(FakeReleaseSource((OLDER, NEWER)), store)
+
+    outcome = service.import_releases(ADDRESS, Heard(), never)
+
+    assert store.files["2026-06-01_v2.0.md"] == "the reader's own"
+    assert outcome.plan.kept_edited == ()
+    assert len(outcome.plan.added) == 2
+    assert "2026-06-01_v2.0.md" not in outcome.plan.added

@@ -10,7 +10,7 @@ from collections.abc import Callable
 from dataclasses import dataclass
 from html import escape
 
-from PySide6.QtCore import QPoint, QTimer
+from PySide6.QtCore import QPoint, QTimer, QUrl
 from PySide6.QtGui import QTextDocument
 from PySide6.QtWidgets import QWidget
 
@@ -18,6 +18,13 @@ from ..application.ports import DocumentRenderer
 from ..domain.document import Document, DocumentBody
 from ..domain.extent import Extent
 from ..domain.passage import soften
+from .confined_reach import (
+    confine_pictures,
+    follow_link,
+    holds_pictures,
+    load_confined,
+)
+from .document_header import header, long_fields
 from .reading_pane import ReadingPane
 from .theme import Palette, document_style
 
@@ -74,9 +81,16 @@ class DocumentView(ReadingPane):
         renderer: DocumentRenderer,
         palette: Palette,
         parent: QWidget | None = None,
+        follow: Callable[[str], object] | None = None,
     ) -> None:
         super().__init__(parent)
-        self.setOpenExternalLinks(True)
+        # A link is the document's choice, not the reader's, so the pane never
+        # follows one itself: see ``confined_reach.follow_link``.
+        self._follow = follow
+        self.setOpenLinks(False)
+        self.anchorClicked.connect(self._link_clicked)
+        # The document being read, whose folder its relative files come from.
+        self._reading: str | None = None
         self.document().setDefaultStyleSheet(document_style(palette))
         self._renderer = renderer
         self._palette = palette
@@ -95,6 +109,13 @@ class DocumentView(ReadingPane):
         self._give_up.setInterval(SETTLES_WITHIN_MS)
         self._give_up.timeout.connect(self._stop_watching)
         self.show_nothing()
+
+    def loadResource(self, kind: int, name: QUrl) -> object:
+        """Read a file the document names only where ``document_reach`` allows."""
+        return load_confined(kind, name, self._reading, super().loadResource)
+
+    def _link_clicked(self, address: QUrl) -> None:
+        follow_link(address, self.scrollToAnchor, self._follow)
 
     @property
     def extent(self) -> Extent | None:
@@ -232,7 +253,7 @@ class DocumentView(ReadingPane):
             return
         self._showing = document
         body, extent = self._body(document, read_body)
-        self._set(_header(document) + body + _long_fields(document))
+        self._set(header(document) + body + long_fields(document), document.path)
         # After the draw, which clears whatever the last document counted.
         self._extent = extent
 
@@ -266,8 +287,11 @@ class DocumentView(ReadingPane):
         text = soften(body.text) if document.kind.reflows else body.text
         return self._renderer.render(text, document.kind), Extent.of(body.text)
 
-    def _set(self, html: str) -> None:
+    def _set(self, html: str, reading: str | None = None) -> None:
         """Show this content, at the start unless a place was kept for it.
+
+        ``reading`` is the document's own path, which its relative files are
+        read beside; a standing message has none and so may read nothing.
 
         The document is built and laid out here rather than handed to the
         widget as text. Setting text on the live widget empties its scroll
@@ -277,6 +301,7 @@ class DocumentView(ReadingPane):
         """
         place = self._place
         self._place = None
+        self._reading = reading
         # Whatever is being drawn, it is not the last document any more. A
         # document redrawing puts its own count back the moment this returns;
         # a standing message leaves it cleared, which is the truth.
@@ -309,6 +334,9 @@ class DocumentView(ReadingPane):
         document.setDefaultFont(self.font())
         document.setDefaultStyleSheet(document_style(self._palette))
         document.setHtml(html)
+        # Before the layout, which is when Qt goes looking for the pictures.
+        if holds_pictures(html):
+            confine_pictures(document, reading)
         # Laid out at the width the widget itself was using, not at the raw
         # viewport width. Those differ; the difference was measured moving
         # the page height by six hundred pixels on a change of colour alone,
@@ -331,44 +359,3 @@ class DocumentView(ReadingPane):
             # a hand on the wheel earns.
             self.scroller.suspend()
         self.sync_focus_policy()
-
-
-def _header(document: Document) -> str:
-    """The title, the description and whatever else the document declares.
-
-    The title is the declared name where there is one and the file name
-    otherwise, so a document that calls itself something opens under that
-    name while still listing in the tree as the file it is.
-    """
-    parts = [f"<h1>{escape(document.title)}</h1>"]
-    if document.description:
-        parts.append(f"<p><i>{escape(document.description)}</i></p>")
-    fields = _fields(document)
-    if fields:
-        parts.append(fields)
-    parts.append("<hr>")
-    return "".join(parts)
-
-
-def _fields(document: Document) -> str:
-    """The short frontmatter this document declares, beyond the two already shown."""
-    rows = [
-        f"<li><b>{escape(key)}</b>: {escape(value)}</li>"
-        for key, value in document.header_fields
-    ]
-    return "" if not rows else "<ul>" + "".join(rows) + "</ul>"
-
-
-def _long_fields(document: Document) -> str:
-    """Every oversized frontmatter value, each under a heading of its own.
-
-    These follow the body rather than heading it, so the text a reader opened
-    the document for is the first thing they meet.
-    """
-    if not document.long_fields:
-        return ""
-    sections = "".join(
-        f"<h2>{escape(key)}</h2><p>{escape(value)}</p>"
-        for key, value in document.long_fields
-    )
-    return "<hr>" + sections

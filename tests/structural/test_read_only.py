@@ -1,47 +1,54 @@
-"""Read only, as an invariant: nothing writes to a document the reader chose.
+"""Read only, as an allowlist: each module may use only the writes granted to it.
 
 Editing is the external editor's job, so the application writes only its own
 files: the settings file and the release notes it imports, each beneath its own
-directory. This test names the modules allowed to write at all and asserts
-nothing else calls a writing operation.
+directory. Every write capability a module uses (see ``write_capabilities``)
+must be granted to it by name below; anything ungranted fails, in any module,
+the new ones included. A grant is the place a reason is written down.
+
+It is a check on this package's source. What it reads and what it cannot see
+are stated in ``write_capabilities``.
 """
 
 from __future__ import annotations
 
-import ast
+from collections.abc import Mapping
 
 from .layers import PACKAGE_NAME, package_files, parse
+from .write_capabilities import writing_calls
 
-WRITING_CALLS = frozenset(
-    {
-        "write_text",
-        "write_bytes",
-        "mkdir",
-        "unlink",
-        "rmdir",
-        "replace",
-        "rename",
-        "touch",
-        "remove",
-        "rmtree",
-    }
-)
+__all__ = ["writing_calls"]
 
-# The builtin only. An attribute named `open` is not checked, because a port
-# legitimately carries that verb: the external opener asks the desktop to open
-# an address and touches no file at all.
-WRITING_BUILTINS = frozenset({"open"})
+INFRASTRUCTURE = f"{PACKAGE_NAME}.infrastructure"
 
-# The modules that write anything. The settings store writes the settings
-# file; the collection store writes imported release notes beneath their own
-# root; both write through the one atomic writer.
-PERMITTED_WRITERS = frozenset(
-    {
-        f"{PACKAGE_NAME}.infrastructure.settings_store",
-        f"{PACKAGE_NAME}.infrastructure.release_collection_store",
-        f"{PACKAGE_NAME}.infrastructure.atomic_write",
-    }
-)
+# Module, then exactly what it may use, each with its reason.
+GRANTS: Mapping[str, frozenset[str]] = {
+    # The one home of the temporary file, the flush and the replace.
+    f"{INFRASTRUCTURE}.atomic_write": frozenset(
+        {"import tempfile", "mkstemp", "write", "replace", "unlink"}
+    ),
+    # Writes the settings file through the atomic writer; makes its folder.
+    f"{INFRASTRUCTURE}.settings_store": frozenset({"mkdir"}),
+    # Writes imported release notes beneath their own root and only there. A
+    # refresh goes through the atomic writer; a first import builds the whole
+    # collection in a temporary folder beside it, then renames it into place.
+    f"{INFRASTRUCTURE}.release_collection_store": frozenset(
+        {
+            "import shutil",
+            "import tempfile",
+            "mkdir",
+            "mkdtemp",
+            "write_bytes",
+            "rename",
+            "rmtree",
+        }
+    ),
+    # Starts the reader's chosen editor on the document; writes nothing itself.
+    f"{INFRASTRUCTURE}.desktop": frozenset({"import QProcess", "QProcess"}),
+    # Calls the settings store's port, named ``save``; QImage's write shares
+    # the name, so the call is granted here rather than the name ignored.
+    f"{PACKAGE_NAME}.application.services": frozenset({"save"}),
+}
 
 
 def module_name(path: object) -> str:
@@ -52,28 +59,28 @@ def module_name(path: object) -> str:
     return ".".join(relative.with_suffix("").parts)
 
 
-def writing_calls(tree: ast.Module) -> set[str]:
-    """Every writing operation called anywhere in this file."""
-    found: set[str] = set()
-    for node in ast.walk(tree):
-        if not isinstance(node, ast.Call):
-            continue
-        target = node.func
-        if isinstance(target, ast.Attribute) and target.attr in WRITING_CALLS:
-            found.add(target.attr)
-        elif isinstance(target, ast.Name) and target.id in WRITING_BUILTINS:
-            found.add(target.id)
-    return found
+def capabilities_by_module() -> dict[str, set[str]]:
+    """Every module in the package and the write capabilities it uses."""
+    return {module_name(path): writing_calls(parse(path)) for path in package_files()}
 
 
-def test_only_the_named_writers_write_anything() -> None:
-    offences: list[str] = []
-    for path in package_files():
-        name = module_name(path)
-        if name in PERMITTED_WRITERS:
-            continue
-        calls = writing_calls(parse(path))
-        if calls:
-            offences.append(f"{name}: {sorted(calls)}")
+def test_no_module_writes_beyond_its_grant() -> None:
+    offences = [
+        f"{name}: {sorted(used - GRANTS.get(name, frozenset()))}"
+        for name, used in capabilities_by_module().items()
+        if used - GRANTS.get(name, frozenset())
+    ]
 
     assert offences == []
+
+
+def test_every_grant_is_still_used() -> None:
+    """A grant nothing uses is a door left open for the next change."""
+    used = capabilities_by_module()
+    stale = [
+        f"{name}: {sorted(granted - used.get(name, set()))}"
+        for name, granted in GRANTS.items()
+        if granted - used.get(name, set())
+    ]
+
+    assert stale == []
