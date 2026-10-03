@@ -643,7 +643,7 @@ build_utils.py  dmg_icon.py
 LICENSE  LICENSE-GPL-3.0.txt  LICENSE-LGPL-3.0.txt  INSTALLER_LICENSE
 main.py            the entry script the build scripts compile
 README.md  ARCHITECTURE.md  DESIGN-PLAN.md  TECH_DEBT.md  RELEASE-IMPORT.md
-DECISIONS-TRADEOFFS.md
+DECISIONS-TRADEOFFS.md  DEVELOPMENT.md  TESTING.md
 docs/              the GitHub Pages site
 installer/         the setup program, a second application in the same tree
 plainsight/
@@ -704,8 +704,10 @@ the entry point, `installer/` and the build scripts under GPL-3.0.
 
 Windows through `buildexe.py` plus `buildinstaller.py` with a bespoke themed
 installer, Linux through `build_flatpak.sh` and `clean_flatpak.sh`, macOS through
-`builddmg.py`. All three compile `main.py` with Nuitka; nothing here builds with
-PyInstaller.
+`builddmg.py`. The Windows and macOS builds compile `main.py` with Nuitka, each
+stopping first unless Nuitka 4.2.1 or newer is installed; the flatpak instead
+runs `main.py` under the runtime's own Python, with every dependency installed
+from wheels fetched on the host. Nothing here builds with PyInstaller.
 
 The setup program installs per user and never asks for an administrator. It
 removes what it wrote plus the application's own directory, settings and

@@ -497,15 +497,19 @@ opens with every folder shut.
 ### Nuitka, with unused parts of Qt fenced out
 
 The application, the setup program and the macOS application are compiled
-with Nuitka. The build fences out the parts of Qt nothing imports.
+with Nuitka; the Linux flatpak runs the source under its runtime's own Python.
+The build fences out the parts of Qt nothing imports. Every Nuitka build
+refuses to start on a Nuitka older than the release it is written against.
 
 - **Rather than:** PyInstaller, which bundles an interpreter beside the source;
-  collecting Qt whole under it produced a far larger bundle.
+  collecting Qt whole under it produced a far larger bundle; compiling with
+  whichever Nuitka happens to be installed.
 - **Gains:** one rule finds the bundled files in development and under a
   compiled build alike; nothing unused can creep in through an indirect
-  import.
+  import; what ships is compiled by a release somebody chose.
 - **Costs:** some packages must be named for inclusion by hand, which ties the
-  build to how those libraries load; a new Qt feature may need the fence moved.
+  build to how those libraries load; a new Qt feature may need the fence moved;
+  an old environment has to upgrade Nuitka before it can build at all.
 
 ### Installed for one user, without administrator rights
 
@@ -578,9 +582,11 @@ script link with a hash of its content.
 
 ### Icons from one master each
 
-Every icon, tray mark and the donate mark is generated from a master image.
-Nothing is upscaled: a master smaller than a wanted size is reported rather
-than stretched. The masters stay out of the bundle.
+Every icon, nearly every tray mark and the donate mark is generated from a
+master image; the three text size marks are drawn by hand. Nothing is
+upscaled: a master smaller than a wanted size is reported rather than
+stretched. The masters stay out of the bundle, all but the one for the tree
+filter's cross, which keeps the name its owner gave it.
 
 - **Rather than:** hand-exported sizes.
 - **Gains:** one source per picture; no blurred icon.

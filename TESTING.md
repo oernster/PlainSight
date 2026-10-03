@@ -24,9 +24,10 @@ coverage measurement and the floor. Add `-v` to see each test named as it runs.
 there is no CI, so a formatting or lint regression passes `pytest` untouched.
 Run all four and read the exit code of each.
 
-**A full run takes about ten seconds.** Measured on 2026-10-02: 1,022 tests
-passed in 12 seconds on Windows. The count varies by machine: one test is
-skipped where there is no skills library to read (see below).
+**A full run takes under half a minute.** Measured on Windows: 1,022 tests
+passed in 12 seconds on 2026-10-02 and in 22 seconds on 2026-10-03. The count
+varies by machine: one test is skipped where there is no skills library to
+read (see below).
 
 **Read the exit code, never the text.** The run prints the coverage table then
 one summary line. A search of the output for a result word is still not safe,
