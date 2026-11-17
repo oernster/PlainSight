@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>What's new in PlainSight: release history</title>
+  <meta name="description" content="PlainSight's release history: pictures and links kept to where you would expect, release notes imported from GitHub, a status bar, a tree that hides what is not yours to read and the move from Skills Viewer to a reader for every kind of document.">
+  <link rel="canonical" href="https://ernster.dev/PlainSight/whats-new.html">
+  <meta name="theme-color" content="#1e1e2e">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="PlainSight">
+  <meta property="og:url" content="https://ernster.dev/PlainSight/whats-new.html">
+  <meta property="og:title" content="What's new in PlainSight: release history">
+  <meta property="og:description" content="Pictures and links kept to where you would expect, release notes imported from GitHub, a status bar, a tree that hides what is not yours to read and the move from Skills Viewer to a reader for every kind of document.">
+  <meta property="og:image" content="https://ernster.dev/PlainSight/plainsight-512.png">
+  <meta property="og:image:width" content="512">
+  <meta property="og:image:height" content="512">
+  <meta property="og:image:alt" content="PlainSight app icon">
+  <meta property="og:locale" content="en_GB">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="What's new in PlainSight: release history">
+  <meta name="twitter:description" content="Pictures and links kept to where you would expect, release notes imported from GitHub, a status bar, a tree that hides what is not yours to read and the move from Skills Viewer to a reader for every kind of document.">
+  <meta name="twitter:image" content="https://ernster.dev/PlainSight/plainsight-512.png">
+  <link rel="icon" href="favicon.ico" sizes="any">
+  <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
+  <link rel="apple-touch-icon" href="apple-touch-icon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css?v=5fb17ae258">
+<script>window.goatcounter = {path: function (p) { return location.host + p }}</script>
+<script data-goatcounter="https://oernster.goatcounter.com/count" async src="https://gc.zgo.at/count.js"></script>
+</head>
+<body>
+
+<nav>
+  <a class="nav-brand" href="./">
+    <img src="plainsight-512.png" alt="PlainSight icon">
+    <span>PlainSight</span>
+  </a>
+  <div class="nav-right">
+    <a class="nav-link" href="features.html">Features</a>
+    <a class="nav-link" href="why.html">Why</a>
+    <a class="nav-link" href="whats-new.html">What's New</a>
+    <a class="nav-link" href="download.html">Download</a>
+    <a class="btn-primary" href="download.html">Download</a>
+  </div>
+</nav>
+
+<section class="section" id="whats-new">
+  <div class="section-label">Changelog</div>
+  <h1 class="section-title">What's new</h1>
+  <p class="section-sub">Recent releases have focused on what a document can make PlainSight do. The newest keeps
+    pictures to this computer, sends a link only where you would expect it to go and keeps updates and imports on GitHub;
+    the Linux Flatpak can no longer change your home folder. Before that PlainSight learned to import a GitHub repository's
+    release notes as a folder of Markdown, to count what you are reading and to hide what is not yours to read. It began
+    as Skills Viewer, a window onto your Claude skills, then became a reader for Markdown, text, HTML, Word and PDF.</p>
+
+  <div class="changelog-grid">
+
+    <div class="cl-entry">
+      <div class="ver-tag">v<!--VERSION-->2.6.0<!--/VERSION--></div>
+      <h3>Pictures and links stay where you would expect</h3>
+      <ul>
+        <li>A picture in a document is read from this computer only. One named on a network share is no longer read, so a document somebody sent you cannot make your computer reach a machine it names</li>
+        <li>A picture named relative to its document, such as images/picture.png, is now looked for in the document's own folder instead of going unshown or coming from wherever PlainSight started</li>
+        <li>A web or email link goes to your browser or mail program and a link within the page moves you there; every other kind of link now does nothing</li>
+        <li>A file of your own in an imported release notes folder no longer hides a later release that would have taken its name</li>
+        <li>The update check and the release notes import follow a redirect only while it stays on GitHub</li>
+        <li>The Linux Flatpak sees your home folder read only; the one folder it may write to is its own</li>
+      </ul>
+    </div>
+
+    <div class="cl-entry">
+      <div class="ver-tag">v2.5.0</div>
+      <h3>A website with a page for each part</h3>
+      <ul>
+        <li>The site's features page gives the short version, then hands over to a page on what PlainSight reads and one on how the tree and the reading page work</li>
+        <li>The site's stylesheet is named by its content, so a browser never pairs a fresh page with a stale stylesheet</li>
+        <li>An update check answering after its window has gone is now dropped quietly instead of raising an error on a background thread</li>
+        <li>For anyone building from source: the Windows and macOS builds need Nuitka 4.2.1 or newer and say so before touching anything; development, testing and decision documents join the README</li>
+      </ul>
+    </div>
+
+    <div class="cl-entry">
+      <div class="ver-tag">v2.4.0</div>
+      <h3>Import a GitHub repository's release notes</h3>
+      <ul>
+        <li>A new button in the top tray turns any public GitHub repository's release history into a folder of Markdown, opened on the newest release with the rest listed newest first</li>
+        <li>Each file opens with the release's title, its tag, a link back to GitHub and a clear mark for a pre-release. A release published with no notes still gets its page</li>
+        <li>Paste the address however you have it: the full address, owner/repository or a page inside the repository. Anything that names no repository is refused before GitHub is asked</li>
+        <li>Importing again brings the folder up to date and keeps any file you have edited exactly as you left it; a refresh that fails leaves every file readable</li>
+        <li>Errors say what went wrong in words, including when GitHub's hourly allowance comes back. An import can be cancelled while it reads</li>
+        <li>PlainSight still never writes to a document you point it at. The import is its second kind of network request, made only when you ask for one</li>
+      </ul>
+    </div>
+
+    <div class="cl-entry">
+      <div class="ver-tag">v2.3.3</div>
+      <h3>A new donation page</h3>
+      <ul>
+        <li>The Donate button now opens a new PayPal page that suggests £5 and lets you give any amount you choose. Nothing else has changed</li>
+      </ul>
+    </div>
+
+    <div class="cl-entry">
+      <div class="ver-tag">v2.3.2</div>
+      <h3>Diagrams and code blocks read properly</h3>
+      <ul>
+        <li>A diagram drawn with box characters now joins up into one clean rectangle, where its lines came out as dashes in a ragged staircase</li>
+        <li>Prose still stops at a comfortable line length. A diagram or a block of code spreads into the window's full width and scrolls sideways only when the window is too narrow to show it whole</li>
+      </ul>
+    </div>
+
+    <div class="cl-entry">
+      <div class="ver-tag">v2.3.1</div>
+      <h3>Tooltips show while another program has focus</h3>
+      <ul>
+        <li>Every window, its dialogs and the setup program included, now shows its tooltips whether it is the active one or not</li>
+      </ul>
+    </div>
+
+    <div class="cl-entry">
+      <div class="ver-tag">v2.3.0</div>
+      <h3>A status bar for what you have open</h3>
+      <ul>
+        <li>The foot of the window names the kind of document at the left and counts its characters and lines at the right</li>
+        <li>The count is of the text you are reading rather than the bytes of the file; a document that could not be read still names its kind</li>
+      </ul>
+    </div>
+
+    <div class="cl-entry">
+      <div class="ver-tag">v2.2.1</div>
+      <h3>The donate link follows the new name</h3>
+      <ul>
+        <li>The donation button's link now refers to the app by its new name, PlainSight</li>
+      </ul>
+    </div>
+
+    <div class="cl-entry">
+      <div class="ver-tag">v2.2.0</div>
+      <h3>The tree hides what is not yours to read</h3>
+      <ul>
+        <li>venv and node_modules folders are hidden, as are documents holding nothing to read and any folder that leaves empty</li>
+        <li>One button at the right end of the bottom tray turns the filter off and on. Its picture shows the filter as it stands; the choice is remembered between runs</li>
+        <li>A PDF, a document that cannot be read and a file opened on its own are never hidden</li>
+      </ul>
+    </div>
+
+    <div class="cl-entry">
+      <div class="ver-tag">v2.1.0</div>
+      <h3>The chooser opens on your home folder</h3>
+      <ul>
+        <li>The folder chooser opens on your home directory, the one starting place no operating system asks you to approve, instead of the Claude skills folder</li>
+        <li>Uninstalling now removes PlainSight's settings too, so a later install starts fresh. Your documents are never touched</li>
+        <li>Three statements in the documentation were corrected against the code</li>
+      </ul>
+    </div>
+
+    <div class="cl-entry">
+      <div class="ver-tag">v2.0.0</div>
+      <h3>Skills Viewer becomes PlainSight, a reader for documents</h3>
+      <ul>
+        <li>Skills Viewer read a folder of Claude skills. Renamed PlainSight, it now reads a folder of documents or a single file</li>
+        <li>Five kinds of file: Markdown, plain text, HTML, Word and PDF. A PDF is read back into headings, emphasis and lists from the size and face of its lines</li>
+        <li>A scanned or password-protected PDF says so instead of showing an empty page</li>
+        <li>A Guide, first on the Help menu, names every picture in the two trays and says what each kind of document becomes in the reading pane</li>
+        <li>Scripts inside a document are dropped rather than run and nothing is fetched on a document's behalf; the update check stays the one request of its own</li>
+        <li>A folder is listed without reading every file: forty twelve-page PDFs list in 7 ms where reading them all took 515 ms</li>
+        <li>Nothing is read until you choose a folder, the left pane is the tree your folders actually are and a new button opens a single document</li>
+        <li>The Linux build works again; the macOS image ships the licence files</li>
+      </ul>
+    </div>
+
+    <div class="cl-entry">
+      <div class="ver-tag">v1.0.0</div>
+      <h3>Skills Viewer: see the skills Claude reads</h3>
+      <ul>
+        <li>Finds your Claude skills, lists them on the left and renders the one you pick on the right. Skills you wrote and skills that came with a plugin are grouped apart</li>
+        <li>Long text is set to be read: a readable line length, space between paragraphs and long passages broken between sentences, with nothing added or removed</li>
+        <li>Light and dark themes plus three text sizes, with your place in a skill kept across a change of either</li>
+        <li>The reading pane reads itself down slowly and hands control back the moment you touch it. Every control is reachable through one keyboard ring</li>
+        <li>Editing is handed to an editor you choose; Skills Viewer never writes to a skill</li>
+        <li>An update check a few seconds after opening and once a day, silent unless there is something newer. It is the one network request of its own</li>
+        <li>A per-account Windows setup program, a Linux Flatpak and a signed macOS disk image</li>
+      </ul>
+    </div>
+
+  </div>
+
+  <div style="text-align:center; margin-top:2.5rem;">
+    <a class="btn-secondary" href="https://github.com/oernster/PlainSight/releases" style="font-size:0.9rem; padding:0.6rem 1.5rem;">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg>
+      View all releases on GitHub
+    </a>
+  </div>
+</section>
+
+<footer>
+  <div class="footer-inner">
+    <div class="footer-top">
+      <a class="footer-brand" href="./">
+        <img src="plainsight-512.png" alt="PlainSight">
+        <span>PlainSight</span>
+      </a>
+      <nav class="footer-links">
+        <a href="features.html">Features</a>
+        <a href="why.html">Why</a>
+        <a href="whats-new.html">What's New</a>
+        <a href="download.html">Download</a>
+        <a href="https://github.com/oernster/PlainSight">GitHub</a>
+        <a href="https://github.com/oernster/PlainSight/releases">Releases</a>
+        <a href="https://github.com/oernster/PlainSight/blob/main/ARCHITECTURE.md">Architecture</a>
+        <a href="https://github.com/oernster/PlainSight/blob/main/LICENSE">Licence</a>
+        <a href="https://ernster.dev">More of my work</a>
+      </nav>
+    </div>
+    <div class="footer-bottom">
+      <p>A local-first reader for folders of Markdown, text, HTML, Word and PDF files. It reads nothing until you choose a folder; the chooser opens on your home directory. It never writes to your documents; open source, no cloud. Not affiliated with Anthropic and not endorsed by them.</p>
+      <div class="chips">
+        <span class="chip">Version <!--VERSION-->2.6.0<!--/VERSION--></span>
+        <span class="chip">Python</span>
+        <span class="chip">PySide6</span>
+        <span class="chip">GPL-3.0</span>
+        <span class="chip">LGPL-3.0</span>
+      </div>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>
